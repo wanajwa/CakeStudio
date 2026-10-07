@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CakeStudio.Models;
 using CakeStudio.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CakeStudio.Controllers
 {
+    [Authorize(Roles = "Baker")]
     public class CakeController : Controller
     {
       

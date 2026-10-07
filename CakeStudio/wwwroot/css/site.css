@@ -20,3 +20,46 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* =========================
+   Baker Sidebar
+========================= */
+
+.sidebar {
+    width: 260px;
+    min-height: 100vh;
+    flex-shrink: 0;
+}
+
+/* CakeStudio logo */
+.sidebar-logo {
+    padding: 35px 20px 60px 20px;
+    text-align: center;
+}
+
+/* Navigation */
+.sidebar-link {
+    color: #333;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+    .sidebar-link:hover {
+        background-color: #f2f2f2;
+        color: #000;
+    }
+
+    /* Selected menu */
+    .sidebar-link.active {
+        background-color: #e8f2f8;
+        color: #000;
+        font-weight: 500;
+    }
+
+/* Main page */
+.main-content {
+    background-color: #faf7f9;
+    min-height: 100vh;
+}
