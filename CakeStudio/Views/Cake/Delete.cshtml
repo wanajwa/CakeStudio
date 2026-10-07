@@ -1,0 +1,41 @@
+﻿@model CakeStudio.Models.Cake
+
+@{
+    ViewData["Title"] = "Delete Cake";
+}
+
+<h1>Delete Cake</h1>
+
+<p>Are you sure you want to delete this cake?</p>
+
+<div class="mb-3">
+    <strong>Cake Name:</strong>
+    @Model.CakeName
+</div>
+
+<div class="mb-3">
+    <strong>Description:</strong>
+    @Model.Description
+</div>
+
+<div class="mb-3">
+    <strong>Base Price:</strong>
+    RM @Model.BasePrice.ToString("0.00")
+</div>
+
+<form asp-controller="Cake"
+      asp-action="DeleteConfirmed"
+      asp-route-id="@Model.CakeId"
+      method="post">
+
+    <button type="submit" class="btn btn-danger">
+        Confirm Delete
+    </button>
+
+    <a asp-controller="Cake"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Cancel
+    </a>
+
+</form>

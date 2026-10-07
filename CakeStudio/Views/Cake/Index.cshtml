@@ -1,0 +1,62 @@
+﻿@model IEnumerable<CakeStudio.Models.Cake>
+
+@{
+    ViewData["Title"] = "Cakes";
+}
+
+<h1>Cakes</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Cake Name</th>
+            <th>Description</th>
+            <th>Base Price</th>
+            <th>Available</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var cake in Model)
+        {
+            <tr>
+                <td>
+                    @if (cake.Image != null && cake.Image.ImageContent != null)
+                    {
+                        var base64 = Convert.ToBase64String(cake.Image.ImageContent);
+                        var imageSrc = $"data:{cake.Image.ImageType};base64,{base64}";
+
+                        <img src="@imageSrc"
+                             alt="@cake.CakeName"
+                             style="width:100px; height:100px; object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <span>No Image</span>
+                    }
+                </td>
+                <td>@cake.CakeName</td>
+                <td>@cake.Description</td>
+                <td>RM @cake.BasePrice.ToString("0.00")</td>
+                <td>@cake.IsAvailable</td>
+                <td>
+                    <a asp-controller="Cake"
+                       asp-action="Edit"
+                       asp-route-id="@cake.CakeId"
+                       class="btn btn-warning">
+                        Edit
+                    </a>
+
+                    <a asp-controller="Cake"
+                       asp-action="Delete"
+                       asp-route-id="@cake.CakeId"
+                       class="btn btn-danger">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

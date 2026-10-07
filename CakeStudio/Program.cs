@@ -1,10 +1,14 @@
 
 using CakeStudio.Data;
+using CakeStudio.Services;
 var builder = WebApplication.CreateBuilder(args);
+
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<NHibernateHelper>();
+builder.Services.AddScoped<ICakeService, CakeService>();
 
 var app = builder.Build();
 

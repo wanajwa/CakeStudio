@@ -1,35 +1,45 @@
 ﻿using CakeStudio.Data;
+using CakeStudio.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CakeStudio.Controllers
 {
     public class DatabaseTestController : Controller
     {
-        // Store our NHibernateHelper.
         private readonly NHibernateHelper _nhibernateHelper;
 
-
-        // ASP.NET Core gives this controller our NHibernateHelper
-        // through Dependency Injection.
         public DatabaseTestController(NHibernateHelper nhibernateHelper)
         {
-            // Save it so other methods in this controller can use it.
             _nhibernateHelper = nhibernateHelper;
         }
 
-
-        public IActionResult Index()
+        public IActionResult InsertCake()
         {
-            // Ask NHibernateHelper to open a database session.
+            // 1. Open a connection/session to the database through NHibernate.
             using var session = _nhibernateHelper.OpenSession();
 
-            // Check whether the NHibernate session is connected.
-            if (session.IsConnected)
-            {
-                return Content("Database connected successfully!");
-            }
+            // 2. Start a database transaction.
+            using var transaction = session.BeginTransaction();
 
-            return Content("Database connection failed.");
+            // 3. Create a normal C# Cake object.
+            var cake = new Cake
+            {
+                CakeName = "Chocolate Cake",
+                Description = "Chocolate cake",
+                BasePrice = 60.00m,
+                IsAvailable = true
+            };
+
+            // 4. Tell NHibernate to save this Cake.
+            session.Save(cake);
+
+            // 5. Commit the transaction.
+            // This makes the database change permanent.
+            transaction.Commit();
+
+            return Content(
+                $"Cake inserted successfully! CakeId: {cake.CakeId}"
+            );
         }
     }
 }

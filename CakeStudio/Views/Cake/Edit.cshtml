@@ -1,0 +1,79 @@
+﻿@model CakeStudio.Models.Cake
+@{
+		ViewData["Title"] = "Create Cake";
+
+}
+
+<h1> Edit Cake</h1>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form asp-controller="Cake"
+	asp-action="Edit"
+	method="post"
+	  enctype="multipart/form-data">
+
+	<input type ="hidden" asp-for="CakeId" />
+	
+	<div class="mb-03">
+		<label asp-for="CakeName" class="form-label"></label>
+		<input asp-for="CakeName" class="form-control"/>
+		<span asp-validation-for="CakeName"class="text-danger"></span></span>
+	</div>
+
+	<div class="mb-03">
+		<label asp-for="Description" class="form-label"></label>
+		<textarea asp-for="Description" class="form-control"></textarea>
+		<span asp-validation-for="Description" class="text-danger"></span>
+	</div>
+
+	<div class="mb-03">
+		<label asp-for="BasePrice" class="form-label"></label>
+		<input asp-for="BasePrice" class="form-control" />
+		<span asp-validation-for="BasePrice" class="text-danger"></span>
+		</div>
+	<div class="mb-3">
+		<label class="form-label">Current Image</label>
+
+		<div>
+			@if (Model.Image != null && Model.Image.ImageContent != null)
+			{
+				var base64 = Convert.ToBase64String(Model.Image.ImageContent);
+				var imageSrc = $"data:{Model.Image.ImageType};base64,{base64}";
+
+				<img src="@imageSrc"
+					 alt="@Model.CakeName"
+					 style="width:150px; height:150px; object-fit:cover;"
+					 class="mb-2" />
+			}
+			else
+			{
+				<p>No image</p>
+			}
+		</div>
+	</div>
+
+	<div class="mb-3">
+		<label for="imageFile" class="form-label">Replace Image</label>
+
+		<input type="file"
+			   id="imageFile"
+			   name="imageFile"
+			   class="form-control"
+			   accept="image/jpeg,image/png" />
+
+		<small class="text-muted">
+			Leave empty to keep the current image.
+		</small>
+	</div>
+
+	<div class="form-check mb-3">
+		<input asp-for="IsAvailable" class="form-check-input" />
+		<label asp-for="IsAvailable" class="form-check-label"></label>
+	</div>
+
+	<button type="submit" class="btn btn-primary">
+		Save Changes
+	</button>
+
+</form>
