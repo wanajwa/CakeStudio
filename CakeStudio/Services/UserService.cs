@@ -23,49 +23,44 @@ namespace CakeStudio.Services
             {
                 using var session = _nhibernateHelper.OpenSession();
 
+                // Find user by email
                 var user = session.QueryOver<User>()
                     .Where(x => x.Email == email)
                     .SingleOrDefault();
 
+                // Check whether user exists
                 if (user == null)
                 {
-                    serviceResponse.Status = false;
                     serviceResponse.Message = "Invalid email or password.";
                     serviceResponse.MessageCode = "INVALID_LOGIN";
-                    serviceResponse.Data = null;
-
                     return serviceResponse;
                 }
 
+                // Verify password
                 var passwordResult = _passwordHasher.VerifyHashedPassword(
                     user,
                     user.PasswordHash,
                     password
                 );
 
+                // Check whether password is correct
                 if (passwordResult == PasswordVerificationResult.Failed)
                 {
-                    serviceResponse.Status = false;
                     serviceResponse.Message = "Invalid email or password.";
                     serviceResponse.MessageCode = "INVALID_LOGIN";
-                    serviceResponse.Data = null;
-
                     return serviceResponse;
                 }
 
+                // Login successful
                 serviceResponse.Status = true;
-                serviceResponse.Message = "Login successful.";
-                serviceResponse.MessageCode = "LOGIN_SUCCESS";
                 serviceResponse.Data = user;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("LOGIN ERROR:");
                 System.Diagnostics.Debug.WriteLine(ex.ToString());
-                serviceResponse.Status = false;
+
                 serviceResponse.Message = "An error occurred during login.";
-                serviceResponse.MessageCode = ex.Message;
-                serviceResponse.Data = null;
+                serviceResponse.MessageCode = "LOGIN_ERROR";
             }
 
             return serviceResponse;

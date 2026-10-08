@@ -33,10 +33,7 @@ namespace CakeStudio.Controllers
                 return View(model);
             }
 
-            var response = _userService.Login(
-                model.Email,
-                model.Password
-            );
+            var response = _userService.Login(model.Email, model.Password);
 
             if (!response.Status || response.Data is not User user)
             {

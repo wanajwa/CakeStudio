@@ -1,9 +1,7 @@
 ﻿using CakeStudio.Data;
 using CakeStudio.Models;
 using NHibernate.Linq;
-using System.Net.NetworkInformation;
-using System.Transactions;
-
+using NHibernate;
 namespace CakeStudio.Services
 {
     public class CakeService : ICakeService
@@ -17,40 +15,71 @@ namespace CakeStudio.Services
 
         public List<Cake> GetAll()
         {
-            using var session = _nhibernateHelper.OpenSession();
+            try
+            {
 
-            var cakes = session.Query<Cake>()
-                .Fetch(x => x.Image)
-                .ToList();
+                using var session = _nhibernateHelper.OpenSession();
 
-            return cakes;
+                var cakes = session.QueryOver<Cake>()
+                    .Fetch(SelectMode.Fetch, x => x.Image)
+                    .List()
+                    .ToList();
+
+                return cakes;
+            }
+            catch (Exception ex)
+            {
+                
+                Console.WriteLine($"An error occurred while fetching cakes: {ex.Message}");
+                throw;
+            }
         }
-
 
         public Cake? GetById(int id)
         {
-            using var session = _nhibernateHelper.OpenSession();
+            try
+            {
+                using var session = _nhibernateHelper.OpenSession();
 
-            var cake = session.Query<Cake>()
-                .Fetch(x => x.Image)
-                .FirstOrDefault(x => x.CakeId == id);
+                var cake = session.QueryOver<Cake>()
+                    .Where(x => x.CakeId == id)
+                    .Fetch(SelectMode.Fetch, x => x.Image)
+                    .SingleOrDefault();
 
-            return cake;
+                return cake;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while fetching the cake with ID {id}: {ex.Message}");
+                throw;
+            }
         }
 
         public void Create(Cake cake)
         {
             using var session = _nhibernateHelper.OpenSession();
             using var transaction = session.BeginTransaction();
-
-            if (cake.Image != null)
+            try
             {
-                session.Save(cake.Image);
+
+                if (cake.Image != null)
+                {
+                    session.Save(cake.Image);
+                }
+
+                session.Save(cake);
+
+                transaction.Commit();
             }
-
-            session.Save(cake);
-
-            transaction.Commit();
+            catch (Exception ex)
+            {
+                if (transaction.IsActive)
+                {
+                    transaction.Rollback();
+                }
+                Console.WriteLine($"An error occurred while creating the cake: {ex.Message}");
+                throw;
+            }
         }
 
         public void Update(Cake cake)
@@ -58,72 +87,103 @@ namespace CakeStudio.Services
             using var session = _nhibernateHelper.OpenSession();
             using var transaction = session.BeginTransaction();
 
-            // Get the existing cake from the database
-            var existingCake = session.Get<Cake>(cake.CakeId);
-
-            if (existingCake == null)
+            try
             {
-                return;
-            }
+            
+                // Get the existing cake from the database
+                var existingCake = session.QueryOver<Cake>()
+                    .Where(x => x.CakeId == cake.CakeId)
+                    .SingleOrDefault(); 
 
-            // Update normal cake information
-            existingCake.CakeName = cake.CakeName;
-            existingCake.Description = cake.Description;
-            existingCake.BasePrice = cake.BasePrice;
-            existingCake.IsAvailable = cake.IsAvailable;
-
-            // If the baker uploaded a new image
-            if (cake.Image != null)
-            {
-                // Keep reference to the old image
-                var oldImage = existingCake.Image;
-
-                // Save the new image first
-                session.Save(cake.Image);
-
-                // Replace the cake's image
-                existingCake.Image = cake.Image;
-
-                // Make sure Cake is updated before deleting old Image
-                session.Flush();
-
-                // Delete the old image if there was one
-                if (oldImage != null)
+                if (existingCake == null)
                 {
-                    session.Delete(oldImage);
+                    transaction.Rollback();
+                    return;
                 }
-            }
 
-            transaction.Commit();
+                // Update normal cake information
+                existingCake.CakeName = cake.CakeName;
+                existingCake.Description = cake.Description;
+                existingCake.BasePrice = cake.BasePrice;
+                existingCake.IsAvailable = cake.IsAvailable;
+
+                // If the baker uploaded a new image
+                if (cake.Image != null)
+                {
+                    // Keep reference to the old image
+                    var oldImage = existingCake.Image;
+
+                    // Save the new image first
+                    session.Save(cake.Image);
+
+                    // Replace the cake's image
+                    existingCake.Image = cake.Image;
+
+                    // Make sure Cake is updated before deleting old Image
+                    session.Flush();
+
+                    // Delete the old image if there was one
+                    if (oldImage != null)
+                    {
+                        session.Delete(oldImage);
+                    }
+                }
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                if (transaction.IsActive)
+                {
+                    transaction.Rollback();
+                }
+                Console.WriteLine($"An error occurred while updating the cake with ID {cake.CakeId}: {ex.Message}");
+                throw;
+            }
         }
 
         public void Delete(int id)
         {
             using var session = _nhibernateHelper.OpenSession();
             using var transaction = session.BeginTransaction();
-            var cake = session.Get<Cake>(id);
-
-            if (cake == null)
+            try
             {
-                return;
+                var cake = session.QueryOver<Cake>()
+                    .Where(x => x.CakeId == id)
+                    .SingleOrDefault();
+
+                if (cake == null)
+                {
+                    transaction.Rollback();
+                    return;
+                }
+                // Keep the image before deleting the cake
+                var image = cake.Image;
+
+                // Delete the cake first
+                session.Delete(cake);
+
+                // Make sure Cake is deleted before its Image
+                session.Flush();
+
+                // Delete the related image if it exists
+                if (image != null)
+                {
+                    session.Delete(image);
+                }
+
+                transaction.Commit();
             }
-            // Keep the image before deleting the cake
-            var image = cake.Image;
-
-            // Delete the cake first
-            session.Delete(cake);
-
-            // Make sure Cake is deleted before its Image
-            session.Flush();
-
-            // Delete the related image if it exists
-            if (image != null)
+            catch (Exception ex)
             {
-                session.Delete(image);
+                if (transaction.IsActive)
+                {
+                    transaction.Rollback();
+                }
+                Console.WriteLine($"An error occurred while deleting the cake with ID {id}: {ex.Message}");
+                throw;
+
             }
-
-            transaction.Commit();
-
         }
     }
 }
