@@ -1,0 +1,51 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CakeStudio.Models
+{
+    public class Order
+    {
+        public virtual int OrderId { get; set; }
+
+        [Required]
+        public virtual int? CustId { get; set; }
+
+        public virtual int? CakeId { get; set; }
+
+        public virtual int? FlavourId { get; set; }
+
+        public virtual int? SizeId { get; set; }
+
+        public virtual int? TierId { get; set; }
+
+        public virtual int? BakerId { get; set; }
+
+        [Required(ErrorMessage = "Required date is required.")]
+        [DataType(DataType.Date)]
+        public virtual DateTime? RequiredDate { get; set; }
+
+        [Required(ErrorMessage = "Collection method is required.")]
+        [StringLength(50)]
+        public virtual string CollectionMethod { get; set; } = string.Empty;
+
+        [StringLength(500)]
+        public virtual string? DeliveryAddress { get; set; }
+
+        [StringLength(500)]
+        public virtual string? MessageOnCakes { get; set; }
+
+        [Range(0, 100000, ErrorMessage = "Total price cannot be negative.")]
+        public virtual decimal TotalPrice { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public virtual string OrderStatus { get; set; } = "Pending";
+
+        public virtual DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public virtual DateTime? UpdatedAt { get; set; }
+
+        public virtual int? UpdatedId { get; set; }
+
+        public virtual int? CreatedId { get; set; }
+    }
+}

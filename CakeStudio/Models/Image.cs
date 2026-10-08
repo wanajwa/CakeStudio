@@ -6,15 +6,15 @@ namespace CakeStudio.Models
     {
         public virtual int ImageId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Image type is required.")]
         [StringLength(100)]
         public virtual string ImageType { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "File name is required.")]
         [StringLength(255)]
         public virtual string FileName { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Image content is required.")]
         public virtual byte[] ImageContent { get; set; } = Array.Empty<byte>();
     }
 }

@@ -6,12 +6,12 @@ namespace CakeStudio.Models
     {
         public virtual int UserId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Name is required.")   ]
         [StringLength(100)]
         public virtual string Name { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email address.")]
         [StringLength(255)]
         public virtual string Email { get; set; } = string.Empty;
 
@@ -19,6 +19,7 @@ namespace CakeStudio.Models
         [StringLength(255)]
         public virtual string PasswordHash { get; set; } = string.Empty;
 
+        [Phone(ErrorMessage = "Invalid phone number.")]
         [StringLength(20)]
         public virtual string? PhoneNumber { get; set; }
 
