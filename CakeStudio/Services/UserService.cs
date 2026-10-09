@@ -65,5 +65,67 @@ namespace CakeStudio.Services
 
             return serviceResponse;
         }
+
+        public Response Register(User user, string password)
+        {
+            Response serviceResponse = new Response();
+
+            try
+            {
+                // Validate required registration information
+                if (string.IsNullOrWhiteSpace(user.Name) ||
+                    string.IsNullOrWhiteSpace(user.Email) ||
+                    string.IsNullOrWhiteSpace(password))
+                {
+                    serviceResponse.Message = "Please complete all required fields.";
+                    serviceResponse.MessageCode = "INVALID_INPUT";
+                    return serviceResponse;
+                }
+
+                using var session = _nhibernateHelper.OpenSession();
+
+                // Check if email already exists
+                var existingUser = session.QueryOver<User>()
+                    .Where(x => x.Email == user.Email)
+                    .SingleOrDefault();
+
+                if (existingUser != null)
+                {
+                    serviceResponse.Message = "Email is already registered.";
+                    serviceResponse.MessageCode = "EMAIL_EXISTS";
+                    return serviceResponse;
+                }
+
+                // Assign Customer role
+                user.Role = "Customer";
+
+                // Hash the password
+                user.PasswordHash = _passwordHasher.HashPassword(user, password);
+
+                // Begin transaction before saving
+                using var transaction = session.BeginTransaction();
+
+                // Save new customer
+                session.Save(user);
+
+                // Commit changes to SQL Server
+                transaction.Commit();
+
+                // Registration successful
+                serviceResponse.Status = true;
+                serviceResponse.Message = "Customer registered successfully.";
+                serviceResponse.MessageCode = "REGISTRATION_SUCCESS";
+                serviceResponse.Data = user.UserId;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.ToString());
+
+                serviceResponse.Message = "An error occurred during registration.";
+                serviceResponse.MessageCode = "REGISTRATION_ERROR";
+            }
+
+            return serviceResponse;
+        }
     }
 }

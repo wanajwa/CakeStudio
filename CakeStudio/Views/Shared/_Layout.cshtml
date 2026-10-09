@@ -31,29 +31,46 @@
                 <!-- Navigation at top -->
                 <nav class="nav flex-column px-3">
 
-                    <a class="nav-link sidebar-link @(currentController == "Home" ? "active" : "")"
-                    asp-controller="Home"
-                    asp-action="Index">
-                        <i class="bi bi-grid me-3"></i>
-                        Dashboard
-                    </a>
+                    @if (User.IsInRole("Baker"))
+                    {
+                        <!-- Baker Dashboard -->
+                        <a class="nav-link sidebar-link @(currentController == "Home" ? "active" : "")"
+                           asp-controller="Home"
+                           asp-action="Index">
+                            <i class="bi bi-grid me-3"></i>
+                            Dashboard
+                        </a>
 
-                    <a class="nav-link sidebar-link @(currentController == "Cake" ? "active" : "")"
-                    asp-controller="Cake"
-                    asp-action="Index">
-                        <i class="bi bi-cake2 me-3"></i>
-                        Cakes
-                    </a>
-                    <a class="nav-link sidebar-link @(currentController == "CakeOptions" ? "active" : "")"
-                       asp-controller="CakeOptions"
-                       asp-action="Index">
+                        <!-- Manage Cakes -->
+                        <a class="nav-link sidebar-link @(currentController == "Cake" ? "active" : "")"
+                           asp-controller="Cake"
+                           asp-action="Index">
+                            <i class="bi bi-cake2 me-3"></i>
+                            Cakes
+                        </a>
 
-                        <i class="bi bi-sliders me-3"></i>
-                        Cake Options
+                        <!-- Manage Cake Options -->
+                        <a class="nav-link sidebar-link @(currentController == "CakeOptions" ? "active" : "")"
+                           asp-controller="CakeOptions"
+                           asp-action="Index">
+                            <i class="bi bi-sliders me-3"></i>
+                            Cake Options
+                        </a>
+                    }
 
-                    </a>
+                    else if (User.IsInRole("Customer"))
+                {
+                <!-- Customer Home -->
+                <a class="nav-link sidebar-link @(currentController == "Home" ? "active" : "")"
+                   asp-controller="Home"
+                   asp-action="Index">
+                    <i class="bi bi-house me-3"></i>
+                    Home
+                </a>
+                }
 
                 </nav>
+
 
                 <!-- Logout at bottom -->
 

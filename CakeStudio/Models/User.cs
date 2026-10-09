@@ -29,5 +29,9 @@ namespace CakeStudio.Models
         [Required]
         [StringLength(20)]
         public virtual string Role { get; set; } = string.Empty;
+        public virtual string GetRoleName()
+        {
+            return Role;
+        }
     }
 }
