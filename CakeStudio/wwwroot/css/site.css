@@ -63,3 +63,8 @@ body {
     background-color: #faf7f9;
     min-height: 100vh;
 }
+/* Login page without sidebar */
+.login-layout {
+    margin-left: 0 !important;
+    width: 100%;
+}

@@ -1,7 +1,8 @@
 
 using CakeStudio.Data;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using CakeStudio.Services;
+using CakeStudio.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -11,6 +12,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<NHibernateHelper>();
 builder.Services.AddScoped<ICakeService, CakeService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICakeSizeService, CakeSizeService>();
+builder.Services.AddScoped<ICakeFlavourService, CakeFlavourService>();
+builder.Services.AddScoped<ICakeTierService, CakeTierService>();
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

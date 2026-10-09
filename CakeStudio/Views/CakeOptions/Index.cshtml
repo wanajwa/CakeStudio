@@ -1,0 +1,1130 @@
+﻿@model CakeStudio.ViewModels.CakeOptionsViewModel
+
+@{
+    ViewData["Title"] = "Cake Options";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold">Cake Options</h2>
+        <p class="text-muted">
+            Manage cake sizes, flavours, and tiers.
+        </p>
+    </div>
+</div>
+
+<!-- Success Message -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close">
+        </button>
+    </div>
+}
+
+<!-- Error Message -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close">
+        </button>
+    </div>
+}
+
+<!-- Cake Options Tabs -->
+<ul class="nav nav-tabs mb-4"
+    id="cakeOptionsTabs"
+    role="tablist">
+
+    <!-- Sizes Tab Button -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active"
+                id="sizes-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#sizes"
+                type="button"
+                role="tab"
+                aria-controls="sizes"
+                aria-selected="true">
+            Sizes
+        </button>
+    </li>
+
+    <!-- Flavours Tab Button -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link"
+                id="flavours-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#flavours"
+                type="button"
+                role="tab"
+                aria-controls="flavours"
+                aria-selected="false">
+            Flavours
+        </button>
+    </li>
+
+    <!-- Tiers Tab Button -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link"
+                id="tiers-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#tiers"
+                type="button"
+                role="tab"
+                aria-controls="tiers"
+                aria-selected="false">
+            Tiers
+        </button>
+    </li>
+
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="cakeOptionsTabContent">
+
+    <!-- ================================ -->
+    <!-- SIZES TAB -->
+    <!-- ================================ -->
+    <div class="tab-pane fade show active"
+         id="sizes"
+         role="tabpanel"
+         aria-labelledby="sizes-tab">
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-semibold mb-0">
+                        Cake Sizes
+                    </h5>
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addSizeModal">
+                        + Add Size
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Size Name</th>
+                                <th>Additional Price</th>
+                                <th>Availability</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var size in Model.CakeSizes)
+                            {
+                                <tr>
+                                    <td>@size.SizeName</td>
+
+                                    <td>
+                                        RM @size.AdditionalPrice.ToString("0.00")
+                                    </td>
+
+                                    <td>
+                                        @if (size.IsAvailable)
+                                        {
+                                            <span class="badge bg-success">
+                                                Available
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                Unavailable
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editSizeModal-@size.SizeId">
+                                            Edit
+                                        </button>
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-primary"
+												data-bs-toggle="modal"
+                                                data-bs-target="#deleteSizeModal-@size.SizeId">
+                                            Delete
+                                            </button>
+
+                                    </td>
+                                </tr>
+                            }
+
+                            @if (!Model.CakeSizes.Any())
+                            {
+                                <tr>
+                                    <td colspan="4"
+                                        class="text-center text-muted py-4">
+                                        No cake sizes found.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <!-- End Sizes Tab -->
+    <!-- ================================ -->
+    <!-- FLAVOURS TAB -->
+    <!-- ================================ -->
+    <div class="tab-pane fade"
+         id="flavours"
+         role="tabpanel"
+         aria-labelledby="flavours-tab">
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-semibold mb-0">
+                        Cake Flavours
+                    </h5>
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addFlavourModal">
+                        + Add Flavour
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Flavour Name</th>
+                                <th>Additional Price</th>
+                                <th>Availability</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var flavour in Model.CakeFlavours)
+                            {
+                                <tr>
+                                    <td>@flavour.FlavourName</td>
+
+                                    <td>
+                                        RM @flavour.AdditionalPrice.ToString("0.00")
+                                    </td>
+
+                                    <td>
+                                        @if (flavour.IsAvailable)
+                                        {
+                                            <span class="badge bg-success">
+                                                Available
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                Unavailable
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editFlavourModal-@flavour.FlavourId">
+                                            Edit
+                                        </button>
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-primary"
+												data-bs-toggle="modal"
+												data-bs-target="#deleteFlavourModal-@flavour.FlavourId">
+                                            Delete
+                                            </button>
+                                    </td>
+                                </tr>
+                            }
+
+                            @if (!Model.CakeFlavours.Any())
+                            {
+                                <tr>
+                                    <td colspan="4"
+                                        class="text-center text-muted py-4">
+                                        No cake flavours found.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <!-- End Flavours Tab -->
+	<!-- ================================ -->
+    <!--Tier-->
+    <!-- ================================-->
+    <div class="tab-pane fade"
+         id="tiers"
+         role="tabpanel"
+         aria-labelledby="tiers-tab">
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-semibold mb-0">
+                        Cake Tiers
+                    </h5>
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addTierModal">
+                        + Add Tier
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Tier Name</th>
+                                <th>Additional Price</th>
+                                <th>Availability</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var tier in Model.CakeTiers)
+                            {
+                                <tr>
+                                    <td>@tier.TierName</td>
+
+                                    <td>
+                                        RM @tier.AdditionalPrice.ToString("0.00")
+                                    </td>
+
+                                    <td>
+                                        @if (tier.IsAvailable)
+                                        {
+                                            <span class="badge bg-success">
+                                                Available
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                Unavailable
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editTierModal-@tier.TierId">
+                                            Edit
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteTierModal-@tier.TierId">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+
+                            @if (!Model.CakeTiers.Any())
+                            {
+                                <tr>
+                                    <td colspan="4"
+                                        class="text-center text-muted py-4">
+                                        No cake tiers found.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- End Tab Content -->
+
+
+
+<!-- ======================================== -->
+<!-- ADD SIZE MODAL -->
+<!-- ======================================== -->
+<div class="modal fade"
+     id="addSizeModal"
+     tabindex="-1"
+     aria-labelledby="addSizeModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <form asp-controller="CakeOptions"
+                  asp-action="CreateSize"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSizeModalLabel">
+                        Add Cake Size
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- Size Name -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Size Name
+                        </label>
+
+                        <input type="text"
+                               name="SizeName"
+                               class="form-control"
+                               maxlength="100"
+                               required />
+                    </div>
+
+                    <!-- Additional Price -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Additional Price (RM)
+                        </label>
+
+                        <input type="number"
+                               name="AdditionalPrice"
+                               class="form-control"
+                               min="0"
+                               step="0.01"
+                               required />
+                    </div>
+
+                    <!-- Availability -->
+                    <div class="form-check">
+
+                        <input type="checkbox"
+                               name="IsAvailable"
+                               value="true"
+                               class="form-check-input"
+                               id="addSizeAvailable"
+                               checked />
+
+                        <input type="hidden"
+                               name="IsAvailable"
+                               value="false" />
+
+                        <label class="form-check-label"
+                               for="addSizeAvailable">
+                            Available
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Save Size
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ======================================== -->
+<!-- EDIT SIZE MODALS -->
+<!-- ======================================== -->
+@foreach (var size in Model.CakeSizes)
+{
+    <div class="modal fade"
+         id="editSizeModal-@size.SizeId"
+         tabindex="-1"
+         aria-labelledby="editSizeModalLabel-@size.SizeId"
+         aria-hidden="true">
+
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <form asp-controller="CakeOptions"
+                      asp-action="EditSize"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <!-- Size ID -->
+                    <input type="hidden"
+                           name="SizeId"
+                           value="@size.SizeId" />
+
+                    <div class="modal-header">
+                        <h5 class="modal-title"
+                            id="editSizeModalLabel-@size.SizeId">
+                            Edit Cake Size
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close">
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <!-- Size Name -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Size Name
+                            </label>
+
+                            <input type="text"
+                                   name="SizeName"
+                                   value="@size.SizeName"
+                                   class="form-control"
+                                   maxlength="100"
+                                   required />
+                        </div>
+
+                        <!-- Additional Price -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Additional Price (RM)
+                            </label>
+
+                            <input type="number"
+                                   name="AdditionalPrice"
+                                   value="@size.AdditionalPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                   class="form-control"
+                                   min="0"
+                                   step="0.01"
+                                   required />
+                        </div>
+
+                        <!-- Availability -->
+                        <div class="form-check">
+
+                            <input type="checkbox"
+                                   name="IsAvailable"
+                                   value="true"
+                                   class="form-check-input"
+                                   id="sizeAvailable-@size.SizeId"
+                                   checked="@size.IsAvailable" />
+
+                            <input type="hidden"
+                                   name="IsAvailable"
+                                   value="false" />
+
+                            <label class="form-check-label"
+                                   for="sizeAvailable-@size.SizeId">
+                                Available
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Save Changes
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+}
+
+
+<!-- DELETE SIZE-->
+
+@foreach (var size in Model.CakeSizes)
+{
+    <div class="=modal fade" 
+        id="deleteSizeModal-@size.SizeId">
+        <div class=" modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Cake Size</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the size "<strong>@size.SizeName</strong>"?</p>
+                </div>
+                <div class="modal-footer">
+                    <form asp-controller="CakeOptions" asp-action="DeleteSize" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@size.SizeId" />
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </form>
+                </div>
+	         </div>
+
+        </div>
+     </div>
+}
+<!-- ======================================== -->
+<!-- ADD FLAVOUR MODAL -->
+<!-- ======================================== -->
+<div class="modal fade"
+     id="addFlavourModal"
+     tabindex="-1"
+     aria-labelledby="addFlavourModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <form asp-controller="CakeOptions"
+                  asp-action="CreateFlavour"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addFlavourModalLabel">
+                        Add Cake Flavour
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- Flavour Name -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Flavour Name
+                        </label>
+
+                        <input type="text"
+                               name="FlavourName"
+                               class="form-control"
+                               maxlength="100"
+                               required />
+                    </div>
+
+                    <!-- Additional Price -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Additional Price (RM)
+                        </label>
+
+                        <input type="number"
+                               name="AdditionalPrice"
+                               class="form-control"
+                               min="0"
+                               step="0.01"
+                               required />
+                    </div>
+
+                    <!-- Availability -->
+                    <div class="form-check">
+
+                        <input type="checkbox"
+                               name="IsAvailable"
+                               value="true"
+                               class="form-check-input"
+                               id="addFlavourAvailable"
+                               checked />
+
+                        <input type="hidden"
+                               name="IsAvailable"
+                               value="false" />
+
+                        <label class="form-check-label"
+                               for="addFlavourAvailable">
+                            Available
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Save Flavour
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- ======================================== -->
+<!-- EDIT FLAVOUR MODALS -->
+<!-- ======================================== -->
+@foreach (var flavour in Model.CakeFlavours)
+{
+    <div class="modal fade"
+         id="editFlavourModal-@flavour.FlavourId"
+         tabindex="-1"
+         aria-labelledby="editFlavourModalLabel-@flavour.FlavourId"
+         aria-hidden="true">
+
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <form asp-controller="CakeOptions"
+                      asp-action="EditFlavour"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <!-- Flavour ID -->
+                    <input type="hidden"
+                           name="FlavourId"
+                           value="@flavour.FlavourId" />
+
+                    <div class="modal-header">
+                        <h5 class="modal-title"
+                            id="editFlavourModalLabel-@flavour.FlavourId">
+                            Edit Cake Flavour
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close">
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <!-- Flavour Name -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Flavour Name
+                            </label>
+
+                            <input type="text"
+                                   name="FlavourName"
+                                   value="@flavour.FlavourName"
+                                   class="form-control"
+                                   maxlength="100"
+                                   required />
+                        </div>
+
+                        <!-- Additional Price -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Additional Price (RM)
+                            </label>
+
+                            <input type="number"
+                                   name="AdditionalPrice"
+                                   value="@flavour.AdditionalPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                   class="form-control"
+                                   min="0"
+                                   step="0.01"
+                                   required />
+                        </div>
+
+                        <!-- Availability -->
+                        <div class="form-check">
+
+                            <input type="checkbox"
+                                   name="IsAvailable"
+                                   value="true"
+                                   class="form-check-input"
+                                   id="flavourAvailable-@flavour.FlavourId"
+                                   checked="@flavour.IsAvailable" />
+
+                            <input type="hidden"
+                                   name="IsAvailable"
+                                   value="false" />
+
+                            <label class="form-check-label"
+                                   for="flavourAvailable-@flavour.FlavourId">
+                                Available
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Save Changes
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+}
+
+<!--DELETE FLAVOUR-->
+@foreach (var flavour in Model.CakeFlavours)
+{
+    <div class="modal fade"
+        id="deleteFlavourModal-@flavour.FlavourId">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Cake Flavour</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the flavour "<strong>@flavour.FlavourName</strong>"?</p>
+                </div>
+                <div class="modal-footer">
+                    <form asp-controller="CakeOptions" asp-action="DeleteFlavour" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@flavour.FlavourId" />
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </form>
+                </div>
+			</div>
+        </div>
+    </div>
+}
+
+
+<!--ADD TIER MODALS-->
+<div class="modal fade"
+     id="addTierModal"
+     tabindex="-1"
+     aria-labelledby="addTierModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="CakeOptions"
+                  asp-action="CreateTier"
+                  method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTierModalLabel">
+                        Add Cake Tier
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tier Name -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Tier Name
+                        </label>
+                        <input type="text"
+                               name="TierName"
+                               class="form-control"
+                               maxlength="100"
+                               required />
+                    </div>
+                    <!-- Additional Price -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Additional Price (RM)
+                        </label>
+                        <input type="number"
+                               name="AdditionalPrice"
+                               class="form-control"
+                               min="0"
+                               step="0.01"
+                               required />
+                    </div>
+                    <!-- Availability -->
+                    <div class="form-check">
+                        <input type="checkbox"
+                               name="IsAvailable"
+                               value="true"
+                               class="form-check-input"
+                               id="addTierAvailable"
+                               checked />
+                        <input type="hidden"
+                               name="IsAvailable"
+                               value="false" />
+                        <label class="form-check-label"
+                               for="addTierAvailable">
+                            Available
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Save Tier
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+
+
+<!--EDIT TIER MODALS--> 
+@foreach (var tier in Model.CakeTiers)
+{
+    <div class="modal fade"
+         id="editTierModal-@tier.TierId"
+         tabindex="-1"
+         aria-labelledby="editTierModalLabel-@tier.TierId"
+         aria-hidden="true">
+
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <form asp-controller="CakeOptions"
+                      asp-action="EditTier"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <!-- Tier ID -->
+                    <input type="hidden"
+                           name="TierId"
+                           value="@tier.TierId" />
+
+                    <div class="modal-header">
+                        <h5 class="modal-title"
+                            id="editTierModalLabel-@tier.TierId">
+                            Edit Cake Tier
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close">
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <!-- Tier Name -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Tier Name
+                            </label>
+
+                            <input type="text"
+                                   name="TierName"
+                                   value="@tier.TierName"
+                                   class="form-control"
+                                   maxlength="100"
+                                   required />
+                        </div>
+
+                        <!-- Additional Price -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Additional Price (RM)
+                            </label>
+
+                            <input type="number"
+                                   name="AdditionalPrice"
+                                   value="@tier.AdditionalPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                   class="form-control"
+                                   min="0"
+                                   step="0.01"
+                                   required />
+                        </div>
+
+                        <!-- Availability -->
+                        <div class="form-check">
+
+                            <input type="checkbox"
+                                   name="IsAvailable"
+                                   value="true"
+                                   class="form-check-input"
+                                   id="tierAvailable-@tier.TierId"
+                                   checked="@tier.IsAvailable" />
+
+                            <input type="hidden"
+                                   name="IsAvailable"
+                                   value="false" />
+
+                            <label class="form-check-label"
+                                   for="tierAvailable-@tier.TierId">
+                                Available
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Save Changes
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+}
+
+
+<!-- DELETE TIER MODALS-->
+@foreach (var tier in Model.CakeTiers)
+{
+    <div class="modal fade"
+		 id="deleteTierModal-@tier.TierId">
+         <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Cake Tier</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the tier "<strong>@tier.TierName</strong>"?</p>
+                </div>
+                <div class="modal-footer">
+                    <form asp-controller="CakeOptions" asp-action="DeleteTier" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@tier.TierId" />
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+	</div>
+ }
+
+<!-- ======================================== -->
+<!-- TAB SELECTION SCRIPT -->
+<!-- ======================================== -->
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const params = new URLSearchParams(window.location.search);
+            const selectedTab = params.get("tab");
+
+            // Keep Flavours tab open after Add/Edit
+            if (selectedTab === "flavours" || selectedTab === "tiers") {
+
+                // Find the corresponding tab button
+                const tabButton = document.getElementById(selectedTab + "-tab");
+
+                if (tabButton) {
+                    // Activate the selected Bootstrap tab
+                    bootstrap.Tab.getOrCreateInstance(tabButton).show();
+                }
+            }
+
+        });
+    </script>
+}
