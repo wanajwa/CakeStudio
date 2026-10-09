@@ -21,6 +21,23 @@ namespace CakeStudio.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            // Check whether user is already logged in
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                // Redirect Baker to Cake Management
+                if (User.IsInRole("Baker"))
+                {
+                    return RedirectToAction("Index", "Cake");
+                }
+
+                // Redirect Customer to Customer Cake Listing
+                if (User.IsInRole("Customer"))
+                {
+                    return RedirectToAction("Index", "CustomerCake");
+                }
+            }
+
+            // Display Login page for unauthenticated users
             return View();
         }
 
@@ -77,7 +94,7 @@ namespace CakeStudio.Controllers
             }
             else
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "CustomerCake");
             }
         }
 

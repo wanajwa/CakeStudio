@@ -35,6 +35,30 @@ namespace CakeStudio.Services
             }
         }
 
+        public List<Cake> GetAvailableCakes()
+        {
+            try
+            {
+                using var session = _nhibernateHelper.OpenSession();
+
+                // Retrieve only available cakes
+                var cakes = session.QueryOver<Cake>()
+                    .Where(x => x.IsAvailable == true)
+                    .Fetch(SelectMode.Fetch, x => x.Image)
+                    .List()
+                    .ToList();
+
+                return cakes;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"An error occurred while fetching available cakes: {ex.Message}"
+                );
+
+                throw;
+            }
+        }
         public Cake? GetById(int id)
         {
             try
