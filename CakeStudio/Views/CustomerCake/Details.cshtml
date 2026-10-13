@@ -67,47 +67,84 @@
                     </h4>
 
                     <!-- Cake Size -->
+                    <!-- Standard 6-inch size is included in the base price -->
                     <div class="mb-3">
                         <label for="cakeSize" class="form-label fw-semibold">
                             Cake Size
                         </label>
 
-                        <select id="cakeSize" class="form-select cake-option">
-                            <option value="" selected disabled>
-                                Select Cake Size
-                            </option>
+                        <select id="cakeSize"
+                                name="sizeId"
+                                class="form-select cake-option">
 
-                            @foreach (var size in Model.CakeSizes)
+                            @foreach (var size in Model.CakeSizes
+                                                        .OrderBy(s => int.Parse(s.SizeName.Split(' ')[0])))
                             {
-                                <option value="@size.SizeId"
-                                        data-price="@size.AdditionalPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)">
-                                    @size.SizeName
-                                    (+RM @size.AdditionalPrice.ToString("0.00"))
-                                </option>
+                                if (size.IsAvailable)
+                                {
+                                    bool isDefault = size.SizeName.Trim()
+                                    .Equals("6 inch", StringComparison.OrdinalIgnoreCase);
+
+                                    <option value="@size.SizeId"
+                                            data-price="@(isDefault ? "0" : size.AdditionalPrice.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                            selected="@isDefault">
+
+                                        @size.SizeName
+
+                                        @if (isDefault)
+                                        {
+                                            @:(Included)
+                                        }
+                                        else
+                                        {
+                                            @:(+RM @size.AdditionalPrice.ToString("0.00"))
+                                        }
+
+                                    </option>
+                                }
                             }
+
                         </select>
+
                     </div>
 
                     <!-- Cake Flavour -->
+                    <!-- Original flavour with optional alternatives -->
                     <div class="mb-3">
                         <label for="cakeFlavour" class="form-label fw-semibold">
                             Cake Flavour
                         </label>
 
-                        <select id="cakeFlavour" class="form-select cake-option">
-                            <option value="" selected disabled>
-                                Select Cake Flavour
+                        <select id="cakeFlavour"
+                                name="flavourId"
+                                class="form-select cake-option">
+
+                            <!-- Original flavour is included in the base price -->
+                            <option value="@Model.Cake.Flavour.FlavourId"
+                                    data-price="0"
+                                    selected>
+                                Original flavour — @Model.Cake.Flavour.FlavourName
+                                (Included)
                             </option>
 
-                            @foreach (var flavour in Model.CakeFlavours)
+                            @foreach (var flavour in Model.CakeFlavours
+                                                        .Where(f => f.IsAvailable &&
+                                                        f.FlavourId != Model.Cake.Flavour.FlavourId)
+                                                        .OrderBy(f => f.FlavourName))
                             {
-                                <option value="@flavour.FlavourId"
-                                        data-price="@flavour.AdditionalPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)">
-                                    @flavour.FlavourName
-                                    (+RM @flavour.AdditionalPrice.ToString("0.00"))
-                                </option>
+                                // Skip the original flavour so it is not shown twice.
+                                if (flavour.IsAvailable &&
+                                flavour.FlavourId != Model.Cake.Flavour.FlavourId)
+                                {
+                                    <option value="@flavour.FlavourId"
+                                            data-price="@flavour.AdditionalPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                                        @flavour.FlavourName
+                                        (+RM @flavour.AdditionalPrice.ToString("0.00"))
+                                    </option>
+                                }
                             }
                         </select>
+
                     </div>
 
                     <!-- Cake Tier -->
@@ -157,54 +194,91 @@
 
     </div>
 </div>
-
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-            // Cake base price from database
-            const basePrice = @Model.Cake.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            // Base price includes the original flavour
+            // and standard 6-inch cake size.
+            const basePrice =
+                @Model.Cake.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
-            // Get dropdown elements
-            const sizeSelect = document.getElementById("cakeSize");
-            const flavourSelect = document.getElementById("cakeFlavour");
-            const tierSelect = document.getElementById("cakeTier");
+            // Get cake option dropdowns.
+            const sizeSelect =
+                document.getElementById("cakeSize");
 
-            // Get total price element
-            const totalPriceElement = document.getElementById("totalPrice");
+            const flavourSelect =
+                document.getElementById("cakeFlavour");
 
-            // Retrieve additional price from selected option
+            const tierSelect =
+                document.getElementById("cakeTier");
+
+            // Get total price element.
+            const totalPriceElement =
+                document.getElementById("totalPrice");
+
+            // Get additional price from selected option.
             function getAdditionalPrice(selectElement) {
 
                 const selectedOption =
                     selectElement.options[selectElement.selectedIndex];
 
+                // Return 0 if no option is selected.
                 if (!selectedOption || !selectedOption.value) {
                     return 0;
                 }
 
+                // Read the additional price.
                 return parseFloat(selectedOption.dataset.price) || 0;
             }
 
-            // Calculate total cake price
+            // Calculate total cake price.
             function calculateTotalPrice() {
 
-                const sizePrice = getAdditionalPrice(sizeSelect);
-                const flavourPrice = getAdditionalPrice(flavourSelect);
-                const tierPrice = getAdditionalPrice(tierSelect);
+                // Get additional charges.
+                const sizePrice =
+                    getAdditionalPrice(sizeSelect);
 
+                const flavourPrice =
+                    getAdditionalPrice(flavourSelect);
+
+                const tierPrice =
+                    getAdditionalPrice(tierSelect);
+
+                // Calculate total price.
                 const totalPrice =
-                    basePrice + sizePrice + flavourPrice + tierPrice;
+                    basePrice
+                    + sizePrice
+                    + flavourPrice
+                    + tierPrice;
 
+                // Display updated price.
                 totalPriceElement.textContent =
                     "RM " + totalPrice.toFixed(2);
             }
 
-            // Recalculate when customer changes an option
-            sizeSelect.addEventListener("change", calculateTotalPrice);
-            flavourSelect.addEventListener("change", calculateTotalPrice);
-            tierSelect.addEventListener("change", calculateTotalPrice);
+            // Recalculate when customer changes size.
+            sizeSelect.addEventListener(
+                "change",
+                calculateTotalPrice
+            );
+
+            // Recalculate when customer changes flavour.
+            flavourSelect.addEventListener(
+                "change",
+                calculateTotalPrice
+            );
+
+            // Recalculate when customer changes tier.
+            tierSelect.addEventListener(
+                "change",
+                calculateTotalPrice
+            );
+
+            // Calculate initial price when page loads.
+            calculateTotalPrice();
 
         });
     </script>
+
 }

@@ -20,5 +20,6 @@ namespace CakeStudio.Models
 
         public virtual Image? Image { get; set;  }
         public virtual bool IsAvailable { get; set; } = true;
+        public virtual CakeFlavour Flavour { get; set; } = null!;
     }
 }

@@ -155,19 +155,21 @@
                                     </td>
 
                                     <td>
+                                        <!-- Edit Button - Yellow -->
                                         <button type="button"
-                                                class="btn btn-sm btn-outline-primary"
+                                                class="btn btn-sm btn-warning"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#editSizeModal-@size.SizeId">
                                             Edit
                                         </button>
+
+                                        <!-- Delete Button - Red -->
                                         <button type="button"
-                                            class="btn btn-sm btn-outline-primary"
-												data-bs-toggle="modal"
+                                                class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal"
                                                 data-bs-target="#deleteSizeModal-@size.SizeId">
                                             Delete
-                                            </button>
-
+                                        </button>
                                     </td>
                                 </tr>
                             }
@@ -253,18 +255,21 @@
                                     </td>
 
                                     <td>
+                                        <!-- Edit Button - Yellow -->
                                         <button type="button"
-                                                class="btn btn-sm btn-outline-primary"
+                                                class="btn btn-sm btn-warning"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#editFlavourModal-@flavour.FlavourId">
                                             Edit
                                         </button>
+
+                                        <!-- Delete Button - Red -->
                                         <button type="button"
-                                            class="btn btn-sm btn-outline-primary"
-												data-bs-toggle="modal"
-												data-bs-target="#deleteFlavourModal-@flavour.FlavourId">
+                                                class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteFlavourModal-@flavour.FlavourId">
                                             Delete
-                                            </button>
+                                        </button>
                                     </td>
                                 </tr>
                             }
@@ -350,14 +355,17 @@
                                     </td>
 
                                     <td>
+                                        <!-- Edit Button - Yellow -->
                                         <button type="button"
-                                                class="btn btn-sm btn-outline-primary"
+                                                class="btn btn-sm btn-warning"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#editTierModal-@tier.TierId">
                                             Edit
                                         </button>
+
+                                        <!-- Delete Button - Red -->
                                         <button type="button"
-                                                class="btn btn-sm btn-outline-primary"
+                                                class="btn btn-sm btn-danger"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#deleteTierModal-@tier.TierId">
                                             Delete
@@ -612,7 +620,7 @@
 
 @foreach (var size in Model.CakeSizes)
 {
-    <div class="=modal fade" 
+    <div class="modal fade" 
         id="deleteSizeModal-@size.SizeId">
         <div class=" modal-dialog">
             <div class="modal-content">

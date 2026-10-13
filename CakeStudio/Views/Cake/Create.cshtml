@@ -24,6 +24,22 @@
 	</div>
 
 	<div class="mb-3">
+		<label for="flavourId" class="form-label">Cake Flavour</label>
+
+		<select id="flavourId"
+				name="flavourId"
+				class="form-select"
+				asp-items="ViewBag.Flavours">
+			<option value="">-- Select flavour --</option>
+		</select>
+
+		@Html.ValidationMessage(
+		"flavourId",
+				null,
+				new { @class = "text-danger" })
+	</div>
+
+	<div class="mb-3">
 		<label asp-for="BasePrice" class="form-label"> </label>
 		<input asp-for="BasePrice" class="form-control" />
 		<span asp-validation-for="BasePrice"class="text-danger"></span>

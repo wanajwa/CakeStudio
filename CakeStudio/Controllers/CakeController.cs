@@ -2,17 +2,75 @@
 using CakeStudio.Models;
 using CakeStudio.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using CakeStudio.Services.Interfaces;
 
 namespace CakeStudio.Controllers
 {
     [Authorize(Roles = "Baker")]
     public class CakeController : Controller
     {
-      
+
         private readonly ICakeService _cakeService;
-        public CakeController(ICakeService cakeService)
+        private readonly ICakeFlavourService _cakeFlavourService;
+
+        public CakeController(
+            ICakeService cakeService,
+            ICakeFlavourService cakeFlavourService)
         {
-            _cakeService = cakeService; 
+            _cakeService = cakeService;
+            _cakeFlavourService = cakeFlavourService;
+        }
+
+        // Load available flavours for the dropdown.
+        private void LoadFlavours(int? selectedFlavourId = null)
+        {
+            var availableFlavours = _cakeFlavourService.GetAll()
+                .Where(flavour => flavour.IsAvailable)
+                .ToList();
+
+            ViewBag.Flavours = new SelectList(
+                availableFlavours,
+                "FlavourId",
+                "FlavourName",
+                selectedFlavourId
+            );
+
+        }
+
+        // Validate the selected flavour and assign it to the cake.
+        private void AssignFlavour(Cake cake, int? flavourId)
+        {
+            // The form submits flavourId, not a complete Flavour object.
+            // Remove automatic validation for that navigation object.
+            var flavourKeys = ModelState.Keys
+                .Where(key => key == nameof(Cake.Flavour)
+                    || key.StartsWith(nameof(Cake.Flavour) + "."))
+                .ToList();
+
+            foreach (var key in flavourKeys)
+            {
+                ModelState.Remove(key);
+            }
+
+            if (!flavourId.HasValue)
+            {
+                ModelState.AddModelError("flavourId", "Please select a flavour.");
+                return;
+            }
+
+            var flavour = _cakeFlavourService.GetById(flavourId.Value);
+
+            if (flavour == null || !flavour.IsAvailable)
+            {
+                ModelState.AddModelError(
+                    "flavourId",
+                    "Please select an available flavour.");
+
+                return;
+            }
+
+            cake.Flavour = flavour;
         }
 
         public IActionResult Index()
@@ -22,8 +80,12 @@ namespace CakeStudio.Controllers
         }
 
         //Get cake
+        // GET: Display the Create Cake form.
+        [HttpGet]
         public IActionResult Create()
         {
+            LoadFlavours();
+
             return View();
         }
 
@@ -31,10 +93,16 @@ namespace CakeStudio.Controllers
         // receive submit save cake
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Cake cake, IFormFile? imageFile)
+        public async Task<IActionResult> Create(
+    Cake cake,
+    int? flavourId,
+    IFormFile? imageFile)
         {
+            AssignFlavour(cake, flavourId);
+
             if (!ModelState.IsValid)
             {
+                LoadFlavours(flavourId);
                 return View(cake);
             }
 
@@ -70,7 +138,7 @@ namespace CakeStudio.Controllers
             {
                 return NotFound();
             }
-
+            LoadFlavours(cake.Flavour.FlavourId);
             // Send the existing Cake object to Edit.cshtml.
             return View(cake);
         }
@@ -78,10 +146,13 @@ namespace CakeStudio.Controllers
         // POST: /Cake/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Cake cake, IFormFile? imageFile)
+        public async Task<IActionResult> Edit(Cake cake, int? flavourId,IFormFile? imageFile)
         {
+            AssignFlavour(cake, flavourId);
+
             if (!ModelState.IsValid)
             {
+                LoadFlavours(flavourId);
                 return View(cake);
             }
 

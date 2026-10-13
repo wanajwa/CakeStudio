@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CakeStudio.Models
+namespace CakeStudio.ViewModels
 {
     public class LoginViewModel
     {

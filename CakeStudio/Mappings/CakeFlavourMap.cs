@@ -13,11 +13,13 @@ namespace CakeStudio.Mappings
                 .GeneratedBy.Identity();
             Map(x => x.FlavourName)
                 .Length(100)
-                .Not.Nullable();
+                .Not.Nullable()
+                .Unique();
             Map(x => x.AdditionalPrice)
                 .Not.Nullable();
             Map(x => x.IsAvailable)
                 .Not.Nullable();
+
         }
     }
 }

@@ -29,6 +29,10 @@ namespace CakeStudio.Mappings
 
             Map(x => x.IsAvailable)
                 .Not.Nullable();
+            References(x => x.Flavour)
+            .Column("CakeFlavourId")
+            .Not.Nullable();
+
         }
     }
 }

@@ -32,6 +32,17 @@ namespace CakeStudio.Services
         public void Create(CakeTier cakeTier)
         {
             using var session = _nhibernateHelper.OpenSession();
+            // Check whether the tier already exists
+            var existingTier = session.QueryOver<CakeTier>()
+                .Where(x => x.TierName == cakeTier.TierName)
+                .SingleOrDefault();
+
+            if (existingTier != null)
+            {
+                throw new InvalidOperationException(
+                    "This cake tier already exists."
+                );
+            }
             using var transaction = session.BeginTransaction();
             try
             {
@@ -49,6 +60,17 @@ namespace CakeStudio.Services
         public void Update(CakeTier cakeTier)
         {
             using var session = _nhibernateHelper.OpenSession();
+            // Check whether the tier already exists
+            var existingTier = session.QueryOver<CakeTier>()
+                .Where(x => x.TierName == cakeTier.TierName && x.TierId != cakeTier.TierId  )
+                .SingleOrDefault();
+
+            if (existingTier != null)
+            {
+                throw new InvalidOperationException(
+                    "This cake tier already exists."
+                );
+            }
             using var transaction = session.BeginTransaction();
 
             try

@@ -39,6 +39,19 @@ namespace CakeStudio.Services
         public void Create(CakeFlavour cakeFlavour)
         {
             using var session = _nhibernateHelper.OpenSession();
+
+            // Check whether the flavour already exists
+            var existingFlavour = session.QueryOver<CakeFlavour>()
+                .Where(x => x.FlavourName == cakeFlavour.FlavourName)
+                .SingleOrDefault();
+
+            if (existingFlavour != null)
+            {
+                throw new InvalidOperationException(
+                    "This cake flavour already exists."
+                );
+            }
+
             using var transaction = session.BeginTransaction();
 
             try
@@ -59,6 +72,17 @@ namespace CakeStudio.Services
         public void Update(CakeFlavour cakeFlavour)
         {
             using var session = _nhibernateHelper.OpenSession();
+            var existingFlavour = session.QueryOver<CakeFlavour>()
+                .Where(x => x.FlavourName == cakeFlavour.FlavourName
+                && x.FlavourId != cakeFlavour.FlavourId)
+                .SingleOrDefault();
+
+            if (existingFlavour != null)
+            {
+                throw new InvalidOperationException(
+                    "This cake flavour already exists."
+                );
+            }
             using var transaction = session.BeginTransaction();
 
             try

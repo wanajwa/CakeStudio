@@ -32,7 +32,6 @@ namespace CakeStudio.Services
                 if (user == null)
                 {
                     serviceResponse.Message = "Invalid email or password.";
-                    serviceResponse.MessageCode = "INVALID_LOGIN";
                     return serviceResponse;
                 }
 
@@ -47,7 +46,6 @@ namespace CakeStudio.Services
                 if (passwordResult == PasswordVerificationResult.Failed)
                 {
                     serviceResponse.Message = "Invalid email or password.";
-                    serviceResponse.MessageCode = "INVALID_LOGIN";
                     return serviceResponse;
                 }
 
@@ -60,7 +58,6 @@ namespace CakeStudio.Services
                 System.Diagnostics.Debug.WriteLine(ex.ToString());
 
                 serviceResponse.Message = "An error occurred during login.";
-                serviceResponse.MessageCode = "LOGIN_ERROR";
             }
 
             return serviceResponse;
@@ -78,7 +75,6 @@ namespace CakeStudio.Services
                     string.IsNullOrWhiteSpace(password))
                 {
                     serviceResponse.Message = "Please complete all required fields.";
-                    serviceResponse.MessageCode = "INVALID_INPUT";
                     return serviceResponse;
                 }
 
@@ -92,7 +88,6 @@ namespace CakeStudio.Services
                 if (existingUser != null)
                 {
                     serviceResponse.Message = "Email is already registered.";
-                    serviceResponse.MessageCode = "EMAIL_EXISTS";
                     return serviceResponse;
                 }
 
@@ -114,7 +109,6 @@ namespace CakeStudio.Services
                 // Registration successful
                 serviceResponse.Status = true;
                 serviceResponse.Message = "Customer registered successfully.";
-                serviceResponse.MessageCode = "REGISTRATION_SUCCESS";
                 serviceResponse.Data = user.UserId;
             }
             catch (Exception ex)
@@ -122,7 +116,6 @@ namespace CakeStudio.Services
                 System.Diagnostics.Debug.WriteLine(ex.ToString());
 
                 serviceResponse.Message = "An error occurred during registration.";
-                serviceResponse.MessageCode = "REGISTRATION_ERROR";
             }
 
             return serviceResponse;

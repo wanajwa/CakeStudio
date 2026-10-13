@@ -22,6 +22,7 @@ namespace CakeStudio.Services
 
                 var cakes = session.QueryOver<Cake>()
                     .Fetch(SelectMode.Fetch, x => x.Image)
+                    .Fetch(SelectMode.Fetch, x => x.Flavour)
                     .List()
                     .ToList();
 
@@ -45,6 +46,7 @@ namespace CakeStudio.Services
                 var cakes = session.QueryOver<Cake>()
                     .Where(x => x.IsAvailable == true)
                     .Fetch(SelectMode.Fetch, x => x.Image)
+                    .Fetch(SelectMode.Fetch, x => x.Flavour)
                     .List()
                     .ToList();
 
@@ -68,6 +70,7 @@ namespace CakeStudio.Services
                 var cake = session.QueryOver<Cake>()
                     .Where(x => x.CakeId == id)
                     .Fetch(SelectMode.Fetch, x => x.Image)
+                    .Fetch(SelectMode.Fetch, x => x.Flavour)
                     .SingleOrDefault();
 
                 return cake;
@@ -85,6 +88,20 @@ namespace CakeStudio.Services
             using var transaction = session.BeginTransaction();
             try
             {
+                if (cake.Flavour == null)
+                {
+                    throw new ArgumentException("A cake flavour is required.");
+                }
+
+                // Reload the flavour within this NHibernate session.
+                var flavour = session.Get<CakeFlavour>(cake.Flavour.FlavourId);
+
+                if (flavour == null || !flavour.IsAvailable)
+                {
+                    throw new ArgumentException("The selected flavour is unavailable.");
+                }
+
+                cake.Flavour = flavour;
 
                 if (cake.Image != null)
                 {
@@ -113,6 +130,7 @@ namespace CakeStudio.Services
 
             try
             {
+
             
                 // Get the existing cake from the database
                 var existingCake = session.QueryOver<Cake>()
@@ -124,6 +142,19 @@ namespace CakeStudio.Services
                     transaction.Rollback();
                     return;
                 }
+                if (cake.Flavour == null)
+                {
+                    throw new ArgumentException("A cake flavour is required.");
+                }
+
+                var flavour = session.Get<CakeFlavour>(cake.Flavour.FlavourId);
+
+                if (flavour == null || !flavour.IsAvailable)
+                {
+                    throw new ArgumentException("The selected flavour is unavailable.");
+                }
+
+                existingCake.Flavour = flavour;
 
                 // Update normal cake information
                 existingCake.CakeName = cake.CakeName;

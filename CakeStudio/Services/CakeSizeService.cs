@@ -38,6 +38,17 @@ namespace CakeStudio.Services
         public void Create(CakeSize cakeSize)
         {
             using var session = _nhibernateHelper.OpenSession();
+            // Check whether the size already exists
+            var existingSize = session.QueryOver<CakeSize>()
+                .Where(x => x.SizeName == cakeSize.SizeName)
+                .SingleOrDefault();
+
+            if (existingSize != null)
+            {
+                throw new InvalidOperationException(
+                    "This cake size already exists."
+                );
+            }
             using var transaction = session.BeginTransaction();
 
             try
@@ -58,6 +69,17 @@ namespace CakeStudio.Services
         public void Update(CakeSize cakeSize)
         {
             using var session = _nhibernateHelper.OpenSession();
+            // Check whether the size already exists
+            var existingSize = session.QueryOver<CakeSize>()
+                .Where(x => x.SizeName == cakeSize.SizeName && x.SizeId != cakeSize.SizeId)
+                .SingleOrDefault();
+
+            if (existingSize != null)
+            {
+                throw new InvalidOperationException(
+                    "This cake size already exists."
+                );
+            }
             using var transaction = session.BeginTransaction();
 
             try

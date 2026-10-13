@@ -55,6 +55,11 @@ namespace CakeStudio.Controllers
                 TempData["SuccessMessage"] =
                     "Cake size added successfully.";
             }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] =
+                    "This cake size already exists.";
+            }
             catch (Exception)
             {
                 TempData["ErrorMessage"] =
@@ -149,6 +154,11 @@ namespace CakeStudio.Controllers
                 TempData["SuccessMessage"] =
                     "Cake flavour added successfully.";
             }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] =
+                    "This cake flavour already exists.";
+            }
             catch (Exception)
             {
                 TempData["ErrorMessage"] =
@@ -239,6 +249,11 @@ namespace CakeStudio.Controllers
                 _cakeTierService.Create(cakeTier);
                 TempData["SuccessMessage"] =
                     "Cake tier added successfully.";
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] =
+                    "This cake tier already exists.";
             }
             catch (Exception)
             {
