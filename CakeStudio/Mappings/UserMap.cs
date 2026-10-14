@@ -18,7 +18,8 @@ namespace CakeStudio.Mappings
 
             Map(x => x.Email)
                 .Length(255)
-                .Not.Nullable();
+                .Not.Nullable()
+                .Unique();
 
             Map(x => x.PasswordHash)
                 .Length(255)
