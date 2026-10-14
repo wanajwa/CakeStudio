@@ -73,6 +73,56 @@ namespace CakeStudio.Controllers
             cake.Flavour = flavour;
         }
 
+        private bool ValidateImage(IFormFile? imageFile)
+        {
+            if (imageFile == null)
+                return true; // No image uploaded (optional)
+
+            if (imageFile.Length == 0)
+            {
+                ModelState.AddModelError(
+                    "imageFile",
+                    "The uploaded image file cannot be empty.");
+
+                return false;
+            }
+            const long maxFileSize = 5 * 1024 * 1024;
+
+            if(imageFile.Length > maxFileSize)
+            {
+                ModelState.AddModelError(
+                    "imageFile", 
+                    "Image size must not exceed 5MB");
+                return false;
+            }
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var extension = Path.GetExtension(imageFile.FileName)
+                .ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+            {
+                ModelState.AddModelError(
+                    "imageFile",
+                    "Only JPG, JPEG, and PNG images are allowed.");
+                return false;
+            }
+            var allowedContentTypes = new[]
+            {
+                "image/jpeg",
+                "image/png"
+            };
+            
+            if (!allowedContentTypes.Contains(
+                imageFile.ContentType.ToLowerInvariant()))
+            {
+                ModelState.AddModelError(
+                    "imageFile",
+                    "Ivalide image file type.");
+                return false;
+            }
+            return true;
+        }
+
+
         public IActionResult Index()
         {
             var cakes = _cakeService.GetAll();
@@ -99,6 +149,7 @@ namespace CakeStudio.Controllers
     IFormFile? imageFile)
         {
             AssignFlavour(cake, flavourId);
+            ValidateImage(imageFile);
 
             if (!ModelState.IsValid)
             {
@@ -149,7 +200,7 @@ namespace CakeStudio.Controllers
         public async Task<IActionResult> Edit(Cake cake, int? flavourId,IFormFile? imageFile)
         {
             AssignFlavour(cake, flavourId);
-
+            ValidateImage(imageFile);
             if (!ModelState.IsValid)
             {
                 LoadFlavours(flavourId);

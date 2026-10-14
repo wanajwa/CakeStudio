@@ -4,7 +4,7 @@
     ViewData["Title"] = "Our Cakes";
 }
 
-<div class="container py-4">
+<div class="container-fluid py-4">
 
     <!-- Page heading -->
     <div class="text-center mb-5">
@@ -23,12 +23,19 @@
     }
     else
     {
-        <!-- Cake listing -->
-        <div class="row g-4">
+        <!-- Main Layout -->
+<div class="row g-4">
+
+    <!-- LEFT: Cake Listing -->
+    <div class="col-lg-7">
+
+        <h4 class="fw-semibold mb-3">Browse Cakes</h4>
+
+        <div class="row g-3">
 
             @foreach (var cake in Model)
             {
-                <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="col-sm-6 col-md-4">
 
                     <div class="card h-100 shadow-sm border-0">
 
@@ -63,18 +70,139 @@
                                 RM @cake.BasePrice.ToString("0.00")
                             </h5>
 
-                            <a asp-controller="CustomerCake"
-                               asp-action="Details"
-                               asp-route-id="@cake.CakeId"
-                               class="btn btn-primary mt-3">
-                                View Details
-                            </a>
+                                    <button type="button"
+                                            class="btn btn-primary mt-3 view-details-btn"
+                                            data-cake-id="@cake.CakeId">
+                                        View Details
+                                    </button>
 
-                        </div>
-                    </div>
-                </div>
-            }
+                                                </div> <!-- End card-body -->
 
-        </div>
-    }
+                    </div> <!-- End card -->
+
+                </div> <!-- End cake column -->
+            } <!-- End foreach -->
+
+        </div> <!-- End inner cake grid -->
+
+    </div> <!-- End left column -->
+
+    <!-- RIGHT: Cake Details Panel -->
+    <div class="col-lg-5">
+
+        <h4 class="fw-semibold mb-3">
+            Cake Details
+        </h4>
+
+        <div id="cakeDetailsPanel" aria-live="polite">
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+
+                    <h5 class="text-muted">Select a cake</h5>
+
+                    <p class="text-muted mb-0">
+                        Click View Details to see cake information
+                        and available options.
+                    </p>
+
+                                </div> <!-- End card-body -->
+
+            </div> <!-- End card -->
+
+        </div> <!-- End cakeDetailsPanel -->
+
+    </div> <!-- End right column -->
+
+</div> <!-- End main row -->
+}
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const panel = document.getElementById("cakeDetailsPanel");
+            if (!panel) return;
+
+            let currentRequest = null;
+
+            document.querySelectorAll(".view-details-btn")
+                .forEach(button => {
+
+                    button.addEventListener("click", async function () {
+
+                        const cakeId = this.dataset.cakeId;
+
+                        if (currentRequest) {
+                            currentRequest.abort();
+                        }
+
+                        const controller = new AbortController();
+                        currentRequest = controller;
+
+                        panel.innerHTML =
+                            '<div class="text-center p-4">Loading cake details...</div>';
+
+                        try {
+                            const url = '@Url.Action("DetailsPanel", "CustomerCake")'
+                                + '?id=' + encodeURIComponent(cakeId);
+
+                            const response = await fetch(url, {
+                                signal: controller.signal
+                            });
+
+                            if (!response.ok) {
+                                console.error("HTTP Status:", response.status);
+                                console.error("Server response:", await response.text());
+
+                                throw new Error("Unable to load cake details");
+                            }
+                            panel.innerHTML = await response.text();
+                            initializePriceCalculation();
+
+                        } catch (error) {
+                            if (error.name === "AbortError") return;
+
+                            panel.innerHTML =
+                                '<div class="alert alert-danger">Unable to load cake details.</div>';
+                        } finally {
+                            if (currentRequest === controller) {
+                                currentRequest = null;
+                            }
+                        }
+                    });
+                });
+
+            function initializePriceCalculation() {
+
+                const totalElement = panel.querySelector("#totalPrice");
+                if (!totalElement) return;
+
+                const basePrice =
+                    parseFloat(totalElement.dataset.basePrice) || 0;
+
+                const dropdowns = panel.querySelectorAll(".cake-option");
+
+                function updateTotal() {
+                    let total = basePrice;
+
+                    dropdowns.forEach(dropdown => {
+                        const selectedOption = 
+                        dropdown.options[dropdown.selectedIndex];
+                        if (selectedOption && selectedOption.value){
+                            total += parseFloat(selectedOption.dataset.price) || 0;
+                        }
+                    });
+                    totalElement.textContent = "RM " + total.toFixed(2);
+                }
+
+                dropdowns.forEach(dropdown => {
+                    dropdown.addEventListener("change", updateTotal);
+                });
+
+                updateTotal();
+            }
+        });
+    </script>
+}

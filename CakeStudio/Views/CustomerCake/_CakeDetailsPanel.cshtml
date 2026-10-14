@@ -1,0 +1,115 @@
+﻿@model CakeStudio.ViewModels.CustomerCakeDetailsViewModel
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+
+        <h4 class="fw-bold">@Model.Cake.CakeName</h4>
+
+        <p class="text-muted">
+            @Model.Cake.Description
+        </p>
+
+        <h5 class="text-primary mb-4">
+            Base Price: RM @Model.Cake.BasePrice.ToString("0.00")
+        </h5>
+
+        <!-- Cake Size -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Cake Size</label>
+
+            <select id="cakeSize" name="sizeId" class="form-select cake-option">
+            
+
+                @foreach (var size in Model.CakeSizes .OrderBy(s => int.Parse(s.SizeName.Split(' ')[0])))
+                {
+					bool isDefault = size.SizeName.Trim().Equals("6 inch", StringComparison.OrdinalIgnoreCase);
+                    <option value="@size.SizeId"
+                    data-price="@(isDefault ? "0" : size.AdditionalPrice.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                       selected="@isDefault">
+                       @size.SizeName
+                       @if (isDefault)
+                       {
+                           @:(Included)
+						}
+                        else
+                        {
+							@:(+RM @size.AdditionalPrice.ToString("0.00"))
+                        }
+                        
+                    </option>
+                }
+            </select>
+        </div>
+
+        <!-- Cake Flavour -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Cake Flavour</label>
+
+            <select id="cakeFlavour" name="flavourId" class="form-select cake-option">
+               
+                <option value="@Model.Cake.Flavour.FlavourId" data-price="0" selected>
+                    @Model.Cake.Flavour.FlavourName (Included)
+                </option>
+
+                @foreach (var flavour in Model.CakeFlavours.
+                Where(f => f.IsAvailable && f.FlavourId != Model.Cake.Flavour.FlavourId)
+                .OrderBy( f=> f.FlavourName))
+
+                {
+                    <option value="@flavour.FlavourId"
+                    data-price="@flavour.AdditionalPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                        @flavour.FlavourName (+RM @flavour.AdditionalPrice.ToString("0.00"))
+                    </option>
+                }
+            </select>
+        </div>
+
+        <!-- Cake Tier -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Cake Tier</label>
+
+            <select id="cakeTier" name="tierId" class="form-select cake-option">
+               
+                @foreach (var tier in Model.CakeTiers .Where(t => t.IsAvailable)
+                .OrderBy(t => t.TierName))
+                {
+                    bool isDefault = tier.TierName.Trim().Equals("1", StringComparison.OrdinalIgnoreCase);
+
+                    <option value="@tier.TierId"
+                    data-price="@(isDefault ? "0" : tier.AdditionalPrice.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                    selected="@isDefault">
+                        @tier.TierName Tier
+                        @if (isDefault)
+                        {
+                            @:(Included)
+                        }
+                        else
+                        {
+                            @:(+RM @tier.AdditionalPrice.ToString("0.00"))
+                                }
+                    </option>
+                }
+            </select>
+        </div>
+
+        <hr />
+
+        <!-- Total Price -->
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">Total Price</h5>
+
+            <h4 id="totalPrice"
+                class="text-primary fw-bold mb-0"
+                data-base-price="@Model.Cake.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                RM @Model.Cake.BasePrice.ToString("0.00")
+            </h4>
+        </div>
+
+        <button type="button"
+                class="btn btn-primary w-100 mt-4"
+                disabled>
+            Order Now 
+        </button>
+
+    </div>
+</div>

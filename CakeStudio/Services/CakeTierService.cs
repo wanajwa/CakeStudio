@@ -32,6 +32,7 @@ namespace CakeStudio.Services
         public void Create(CakeTier cakeTier)
         {
             using var session = _nhibernateHelper.OpenSession();
+            cakeTier.TierName = cakeTier.TierName.Trim();
             // Check whether the tier already exists
             var existingTier = session.QueryOver<CakeTier>()
                 .Where(x => x.TierName == cakeTier.TierName)
@@ -60,6 +61,7 @@ namespace CakeStudio.Services
         public void Update(CakeTier cakeTier)
         {
             using var session = _nhibernateHelper.OpenSession();
+            cakeTier.TierName = cakeTier.TierName.Trim();
             // Check whether the tier already exists
             var existingTier = session.QueryOver<CakeTier>()
                 .Where(x => x.TierName == cakeTier.TierName && x.TierId != cakeTier.TierId  )

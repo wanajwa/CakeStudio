@@ -97,5 +97,39 @@ namespace CakeStudio.Controllers
 
             return View(viewModel);
         }
+
+        // Return cake details as a Partial View
+        [HttpGet]
+        public IActionResult DetailsPanel(int id)
+        {
+            var cake = _cakeService.GetById(id);
+
+            if (cake == null || !cake.IsAvailable)
+            {
+                return NotFound();
+            }
+
+            var sizes = _cakeSizeService.GetAll()
+                .Where(x => x.IsAvailable)
+                .ToList();
+
+            var flavours = _cakeFlavourService.GetAll()
+                .Where(x => x.IsAvailable)
+                .ToList();
+
+            var tiers = _cakeTierService.GetAll()
+                .Where(x => x.IsAvailable)
+                .ToList();
+
+            var viewModel = new CustomerCakeDetailsViewModel
+            {
+                Cake = cake,
+                CakeSizes = sizes,
+                CakeFlavours = flavours,
+                CakeTiers = tiers
+            };
+
+            return PartialView("_CakeDetailsPanel", viewModel);
+        }
     }
 }

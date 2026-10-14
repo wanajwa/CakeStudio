@@ -2,7 +2,7 @@
 using CakeStudio.Data;
 using CakeStudio.Models;
 using CakeStudio.Services.Interfaces;
-
+using System.Globalization;
 namespace CakeStudio.Services
 {
     public class CakeFlavourService : ICakeFlavourService
@@ -40,6 +40,8 @@ namespace CakeStudio.Services
         {
             using var session = _nhibernateHelper.OpenSession();
 
+            cakeFlavour.FlavourName = CultureInfo.CurrentCulture.TextInfo
+    .ToTitleCase(cakeFlavour.FlavourName.Trim().ToLower());
             // Check whether the flavour already exists
             var existingFlavour = session.QueryOver<CakeFlavour>()
                 .Where(x => x.FlavourName == cakeFlavour.FlavourName)
@@ -72,6 +74,8 @@ namespace CakeStudio.Services
         public void Update(CakeFlavour cakeFlavour)
         {
             using var session = _nhibernateHelper.OpenSession();
+            cakeFlavour.FlavourName = CultureInfo.CurrentCulture.TextInfo
+    .ToTitleCase(cakeFlavour.FlavourName.Trim().ToLower());
             var existingFlavour = session.QueryOver<CakeFlavour>()
                 .Where(x => x.FlavourName == cakeFlavour.FlavourName
                 && x.FlavourId != cakeFlavour.FlavourId)

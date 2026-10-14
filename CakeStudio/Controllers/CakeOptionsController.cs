@@ -38,14 +38,31 @@ namespace CakeStudio.Controllers
         // CREATE: Save new cake size
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CreateSize(CakeSize cakeSize)
+        public IActionResult CreateSize(CakeSize cakeSize, int? sizeValue)
         {
-            if (!ModelState.IsValid)
+            // Validate size value
+            if (!sizeValue.HasValue ||
+                sizeValue.Value < 1 ||
+                sizeValue.Value > 100)
+            {
+                TempData["ErrorMessage"] = "Please enter a valid cake size between 1 and 100 inches.";
+
+                return RedirectToAction(nameof(Index), new { tab = "sizes" });
+            }
+
+            // Automatically append the unit
+            cakeSize.SizeName = $"{sizeValue.Value} inch";
+
+            // Clear validation state for the generated SizeName
+            ModelState.Remove(nameof(CakeSize.SizeName));
+
+            // Validate the completed CakeSize model
+            if (!TryValidateModel(cakeSize))
             {
                 TempData["ErrorMessage"] =
                     "Invalid cake size information. Please check the fields.";
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { tab = "sizes" });
             }
 
             try
@@ -55,7 +72,7 @@ namespace CakeStudio.Controllers
                 TempData["SuccessMessage"] =
                     "Cake size added successfully.";
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
                 TempData["ErrorMessage"] =
                     "This cake size already exists.";
@@ -66,24 +83,44 @@ namespace CakeStudio.Controllers
                     "Unable to add cake size. Please try again.";
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { tab = "sizes" });
         }
 
         // UPDATE: Save changes to an existing size
+        // UPDATE: Save changes to an existing cake size
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditSize(CakeSize cakeSize)
+        public IActionResult EditSize(CakeSize cakeSize, int? sizeValue)
         {
-            if (!ModelState.IsValid)
+            // Validate size value
+            if (!sizeValue.HasValue ||
+                sizeValue.Value < 1 ||
+                sizeValue.Value > 100)
+            {
+                TempData["ErrorMessage"] =
+                    "Please enter a valid cake size between 1 and 100 inches.";
+
+                return RedirectToAction(nameof(Index), new { tab = "sizes" });
+            }
+
+            // Automatically append the unit
+            cakeSize.SizeName = $"{sizeValue.Value} inch";
+
+            // Clear validation state for the generated SizeName
+            ModelState.Remove(nameof(CakeSize.SizeName));
+
+            // Validate the completed CakeSize model
+            if (!TryValidateModel(cakeSize))
             {
                 TempData["ErrorMessage"] =
                     "Invalid cake size information. Please check the fields.";
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { tab = "sizes" });
             }
 
             try
             {
+                // Check whether the cake size exists
                 var existingSize = _cakeSizeService.GetById(cakeSize.SizeId);
 
                 if (existingSize == null)
@@ -91,10 +128,16 @@ namespace CakeStudio.Controllers
                     return NotFound();
                 }
 
+                // Update cake size
                 _cakeSizeService.Update(cakeSize);
 
                 TempData["SuccessMessage"] =
                     "Cake size updated successfully.";
+            }
+            catch (InvalidOperationException)
+            {
+                TempData["ErrorMessage"] =
+                    "This cake size already exists.";
             }
             catch (Exception)
             {
@@ -102,7 +145,7 @@ namespace CakeStudio.Controllers
                     "Unable to update cake size. Please try again.";
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { tab = "sizes" });
         }
 
         // DELETE: Remove cake size
@@ -141,12 +184,17 @@ namespace CakeStudio.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] =
-                    "Invalid cake flavour information. Please check the fields.";
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(message => !string.IsNullOrWhiteSpace(message));
 
-                return RedirectToAction(nameof(Index), new { tab = "flavours" });
+                TempData["ErrorMessage"] = string.Join(" ", errors);
+
+                return RedirectToAction(
+                    nameof(Index),
+                    new { tab = "flavours" });
             }
-
             try
             {
                 _cakeFlavourService.Create(cakeFlavour);
@@ -240,9 +288,16 @@ namespace CakeStudio.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] =
-                    "Invalid cake tier information. Please check the fields.";
-                return RedirectToAction(nameof(Index), new { tab = "tiers" });
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(message => !string.IsNullOrWhiteSpace(message));
+
+                TempData["ErrorMessage"] = string.Join(" ", errors);
+
+                return RedirectToAction(
+                    nameof(Index),
+                    new { tab = "tiers" });
             }
             try
             {

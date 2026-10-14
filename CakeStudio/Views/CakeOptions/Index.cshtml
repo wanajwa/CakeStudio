@@ -333,7 +333,7 @@
                             @foreach (var tier in Model.CakeTiers)
                             {
                                 <tr>
-                                    <td>@tier.TierName</td>
+                                    <td>@tier.TierName Tier</td>
 
                                     <td>
                                         RM @tier.AdditionalPrice.ToString("0.00")
@@ -429,17 +429,25 @@
 
                 <div class="modal-body">
 
-                    <!-- Size Name -->
+                    <!-- Cake Size -->
                     <div class="mb-3">
-                        <label class="form-label">
-                            Size Name
+                        <label for="addSizeValue" class="form-label">
+                            Cake Size
                         </label>
 
-                        <input type="text"
-                               name="SizeName"
-                               class="form-control"
-                               maxlength="100"
-                               required />
+                        <div class="input-group">
+                            <input type="number"
+                                   id="addSizeValue"
+                                   name="SizeValue"
+                                   class="form-control"
+                                   min="1"
+                                   max="100"
+                                   step="1"
+                                   placeholder="Enter size"
+                                   required />
+
+                            <span class="input-group-text">inch</span>
+                        </div>
                     </div>
 
                     <!-- Additional Price -->
@@ -541,18 +549,26 @@
 
                     <div class="modal-body">
 
-                        <!-- Size Name -->
+                        <!-- Cake Size -->
                         <div class="mb-3">
-                            <label class="form-label">
-                                Size Name
+                            <label for="editSizeValue-@size.SizeId"
+                                   class="form-label">
+                                Cake Size
                             </label>
 
-                            <input type="text"
-                                   name="SizeName"
-                                   value="@size.SizeName"
-                                   class="form-control"
-                                   maxlength="100"
-                                   required />
+                            <div class="input-group">
+                                <input type="number"
+                                       id="editSizeValue-@size.SizeId"
+                                       name="SizeValue"
+                                       value="@size.SizeName.Replace(" inch", "")"
+                                       class="form-control"
+                                       min="1"
+                                       max="100"
+                                       step="1"
+                                       required />
+
+                                <span class="input-group-text">inch</span>
+                            </div>
                         </div>
 
                         <!-- Additional Price -->
@@ -917,11 +933,13 @@
                         <label class="form-label">
                             Tier Name
                         </label>
-                        <input type="text"
+                        <input type="number"
                                name="TierName"
                                class="form-control"
-                               maxlength="100"
-                               required />
+                               min="1"
+                               step="1"
+                               required
+                               placeholder="Enter tier number" />
                     </div>
                     <!-- Additional Price -->
                     <div class="mb-3">
@@ -1015,12 +1033,14 @@
                                 Tier Name
                             </label>
 
-                            <input type="text"
+                            <input type="number"
                                    name="TierName"
                                    value="@tier.TierName"
                                    class="form-control"
-                                   maxlength="100"
-                                   required />
+                                   min="1"
+                                   step="1"
+                                   required
+                                   placeholder="Enter tier number" />
                         </div>
 
                         <!-- Additional Price -->
