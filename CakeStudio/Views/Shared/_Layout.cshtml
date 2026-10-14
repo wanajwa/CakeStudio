@@ -19,7 +19,7 @@
         <!-- sidebar-->
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <aside class="sidebar bg-white border-end d-flex flex-column">
+            <aside class="sidebar bg-white border-end d-none d-lg-flex flex-column">
 
                 <!-- Logo -->
                 <div class="sidebar-logo text-center">
@@ -96,9 +96,89 @@
 
             </aside>
         }
-        <main role="main" class="main-content flex-grow-1">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="offcanvas offcanvas-start"
+                 tabindex="-1"
+                 id="mobileSidebar"
+                 aria-labelledby="mobileSidebarLabel">
 
-            <div class="container-fluid p-5">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title fw-bold" id="mobileSidebarLabel">
+                        CakeStudio
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="offcanvas"
+                            aria-label="Close"></button>
+                </div>
+
+                <div class="offcanvas-body d-flex flex-column">
+                    <nav class="nav flex-column">
+
+                        @if (User.IsInRole("Baker"))
+                        {
+                            <a class="nav-link"
+                               asp-controller="Home"
+                               asp-action="Index">
+                                <i class="bi bi-grid me-3"></i> Dashboard
+                            </a>
+
+                            <a class="nav-link"
+                               asp-controller="Cake"
+                               asp-action="Index">
+                                <i class="bi bi-cake2 me-3"></i> Cakes
+                            </a>
+
+                            <a class="nav-link"
+                               asp-controller="CakeOptions"
+                               asp-action="Index">
+                                <i class="bi bi-sliders me-3"></i> Cake Options
+                            </a>
+                        }
+                        else if (User.IsInRole("Customer"))
+                        {
+                            <a class="nav-link"
+                               asp-controller="CustomerCake"
+                               asp-action="Index">
+                                <i class="bi bi-house me-3"></i> Home
+                            </a>
+                        }
+
+                    </nav>
+
+                    <form asp-controller="Account"
+                          asp-action="Logout"
+                          method="post"
+                          class="mt-auto">
+
+                        <button type="submit"
+                                class="nav-link text-start w-100 border-0 bg-transparent">
+                            <i class="bi bi-box-arrow-right me-3"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+        <main role="main" class="main-content flex-grow-1">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="d-lg-none bg-white border-bottom p-3 d-flex align-items-center">
+                    <button class="btn btn-outline-secondary"
+                            type="button"
+                            data-bs-toggle="offcanvas"
+                            data-bs-target="#mobileSidebar"
+                            aria-controls="mobileSidebar"
+                            aria-label="Open navigation">
+                        <i class="bi bi-list fs-4"></i>
+                    </button>
+
+                    <span class="fw-bold ms-3">CakeStudio</span>
+                </div>
+            }
+
+            <div class="container-fluid p-3 p-md-4 p-lg-5">
 
                 @RenderBody()
 

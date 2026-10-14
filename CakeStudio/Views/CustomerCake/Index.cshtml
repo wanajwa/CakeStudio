@@ -159,6 +159,14 @@
                                 throw new Error("Unable to load cake details");
                             }
                             panel.innerHTML = await response.text();
+
+                            if (window.innerWidth < 992) {
+                                panel.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "start"
+                                });
+                            }
+
                             initializePriceCalculation();
 
                         } catch (error) {
