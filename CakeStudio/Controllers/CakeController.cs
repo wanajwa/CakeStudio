@@ -172,7 +172,7 @@ namespace CakeStudio.Controllers
             }
 
             _cakeService.Create(cake);
-
+            TempData["SuccessMessage"] = "Cake created successfully.";
             return RedirectToAction("Index");
         }
 
@@ -222,7 +222,7 @@ namespace CakeStudio.Controllers
             }
 
             _cakeService.Update(cake);
-
+            TempData["SuccessMessage"] = "Cake updated successfully.";
             return RedirectToAction("Index");
         }
 
@@ -252,7 +252,8 @@ namespace CakeStudio.Controllers
         public IActionResult DeleteConfirmed(int id)
         {
                _cakeService.Delete(id);
-            // Return to the Cake list.
+            TempData["SuccessMessage"] = "Cake deleted successfully.";
+
             return RedirectToAction("Index");
         }
     }
