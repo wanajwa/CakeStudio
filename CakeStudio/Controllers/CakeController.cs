@@ -116,7 +116,7 @@ namespace CakeStudio.Controllers
             {
                 ModelState.AddModelError(
                     "imageFile",
-                    "Ivalide image file type.");
+                    "Invalide image file type.");
                 return false;
             }
             return true;

@@ -18,9 +18,23 @@
             <label class="form-label fw-semibold">Cake Size</label>
 
             <select id="cakeSize" name="sizeId" class="form-select cake-option">
-            
+                @if(!Model.CakeSizes.Any(s => s.IsAvailable))
+                {
+                    <option value ="" selected disabled>
+                    No cake sizes available    
+                    </option>
+                }
 
-                @foreach (var size in Model.CakeSizes .OrderBy(s => int.Parse(s.SizeName.Split(' ')[0])))
+                @if (Model.CakeSizes.Any(s => s.IsAvailable) &&
+                                !Model.CakeSizes.Any(s => s.IsAvailable &&
+                                s.SizeName.Trim().Equals("6 inch", StringComparison.OrdinalIgnoreCase)))
+                {
+                    <option value="" selected disabled>-- Select cake size --</option>
+                }
+
+                @foreach (var size in Model.CakeSizes 
+                    .Where(s => s.IsAvailable)
+                    .OrderBy(s => int.Parse(s.SizeName.Split(' ')[0])))
                 {
 					bool isDefault = size.SizeName.Trim().Equals("6 inch", StringComparison.OrdinalIgnoreCase);
                     <option value="@size.SizeId"
@@ -47,9 +61,30 @@
 
             <select id="cakeFlavour" name="flavourId" class="form-select cake-option">
                
-                <option value="@Model.Cake.Flavour.FlavourId" data-price="0" selected>
-                    @Model.Cake.Flavour.FlavourName (Included)
-                </option>
+                @if (Model.Cake.Flavour.IsAvailable)
+                {
+                    <option value="@Model.Cake.Flavour.FlavourId"
+                            data-price="0"
+                            selected>
+                        @Model.Cake.Flavour.FlavourName (Included)
+                    </option>
+                }
+                @if (!Model.Cake.Flavour.IsAvailable &&
+                                Model.CakeFlavours.Any(f => f.IsAvailable))
+                {
+                    <option value="" selected disabled>
+                        -- Select cake flavour --
+                    </option>
+                }
+
+                @if (!Model.Cake.Flavour.IsAvailable &&
+                                !Model.CakeFlavours.Any(f => f.IsAvailable &&
+                                f.FlavourId != Model.Cake.Flavour.FlavourId))
+                {
+                    <option value="" selected disabled>
+                        No cake flavours available
+                    </option>
+                }
 
                 @foreach (var flavour in Model.CakeFlavours.
                 Where(f => f.IsAvailable && f.FlavourId != Model.Cake.Flavour.FlavourId)
@@ -70,6 +105,20 @@
 
             <select id="cakeTier" name="tierId" class="form-select cake-option">
                
+                @if (!Model.CakeTiers.Any(t => t.IsAvailable))
+                {
+                    <option value ="" selected disabled>
+                        No cake tiers available
+                    </option>
+                }
+
+                @if (Model.CakeTiers.Any(t => t.IsAvailable) &&
+                                !Model.CakeTiers.Any(t => t.IsAvailable &&
+                                t.TierName.Trim().Equals("1", StringComparison.OrdinalIgnoreCase)))
+                {
+                    <option value="" selected disabled>-- Select cake tier --</option>
+                }
+
                 @foreach (var tier in Model.CakeTiers .Where(t => t.IsAvailable)
                 .OrderBy(t => t.TierName))
                 {
