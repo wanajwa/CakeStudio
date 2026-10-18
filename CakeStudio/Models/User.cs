@@ -26,12 +26,10 @@ namespace CakeStudio.Models
         [StringLength(500)]
         public virtual string? Address { get; set; }
 
-        [Required]
-        [StringLength(20)]
-        public virtual string Role { get; set; } = string.Empty;
+        public virtual string Role => GetRoleName();
         public virtual string GetRoleName()
         {
-            return Role;
+            return "User";
         }
     }
 }

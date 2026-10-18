@@ -142,3 +142,21 @@ body {
         width: 100%;
         margin-bottom: 5px;
     }
+
+/* Baker Cake Management - Mobile */
+@media (max-width: 767.98px) {
+
+    .cake-table {
+        min-width: 850px;
+    }
+
+        .cake-table th,
+        .cake-table td {
+            overflow-wrap: normal;
+            word-break: normal;
+        }
+
+            .cake-table td:nth-child(3) {
+                overflow-wrap: break-word;
+            }
+}

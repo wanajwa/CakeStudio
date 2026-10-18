@@ -91,11 +91,14 @@ namespace CakeStudio.Services
                     return serviceResponse;
                 }
 
-                // Assign Customer role
-                user.Role = "Customer";
-
                 // Hash the password
                 user.PasswordHash = _passwordHasher.HashPassword(user, password);
+
+                if (user is not Customer)
+                {
+                    serviceResponse.Message = "Invalid registration type.";
+                    return serviceResponse;
+                }
 
                 // Begin transaction before saving
                 using var transaction = session.BeginTransaction();

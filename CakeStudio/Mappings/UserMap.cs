@@ -12,6 +12,9 @@ namespace CakeStudio.Mappings
             Id(x => x.UserId)
                 .GeneratedBy.Identity();
 
+            DiscriminateSubClassesOnColumn("Role")
+                .Not.Nullable();
+
             Map(x => x.Name)
                 .Length(100)
                 .Not.Nullable();
@@ -33,9 +36,7 @@ namespace CakeStudio.Mappings
                 .Length(500)
                 .Nullable();
 
-            Map(x => x.Role)
-                .Length(20)
-                .Not.Nullable();
+
         }
     }
 }

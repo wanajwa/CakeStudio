@@ -116,7 +116,7 @@ namespace CakeStudio.Controllers
             }
 
             // Convert RegisterViewModel into User model
-            var user = new User
+            var user = new Customer
             {
                 Name = model.Name,
                 Email = model.Email,
