@@ -196,3 +196,59 @@ body {
         margin-bottom: 0;
         color: #6c757d;
     }
+
+/* Customer My Orders Table */
+
+.my-orders-card {
+    background-color: #ffffff;
+    border: 1px solid #e9e3f4;
+    border-radius: 20px;
+    padding: 18px 20px;
+    box-shadow: 0 3px 12px rgba(40, 30, 70, 0.025);
+}
+
+/* Pastel Order Status */
+
+.order-status {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 25px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.status-pending {
+    background-color: #fff1cc;
+    color: #987120;
+}
+
+.status-accepted {
+    background-color: #e1e8ff;
+    color: #5668a7;
+}
+
+.status-preparing {
+    background-color: #eee5ff;
+    color: #7455b5;
+}
+
+.status-ready {
+    background-color: #d9f5e9;
+    color: #277a56;
+}
+
+.status-completed {
+    background-color: #d0f5e2;
+    color: #277a56;
+}
+
+.status-rejected {
+    background-color: #ffdddd;
+    color: #b63b38;
+}
+
+.status-default {
+    background-color: #f5f3fa;
+    color: #9189a8;
+}
