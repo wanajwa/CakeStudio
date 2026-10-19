@@ -8,7 +8,7 @@ namespace CakeStudio.Models
 
         [Required]
         public virtual int? CustId { get; set; }
-
+        [Required(ErrorMessage = "Please select a cake.")]
         public virtual int? CakeId { get; set; }
 
         public virtual int? FlavourId { get; set; }
@@ -33,7 +33,7 @@ namespace CakeStudio.Models
         [StringLength(500)]
         public virtual string? MessageOnCakes { get; set; }
 
-        [Range(0, 100000, ErrorMessage = "Total price cannot be negative.")]
+        [Range(typeof(decimal), "0.01", "100000", ErrorMessage = "Total price must be greater than RM0.")]
         public virtual decimal TotalPrice { get; set; }
 
         [Required]
@@ -47,5 +47,18 @@ namespace CakeStudio.Models
         public virtual int? UpdatedId { get; set; }
 
         public virtual int? CreatedId { get; set; }
+
+
+        // Navigation properties
+        public virtual User? Customer { get; set; }
+
+        public virtual Cake? Cake { get; set; }
+
+        public virtual CakeSize? Size { get; set; }
+
+        public virtual CakeFlavour? Flavour { get; set; }
+
+        public virtual CakeTier? Tier { get; set; }
+
     }
 }

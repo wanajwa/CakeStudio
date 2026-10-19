@@ -1,0 +1,284 @@
+﻿@model CakeStudio.ViewModels.OrderViewModel
+@using CakeStudio.Models
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Place Order";
+
+    var sizes = ViewBag.Sizes as List<CakeSize>
+        ?? new List<CakeSize>();
+
+    var flavours = ViewBag.Flavours as List<CakeFlavour>
+        ?? new List<CakeFlavour>();
+
+    var tiers = ViewBag.Tiers as List<CakeTier>
+        ?? new List<CakeTier>();
+
+    var basePrice = Model.BasePrice.ToString(
+        CultureInfo.InvariantCulture);
+}
+
+<div class="container mt-4 mb-5">
+
+    <h2 class="mb-4">Place Your Order</h2>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <form asp-controller="Order"
+                          asp-action="Create"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input asp-for="CakeId"
+                               type="hidden" />
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <h5>@Model.CakeName</h5>
+
+                        <p class="text-muted">
+                            Base Price:
+                            RM @Model.BasePrice.ToString("F2")
+                        </p>
+
+                        <hr />
+
+
+                        <h5>Cake Options</h5>
+
+                        <!-- Keep selected options for form submission -->
+                        <input asp-for="SizeId" type="hidden" />
+                        <input asp-for="FlavourId" type="hidden" />
+                        <input asp-for="TierId" type="hidden" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Cake Size</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="@ViewBag.SizeName"
+                                   readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Cake Flavour</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="@ViewBag.FlavourName"
+                                   readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Cake Tier</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="@ViewBag.TierName"
+                                   readonly />
+                        </div>
+
+
+
+                        <hr />
+
+                        <h5>Order Information</h5>
+
+                        <div class="mb-3">
+                            <label asp-for="RequiredDate"
+                                   class="form-label">
+                                Required Date
+                            </label>
+
+                            <input asp-for="RequiredDate"
+                                   type="date"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                   class="form-control" />
+
+                            <span asp-validation-for="RequiredDate"
+                                  class="text-danger"></span>
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label asp-for="RequiredTime"
+                                   class="form-label">
+                                Pickup / Delivery Time
+                            </label>
+
+                            <input asp-for="RequiredTime"
+                                   type="time"
+                                   step="1800"
+                                   class="form-control" />
+
+                            <span asp-validation-for="RequiredTime"
+                                  class="text-danger"></span>
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label asp-for="CollectionMethod"
+                                   class="form-label">
+                                Collection Method
+                            </label>
+
+                            <select asp-for="CollectionMethod"
+                                    class="form-select"
+                                    id="collectionMethod">
+
+                                <option value="">
+                                    Select Method
+                                </option>
+
+                                <option value="Pickup">
+                                    Pickup
+                                </option>
+
+                                <option value="Delivery">
+                                    Delivery
+                                </option>
+                            </select>
+
+                            <span asp-validation-for="CollectionMethod"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3"
+                             id="deliverySection"
+                             style="display:none;">
+
+                            <label asp-for="DeliveryAddress"
+                                   class="form-label">
+                                Delivery Address
+                            </label>
+
+                            <textarea asp-for="DeliveryAddress"
+                                      class="form-control"
+                                      rows="3">
+                            </textarea>
+
+                            <span asp-validation-for="DeliveryAddress"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MessageOnCakes"
+                                   class="form-label">
+                                Message on Cake
+                            </label>
+
+                            <textarea asp-for="MessageOnCakes"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="e.g. Happy Birthday!">
+                            </textarea>
+
+                            <span asp-validation-for="MessageOnCakes"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit"
+                                    class="btn btn-primary">
+                                Place Order
+                            </button>
+
+                            <a asp-controller="CustomerCake"
+                               asp-action="Index"
+                               class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+
+                    <h5>Order Summary</h5>
+                    <hr />
+
+                    <p>@Model.CakeName</p>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Base Price</span>
+                        <span>
+                            RM @Model.BasePrice.ToString("F2")
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Size - @ViewBag.SizeName</span>
+                        <span>
+                            +RM @Convert.ToDecimal(ViewBag.SizePrice ?? 0m).ToString("F2")
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Flavour - @ViewBag.FlavourName</span>
+                        <span>
+                            +RM @Convert.ToDecimal(ViewBag.FlavourPrice ?? 0m).ToString("F2")
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tier - @ViewBag.TierName</span>
+                        <span>
+                            +RM @Convert.ToDecimal(ViewBag.TierPrice ?? 0m).ToString("F2")
+                        </span>
+                    </div>
+
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between">
+                        <strong>Total Price</strong>
+
+                        <strong id="totalPrice">
+                            RM @Convert.ToDecimal(ViewBag.TotalPrice ?? Model.BasePrice).ToString("F2")
+                        </strong>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        function toggleDelivery() {
+            const method = document.getElementById(
+                "collectionMethod").value;
+
+            const section = document.getElementById(
+                "deliverySection");
+
+            const address = document.getElementById(
+                "DeliveryAddress");
+
+            const isDelivery = method === "Delivery";
+
+            section.style.display =
+                isDelivery ? "block" : "none";
+
+            address.required = isDelivery;
+        }
+
+        document.getElementById("collectionMethod")
+            .addEventListener("change", toggleDelivery);
+        toggleDelivery();
+    </script>
+}

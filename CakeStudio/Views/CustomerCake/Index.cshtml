@@ -158,7 +158,14 @@
 
                                 throw new Error("Unable to load cake details");
                             }
+
                             panel.innerHTML = await response.text();
+                            
+                            panel.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start"
+                            });
+
 
                             if (window.innerWidth < 992) {
                                 panel.scrollIntoView({
@@ -181,6 +188,8 @@
                         }
                     });
                 });
+
+
 
             function initializePriceCalculation() {
 
@@ -211,6 +220,38 @@
 
                 updateTotal();
             }
+
         });
+        function proceedToOrder(cakeId) {
+
+        const panel = document.getElementById("cakeDetailsPanel");
+
+        const sizeId = panel.querySelector("#cakeSize")?.value;
+        const flavourId = panel.querySelector("#cakeFlavour")?.value;
+        const tierId = panel.querySelector("#cakeTier")?.value;
+
+        if (!sizeId || !flavourId || !tierId) {
+            alert("Please select cake size, flavour and tier.");
+            return;
+        }
+
+        const params = new URLSearchParams({
+            cakeId: cakeId,
+            sizeId: sizeId,
+            flavourId: flavourId,
+            tierId: tierId
+        });
+
+        window.location.href = "/Order/Create?" + params.toString();
+    }
+
     </script>
 }
+
+
+
+
+
+
+
+                         

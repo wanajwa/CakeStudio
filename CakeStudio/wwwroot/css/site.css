@@ -69,7 +69,7 @@ body {
     width: 100%;
 }
 
-//for mobile
+/* For mobile */ 
 .main-content {
     min-width: 0;
 }
@@ -159,4 +159,8 @@ body {
             .cake-table td:nth-child(3) {
                 overflow-wrap: break-word;
             }
+}
+
+#cakeDetailsPanel {
+    scroll-margin-top: 100px;
 }

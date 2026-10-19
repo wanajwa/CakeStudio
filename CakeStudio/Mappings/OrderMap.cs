@@ -17,20 +17,42 @@ namespace CakeStudio.Mappings
             // Customer ID (required)
             Map(x => x.CustId)
                 .Not.Nullable();
+            References(x => x.Customer)
+            .Column("CustId")
+            .ReadOnly();
 
-            // Optional cake selection
+            //  cake selection
             Map(x => x.CakeId)
-                .Nullable();
-
+                .Not.Nullable();
+            References(x => x.Cake)
+            .Column("CakeId")
+            .ReadOnly();
             // Optional custom cake selections
+
             Map(x => x.FlavourId)
                 .Nullable();
+
+            References(x => x.Flavour)
+                .Column("FlavourId")
+                .Nullable()
+                .ReadOnly();
 
             Map(x => x.SizeId)
                 .Nullable();
 
+            References(x => x.Size)
+                .Column("SizeId")
+                .Nullable()
+                .ReadOnly();
+
             Map(x => x.TierId)
                 .Nullable();
+
+            References(x => x.Tier)
+                .Column("TierId")
+                .Nullable()
+                .ReadOnly();
+
 
             // Baker may be assigned later
             Map(x => x.BakerId)
@@ -55,8 +77,9 @@ namespace CakeStudio.Mappings
                 .Length(500)
                 .Nullable();
 
-            // Total price
             Map(x => x.TotalPrice)
+                .Precision(18)
+                .Scale(2)
                 .Not.Nullable();
 
             // Order status

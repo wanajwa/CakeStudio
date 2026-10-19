@@ -1,0 +1,69 @@
+﻿@model List<CakeStudio.Models.Order>
+
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<div class="container mt-4">
+
+    <h2 class="mb-4">My Orders</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You haven't placed any orders yet.
+        </div>
+
+        <a asp-controller="CustomerCake"
+           asp-action="Index"
+           class="btn btn-primary">
+            Browse Cakes
+        </a>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>No.</th>
+                        <th>Order Date</th>
+                        <th>Required Date</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var order = Model[i];
+
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@order.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td>
+                                @(order.RequiredDate?.ToString("dd MMM yyyy, hh:mm tt") ?? "-")
+                            </td>
+                            <td>RM @order.TotalPrice.ToString("N2")</td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    @order.OrderStatus
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-controller="Order"
+                                   asp-action="Details"
+                                   asp-route-id="@order.OrderId"
+                                   class="btn btn-outline-primary">
+                                    View Details
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

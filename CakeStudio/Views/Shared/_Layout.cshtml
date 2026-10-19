@@ -56,18 +56,41 @@
                             <i class="bi bi-sliders me-3"></i>
                             Cake Options
                         </a>
+
+
+
+                        <!-- Manage Orders -->
+                        <a class="nav-link sidebar-link @(currentController == "Order" ? "active" : "")"
+                           asp-controller="Order"
+                           asp-action="Index">
+                            <i class="bi bi-receipt me-3"></i>
+                            Manage Orders
+                        </a>
+
+                        
                     }
 
+                    
                     else if (User.IsInRole("Customer"))
-                {
-                <!-- Customer Home -->
-                <a class="nav-link sidebar-link @(currentController == "Home" ? "active" : "")"
-                   asp-controller="CustomerCake"
-                   asp-action="Index">
-                    <i class="bi bi-house me-3"></i>
-                    Home
-                </a>
-                }
+                    {
+                        <!-- Home -->
+                        <a class="nav-link sidebar-link @(currentController == "CustomerCake" ? "active" : "")"
+                           asp-controller="CustomerCake"
+                           asp-action="Index">
+                            <i class="bi bi-house me-3"></i>
+                            Home
+                        </a>
+
+                        <!-- My Orders -->
+                        <a class="nav-link sidebar-link @(currentController == "Order" ? "active" : "")"
+                           asp-controller="Order"
+                           asp-action="MyOrders">
+                            <i class="bi bi-bag-check me-3"></i>
+                            My Orders
+                        </a>
+                    }
+
+                
 
                 </nav>
 
@@ -136,6 +159,14 @@
                                asp-action="Index">
                                 <i class="bi bi-sliders me-3"></i> Cake Options
                             </a>
+
+                            <a class="nav-link sidebar-link"
+                               asp-controller="Order"
+                               asp-action="Index">
+                                <i class="bi bi-receipt me-3"></i>
+                                Manage Orders
+                            </a>
+
                         }
                         else if (User.IsInRole("Customer"))
                         {
@@ -144,6 +175,14 @@
                                asp-action="Index">
                                 <i class="bi bi-house me-3"></i> Home
                             </a>
+
+                            <a class="nav-link sidebar-link"
+                               asp-controller="Order"
+                               asp-action="MyOrders">
+                                <i class="bi bi-bag-check me-3"></i>
+                                My Orders
+                            </a>
+
                         }
 
                     </nav>

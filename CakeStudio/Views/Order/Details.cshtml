@@ -1,0 +1,123 @@
+﻿@model CakeStudio.ViewModels.OrderDetailsViewModel
+
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<div class="container mt-4 mb-5">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+
+            <h3>Order #@Model.Order.OrderId</h3>
+
+            <span class="badge bg-primary mb-3">
+                @Model.Order.OrderStatus
+            </span>
+
+            <hr />
+
+            <h5>Order Information</h5>
+
+            <dl class="row">
+
+                <dt class="col-sm-4">Order Date</dt>
+                <dd class="col-sm-8">
+                    @Model.Order.CreatedAt.ToString("dd MMM yyyy")
+                </dd>
+
+
+                <dt class="col-sm-4">Required Date</dt>
+                <dd class="col-sm-8">
+                    @Model.Order.RequiredDate?.ToString("dd MMM yyyy")
+                </dd>
+
+                <dt class="col-sm-4">Pickup / Delivery Time</dt>
+                <dd class="col-sm-8">
+                    @Model.Order.RequiredDate?.ToString("hh:mm tt")
+                </dd>
+
+
+
+                <!-- Cake Name -->
+                <dt class="col-sm-4">Cake Name</dt>
+                <dd class="col-sm-8">
+                    @Model.CakeName
+                </dd>
+
+                <!-- Cake Flavour -->
+                <dt class="col-sm-4">Cake Flavour</dt>
+                <dd class="col-sm-8">
+                    @Model.FlavourName
+                </dd>
+
+                <!-- Cake Size -->
+                <dt class="col-sm-4">Cake Size</dt>
+                <dd class="col-sm-8">
+                    @Model.SizeName
+                </dd>
+
+                <!-- Cake Tier -->
+                <dt class="col-sm-4">Cake Tier</dt>
+                <dd class="col-sm-8">
+                    @Model.TierName
+                </dd>
+
+
+                <dt class="col-sm-4">Collection Method</dt>
+                <dd class="col-sm-8">
+                    @Model.Order.CollectionMethod
+                </dd>
+
+                @if (Model.Order.CollectionMethod == "Delivery")
+                {
+                    <dt class="col-sm-4">Delivery Address</dt>
+                    <dd class="col-sm-8">
+                        @Model.Order.DeliveryAddress
+                    </dd>
+                }
+
+                <dt class="col-sm-4">Cake Message</dt>
+                <dd class="col-sm-8">
+                    @(Model.Order.MessageOnCakes ?? "-")
+                </dd>
+
+            </dl>
+
+            <hr />
+
+            <div class="d-flex justify-content-between">
+                <h5>Total Price</h5>
+
+                <h5 class="text-primary">
+                    RM @Model.Order.TotalPrice.ToString("F2")
+                </h5>
+            </div>
+
+            <hr />
+
+            @if (User.IsInRole("Customer"))
+            {
+                <a asp-action="MyOrders"
+                   class="btn btn-outline-secondary">
+                    Back to My Orders
+                </a>
+            }
+            else if (User.IsInRole("Baker"))
+            {
+                <a asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    Back to Orders
+                </a>
+            }
+
+        </div>
+    </div>
+</div>
