@@ -30,12 +30,32 @@
     <div class="col-lg-7">
 
         <h4 class="fw-semibold mb-3">Browse Cakes</h4>
-
         <div class="row g-3">
+
+        <!-- Cake Search -->
+        <div class="input-group mb-4">
+            <span class="input-group-text bg-white">
+                <i class="bi bi-search"></i>
+            </span>
+
+            <input type="text"
+                   id="cakeSearch"
+                   class="form-control"
+                   placeholder="Search cakes by name..."
+                   autocomplete="off"
+                   aria-label="Search cakes by name" />
+        </div>
+
+        <!-- No search results -->
+        <div id="noSearchResults"
+             class="alert alert-info text-center d-none">
+            No cakes found matching your search.
+        </div>
 
             @foreach (var cake in Model)
             {
-                <div class="col-sm-6 col-md-4">
+                <div class="col-sm-6 col-md-4 cake-item"
+                data-cake-name="@cake.CakeName">
 
                     <div class="card h-100 shadow-sm border-0">
 
@@ -113,8 +133,7 @@
         </div> <!-- End cakeDetailsPanel -->
 
     </div> <!-- End right column -->
-
-</div> <!-- End main row -->
+    </div>
 }
 </div>
 
@@ -126,6 +145,40 @@
             if (!panel) return;
 
             let currentRequest = null;
+
+            // Cake Search Functionality
+            const searchInput = document.getElementById("cakeSearch");
+            const cakeItems = document.querySelectorAll(".cake-item");
+            const noSearchResults = document.getElementById("noSearchResults");
+
+            if (searchInput && noSearchResults) {
+
+                searchInput.addEventListener("input", function () {
+
+                    const searchText = this.value.trim().toLowerCase();
+
+                    let visibleCount = 0;
+
+                    cakeItems.forEach(cake => {
+
+                        const cakeName =
+                            (cake.dataset.cakeName || "").toLowerCase();
+
+                        const isMatch = cakeName.includes(searchText);
+
+                        cake.classList.toggle("d-none", !isMatch);
+
+                        if (isMatch) {
+                            visibleCount++;
+                        }
+                    });
+
+                    noSearchResults.classList.toggle(
+                        "d-none",
+                        visibleCount > 0
+                    );
+                });
+            }
 
             document.querySelectorAll(".view-details-btn")
                 .forEach(button => {
@@ -246,12 +299,4 @@
     }
 
     </script>
-}
-
-
-
-
-
-
-
-                         
+}             
