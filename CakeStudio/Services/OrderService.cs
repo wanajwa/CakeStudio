@@ -274,19 +274,6 @@ namespace CakeStudio.Services
             string status,
             int bakerId)
         {
-            string[] allowedStatuses =
-            {
-                "Pending",
-                "Confirmed",
-                "Preparing",
-                "Ready",
-                "Completed",
-                "Cancelled"
-            };
-
-            if (!allowedStatuses.Contains(status))
-                throw new ArgumentException(
-                    "Invalid order status.");
 
             using var session = _nhibernateHelper.OpenSession();
             using var transaction = session.BeginTransaction();
@@ -308,11 +295,30 @@ namespace CakeStudio.Services
                     throw new ArgumentException(
                         "Order not found.");
 
-                if (order.OrderStatus == "Completed" ||
-                    order.OrderStatus == "Cancelled")
+                var allowedTransitions = new Dictionary<string, string[]>
+                {
+                    { "Pending", new[] {"Accepted", "Rejected"} },
+                    {"Accepted", new[] {"Preparing"} },
+                    {"Preparing", new[] {"Ready"} },
+                    {"Ready", new[]{"Completed"} },
+                    {"Rejected", Array.Empty<string>() },
+                    {"Completed", Array.Empty<string>() }
+                };
+
+                // Validate current status
+                if (!allowedTransitions.TryGetValue(
+                    order.OrderStatus, out var allowedStatuses))
                 {
                     throw new InvalidOperationException(
-                        "This order can no longer be updated.");
+                        "Unknown current order status.");
+                }
+
+
+                // Validate requested status
+                if (!allowedStatuses.Contains(status))
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot change order status from {order.OrderStatus} to {status}.");
                 }
 
                 order.OrderStatus = status;

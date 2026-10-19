@@ -76,10 +76,22 @@
                                     Details
                                 </a>
 
-                                @if (order.OrderStatus != "Completed" &&
-                                                        order.OrderStatus != "Cancelled")
+
+                                @{
+                                    string[] nextStatuses = order.OrderStatus switch
+                                    {
+                                        "Pending" => new[] { "Accepted", "Rejected" },
+                                        "Accepted" => new[] { "Preparing" },
+                                        "Preparing" => new[] { "Ready" },
+                                        "Ready" => new[] { "Completed" },
+                                        _ => Array.Empty<string>()
+                                    };
+                                }
+
+                                @if (nextStatuses.Length > 0)
                                 {
-                                    <form asp-action="UpdateStatus"
+                                    <form asp-controller="Order"
+                                          asp-action="UpdateStatus"
                                           method="post">
 
                                         @Html.AntiForgeryToken()
@@ -89,20 +101,14 @@
                                                value="@order.OrderId" />
 
                                         <select name="status"
-                                                class="form-select form-select-sm mb-2">
+                                                class="form-select form-select-sm mb-2"
+                                                required>
 
-                                            @foreach (var status in new[]
-                                                                            {
-                                                                "Pending",
-                                                                "Confirmed",
-                                                                "Preparing",
-                                                                "Ready",
-                                                                "Completed",
-                                                                "Cancelled"
-                                                                })
+                                            <option value="">Select Action</option>
+
+                                            @foreach (var status in nextStatuses)
                                             {
-                                                <option value="@status"
-                                                        selected="@(order.OrderStatus == status)">
+                                                <option value="@status">
                                                     @status
                                                 </option>
                                             }
@@ -112,7 +118,6 @@
                                                 class="btn btn-sm btn-success">
                                             Update
                                         </button>
-
                                     </form>
                                 }
                             </td>

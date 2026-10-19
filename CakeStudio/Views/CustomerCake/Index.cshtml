@@ -4,15 +4,13 @@
     ViewData["Title"] = "Our Cakes";
 }
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-0">
 
     <!-- Page heading -->
-    <div class="text-center mb-5">
-        <h2 class="fw-bold">Our Signature Cakes</h2>
-        <p class="text-muted">
-            Explore our delicious collection of cakes.
-        </p>
-    </div>
+    <div class="cake-page-header">
+    <h1>Our Signature Cakes</h1>
+    <p>Explore our delicious collection of cakes.</p>
+</div>
 
     <!-- Check whether cakes are available -->
     @if (!Model.Any())
@@ -24,7 +22,7 @@
     else
     {
         <!-- Main Layout -->
-<div class="row g-4">
+<div class="row g-4 px-3 px-lg-5 pb-5">
 
     <!-- LEFT: Cake Listing -->
     <div class="col-lg-7">
@@ -213,12 +211,7 @@
                             }
 
                             panel.innerHTML = await response.text();
-                            
-                            panel.scrollIntoView({
-                                behavior: "smooth",
-                                block: "start"
-                            });
-
+                          
 
                             if (window.innerWidth < 992) {
                                 panel.scrollIntoView({
