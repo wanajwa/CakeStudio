@@ -42,6 +42,95 @@ namespace CakeStudio.Controllers
                 : null;
         }
 
+        // untuk retrieve customer slected option in form again when invalid
+        private void LoadCakeInfo(OrderViewModel model) 
+        {
+            if (model.CakeId.HasValue)
+            {
+                var cake = _cakeService.GetById(model.CakeId.Value);
+
+                if (cake != null)
+                {
+                    model.CakeName = cake.CakeName;
+                    model.BasePrice = cake.BasePrice;
+
+                    decimal sizePrice = 0m;
+                    decimal flavourPrice = 0m;
+                    decimal tierPrice = 0m;
+
+                    // Retrieve selected size
+                    if (model.SizeId.HasValue)
+                    {
+                        var size = _sizeService.GetById(model.SizeId.Value);
+
+                        if (size != null && size.IsAvailable)
+                        {
+                            ViewBag.SizeName = size.SizeName;
+
+                            bool isDefaultSize = size.SizeName.Trim()
+                                .Equals("6 inch", StringComparison.OrdinalIgnoreCase);
+
+                            if (!isDefaultSize)
+                            {
+                                sizePrice = size.AdditionalPrice;
+                            }
+                        }
+                    }
+
+                    // Retrieve selected flavour
+                    if (model.FlavourId.HasValue)
+                    {
+                        var flavour = _flavourService.GetById(model.FlavourId.Value);
+
+                        if (flavour != null && flavour.IsAvailable)
+                        {
+                            ViewBag.FlavourName = flavour.FlavourName;
+
+                            if (cake.Flavour != null)
+                            {
+                                bool isDefaultFlavour =
+                                    flavour.FlavourId == cake.Flavour.FlavourId;
+
+                                if (!isDefaultFlavour)
+                                {
+                                    flavourPrice = flavour.AdditionalPrice;
+                                }
+                            }
+                        }
+                    }
+
+                    // Retrieve selected tier
+                    if (model.TierId.HasValue)
+                    {
+                        var tier = _tierService.GetById(model.TierId.Value);
+
+                        if (tier != null && tier.IsAvailable)
+                        {
+                            ViewBag.TierName = tier.TierName;
+
+                            bool isDefaultTier = tier.TierName.Trim()
+                                .Equals("1", StringComparison.OrdinalIgnoreCase);
+
+                            if (!isDefaultTier)
+                            {
+                                tierPrice = tier.AdditionalPrice;
+                            }
+                        }
+                    }
+
+                    // Restore additional prices
+                    ViewBag.SizePrice = sizePrice;
+                    ViewBag.FlavourPrice = flavourPrice;
+                    ViewBag.TierPrice = tierPrice;
+
+                    // Restore total price
+                    ViewBag.TotalPrice =
+                        cake.BasePrice + sizePrice + flavourPrice + tierPrice;
+                }
+            }
+
+            LoadCakeOptions();
+        }
 
         private void LoadCakeOptions()
         {
@@ -56,34 +145,14 @@ namespace CakeStudio.Controllers
             ViewBag.Tiers = _tierService.GetAll()
                 .Where(x => x.IsAvailable)
                 .ToList();
-        }
 
 
-        private void LoadCakeInfo(OrderViewModel model)
-        {
-            if (model.CakeId.HasValue)
-            {
-                var cake = _cakeService.GetById(
-                    model.CakeId.Value);
-
-                if (cake != null)
-                {
-                    model.CakeName = cake.CakeName;
-                    model.BasePrice = cake.BasePrice;
-                }
-            }
-
-            LoadCakeOptions();
         }
 
 
         [Authorize(Roles = "Customer")]
         [HttpGet]
-        public IActionResult Create(
-            int cakeId,
-            int? sizeId,
-            int? flavourId,
-            int? tierId)
+        public IActionResult Create(int cakeId,int? sizeId,int? flavourId,int? tierId)
         {
             var cake = _cakeService.GetById(cakeId);
 
@@ -102,6 +171,7 @@ namespace CakeStudio.Controllers
                 .Where(x => x.IsAvailable)
                 .ToList();
 
+            //match tak data atas ngan cust selected id 
             var size = sizes.FirstOrDefault(x => x.SizeId == sizeId);
             var flavour = flavours.FirstOrDefault(x => x.FlavourId == flavourId);
             var tier = tiers.FirstOrDefault(x => x.TierId == tierId);
@@ -109,6 +179,7 @@ namespace CakeStudio.Controllers
             if (size == null || flavour == null || tier == null)
                 return BadRequest("Invalid cake options selected.");
 
+            //create object
             var model = new OrderViewModel
             {
                 CakeId = cake.CakeId,
@@ -126,7 +197,7 @@ namespace CakeStudio.Controllers
 
             decimal totalPrice = cake.BasePrice;
 
-            // Size: 6 inch is included
+            //  inch is included
             bool isDefaultSize = size.SizeName.Trim()
                 .Equals("6 inch", StringComparison.OrdinalIgnoreCase);
 
@@ -135,7 +206,7 @@ namespace CakeStudio.Controllers
                 totalPrice += size.AdditionalPrice;
             }
 
-            // Flavour: cake's original flavour is included
+            // ori flav
             bool isDefaultFlavour =
                 flavour.FlavourId == cake.Flavour.FlavourId;
 
@@ -144,7 +215,7 @@ namespace CakeStudio.Controllers
                 totalPrice += flavour.AdditionalPrice;
             }
 
-            // Tier: 1 tier is included
+            // 1 tier included
             bool isDefaultTier = tier.TierName.Trim()
                 .Equals("1", StringComparison.OrdinalIgnoreCase);
 
@@ -153,20 +224,44 @@ namespace CakeStudio.Controllers
                 totalPrice += tier.AdditionalPrice;
             }
 
+            // nak pass > UI (OrderViewModel read ID)
+            // 6 inch included as default
+            if (isDefaultSize)
+            {
+                ViewBag.SizePrice = 0m;
+            }
+            else
+            {
+                ViewBag.SizePrice = size.AdditionalPrice;
+            }
 
-            ViewBag.SizePrice = isDefaultSize ? 0m : size.AdditionalPrice;
 
-            ViewBag.FlavourPrice = isDefaultFlavour ? 0m : flavour.AdditionalPrice;
+          
+            if (isDefaultFlavour)
+            {
+                ViewBag.FlavourPrice = 0m;
+            }
+            else
+            {
+                ViewBag.FlavourPrice = flavour.AdditionalPrice;
+            }
 
-            ViewBag.TierPrice = isDefaultTier ? 0m : tier.AdditionalPrice;
 
+
+            if (isDefaultTier)
+            {
+                ViewBag.TierPrice = 0m;
+            }
+            else
+            {
+                ViewBag.TierPrice = tier.AdditionalPrice;
+            }
 
             ViewBag.TotalPrice = totalPrice;
 
 
             return View(model);
         }
-
 
         // Customer: Submit order
         [Authorize(Roles = "Customer")]
@@ -177,22 +272,16 @@ namespace CakeStudio.Controllers
             int? customerId = GetCurrentUserId();
 
             if (!customerId.HasValue)
-                return Challenge();
+                return Challenge(); //gi login page //ask the authentication system to authenticate the user //uses existing authentication configuration //configured LoginPath, ASP.NET Core knows where to redirect when an authentication challenge occurs.[program.cs]
 
-            if (model.RequiredDate.HasValue &&
-                model.RequiredDate.Value.Date < DateTime.Today)
+            if (model.RequiredDate.HasValue && model.RequiredDate.Value.Date < DateTime.Today)
             {
-                ModelState.AddModelError(
-                    nameof(model.RequiredDate),
-                    "Required date cannot be in the past.");
+                ModelState.AddModelError(nameof(model.RequiredDate), "Required date cannot be in the past.");
             }
 
-            if (model.CollectionMethod == "Delivery" &&
-                string.IsNullOrWhiteSpace(model.DeliveryAddress))
+            if (model.CollectionMethod == "Delivery" && string.IsNullOrWhiteSpace(model.DeliveryAddress))
             {
-                ModelState.AddModelError(
-                    nameof(model.DeliveryAddress),
-                    "Delivery address is required.");
+                ModelState.AddModelError( nameof(model.DeliveryAddress),"Delivery address is required.");
             }
 
             if (!ModelState.IsValid)
@@ -203,29 +292,24 @@ namespace CakeStudio.Controllers
 
             try
             {
-                int orderId = _orderService.Create(
-                    customerId.Value, model);
+                int orderId = _orderService.Create(customerId.Value, model);
 
-                TempData["SuccessMessage"] =
-                    "Order placed successfully!";
+                TempData["SuccessMessage"] = "Order placed successfully!";
 
-                return RedirectToAction(
-                    nameof(Details),
-                    new { id = orderId });
+                return RedirectToAction(nameof(Details), new { id = orderId });
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException ex) 
             {
-                ModelState.AddModelError(
-                    string.Empty, ex.Message);
+                //hndle invlid orderr info // throw dalam orderservice create 
+                ModelState.AddModelError(string.Empty, ex.Message);
 
+                //Restores the cake information and displays the order form again
                 LoadCakeInfo(model);
                 return View(model);
             }
             catch (Exception)
             {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Unable to place order. Please try again.");
+                ModelState.AddModelError(string.Empty,"Unable to place order. Please try again.");
 
                 LoadCakeInfo(model);
                 return View(model);
@@ -247,7 +331,6 @@ namespace CakeStudio.Controllers
 
             return View(orders);
         }
-
 
 
         [Authorize(Roles = "Customer,Baker")]
@@ -281,8 +364,6 @@ namespace CakeStudio.Controllers
             return View(model);
         }
 
-
-
         // Baker: All orders
         [Authorize(Roles = "Baker")]
         [HttpGet]
@@ -297,8 +378,7 @@ namespace CakeStudio.Controllers
         [Authorize(Roles = "Baker")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateStatus(
-            int orderId, string status)
+        public IActionResult UpdateStatus(int orderId, string status)
         {
             int? bakerId = GetCurrentUserId();
 

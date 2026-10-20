@@ -33,54 +33,6 @@ namespace CakeStudio.Services
             return session.Get<Order>(id);
         }
 
-
-
-
-        public OrderDetailsViewModel? GetOrderDetails(int id)
-        {
-            using var session = _nhibernateHelper.OpenSession();
-
-            Order orderAlias = null!;
-            Cake cakeAlias = null!;
-            CakeSize sizeAlias = null!;
-            CakeFlavour flavourAlias = null!;
-            CakeTier tierAlias = null!;
-
-            var order = session.QueryOver<Order>(() => orderAlias)
-
-                .Left.JoinAlias(
-                    () => orderAlias.Cake,
-                    () => cakeAlias)
-
-                .Left.JoinAlias(
-                    () => orderAlias.Size,
-                    () => sizeAlias)
-
-                .Left.JoinAlias(
-                    () => orderAlias.Flavour,
-                    () => flavourAlias)
-
-                .Left.JoinAlias(
-                    () => orderAlias.Tier,
-                    () => tierAlias)
-
-                .Where(() => orderAlias.OrderId == id)
-
-                .SingleOrDefault();
-
-            if (order == null)
-                return null;
-
-            return new OrderDetailsViewModel
-            {
-                Order = order,
-                CakeName = order.Cake?.CakeName ?? "Unknown Cake",
-                FlavourName = order.Flavour?.FlavourName ?? "-",
-                SizeName = order.Size?.SizeName ?? "-",
-                TierName = order.Tier?.TierName ?? "-"
-            };
-        }
-
         public List<Order> GetOrdersByCustomer(int customerId)
         {
             using var session = _nhibernateHelper.OpenSession();
@@ -269,10 +221,57 @@ namespace CakeStudio.Services
             }
         }
 
-        public void UpdateStatus(
-            int orderId,
-            string status,
-            int bakerId)
+        public OrderDetailsViewModel? GetOrderDetails(int id)
+        {
+            using var session = _nhibernateHelper.OpenSession();
+
+            Order o = null!;                                                                      //null , compiler tak warn
+            Cake c = null!;
+            CakeSize s = null!;
+            CakeFlavour f = null!;
+            CakeTier t = null!;
+
+            var order = session.QueryOver<Order>(() => o)
+            // SELECT o. *
+            // FROM Order o
+
+            //LEFT JOIN Cake c
+            //ON o.CakeId = c.CakeId
+            .Left.JoinAlias(
+                () => o.Cake,
+                () => c)
+
+            .Left.JoinAlias(
+                () => o.Size,
+                () => s)
+
+            .Left.JoinAlias(
+                () => o.Flavour,
+                () => f)
+
+            .Left.JoinAlias(
+                () => o.Tier,
+                () => t)
+
+            //WHERE o.OrderId = id;
+            .Where(() => o.OrderId == id)
+
+            .SingleOrDefault();
+
+            if (order == null)
+                return null;
+
+            return new OrderDetailsViewModel
+            {
+                Order = order,
+                CakeName = order.Cake?.CakeName ?? "Unknown Cake",
+                FlavourName = order.Flavour?.FlavourName ?? "-",
+                SizeName = order.Size?.SizeName ?? "-",
+                TierName = order.Tier?.TierName ?? "-"
+            };
+        }
+
+        public void UpdateStatus(int orderId,string status,int bakerId)
         {
 
             using var session = _nhibernateHelper.OpenSession();

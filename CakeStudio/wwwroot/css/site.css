@@ -138,11 +138,11 @@ body {
         border-radius: 8px;
     }
 
-    /* Action buttons */
     .cake-table td:last-child .btn {
-        display: block;
-        width: 100%;
-        margin-bottom: 5px;
+        display: inline-flex;
+        width: 38px;
+        height: 38px;
+        margin: 0 4px 0 0;
     }
 
 /* Baker Cake Management - Mobile */
@@ -467,3 +467,384 @@ body {
     align-items: center;
     margin-bottom: 24px;
 }
+
+/*Manageorderbaker*/
+
+/* ==========================================
+   BAKER - MANAGE ORDERS
+========================================== */
+
+.manage-orders-page {
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Header */
+
+.manage-orders-header {
+    margin-bottom: 28px;
+}
+
+    .manage-orders-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #252b37;
+        margin-bottom: 6px;
+    }
+
+    .manage-orders-header p {
+        color: #89909c;
+        font-size: 14px;
+        margin: 0;
+    }
+
+/* Summary Cards */
+
+.order-summary-card {
+    background: #ffffff;
+    border: 1px solid #edf0f3;
+    border-radius: 12px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-height: 110px;
+}
+
+.summary-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    flex-shrink: 0;
+}
+
+.icon-total {
+    background: #edf3ff;
+    color: #4978d4;
+}
+
+.icon-preparing {
+    background: #fff3e4;
+    color: #e29a34;
+}
+
+.icon-ready {
+    background: #f0ebff;
+    color: #8965cc;
+}
+
+.icon-completed {
+    background: #e7f6ee;
+    color: #279e67;
+}
+
+.order-summary-card p {
+    font-size: 13px;
+    color: #89909c;
+    margin-bottom: 6px;
+}
+
+.order-summary-card h3 {
+    font-size: 27px;
+    font-weight: 700;
+    color: #252b37;
+    margin: 0;
+}
+
+/* Main Orders Card */
+
+.manage-orders-card {
+    background: #ffffff;
+    border: 1px solid #edf0f3;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.orders-card-header {
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+    .orders-card-header h5 {
+        font-size: 17px;
+        font-weight: 650;
+        margin-bottom: 5px;
+        color: #252b37;
+    }
+
+    .orders-card-header p {
+        font-size: 13px;
+        color: #89909c;
+        margin: 0;
+    }
+
+/* Search and Filters */
+
+.orders-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+
+/* Table */
+
+.orders-table {
+    width: 100%;
+    vertical-align: middle;
+    font-size: 16px;
+}
+
+    .orders-table thead th {
+        background: #ffffff;
+        color: #212529;
+        font-size: 16px;
+        font-weight: 600;
+        padding: 16px 18px;
+        white-space: nowrap;
+    }
+
+    .orders-table tbody td {
+        padding: 17px 18px;
+        border-bottom: 1px solid #f0f1f4;
+        color: #4b5563;
+    }
+
+    .orders-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .orders-table tbody tr:hover td {
+        background: #fafbfd;
+    }
+
+.order-id {
+    font-weight: 600;
+    color: #4878bc;
+}
+
+.customer-name {
+    font-weight: 600;
+    color: #303744;
+}
+
+.order-price {
+    color: #303744;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Status */
+
+.orders-table .order-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 13px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* Action Buttons */
+
+.order-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.order-details-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background: #f4f0ff;
+    border: 1px solid #e8ddff;
+    border-radius: 6px;
+    color: #7455b5;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+    .order-details-btn:hover {
+        background: #e9dfff;
+        color: #60449e;
+    }
+
+
+.order-update-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+    .order-update-form .form-select {
+        width: 160px;
+        min-width: 160px;
+        font-size: 14px;
+        border-color: #e8ddff;
+        border-radius: 6px;
+        padding: 8px 12px;
+    }
+
+.order-update-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 6px;
+    background: #d9f5e9;
+    color: #277a56;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+    .order-update-btn:hover {
+        background: #c4ecd9;
+    }
+
+    .order-update-btn:hover {
+        background: #1e724e;
+    }
+
+/* Footer */
+
+.orders-table-footer {
+    padding: 17px 24px;
+    border-top: 1px solid #edf0f3;
+    color: #89909c;
+    font-size: 12px;
+}
+
+/* Empty State */
+
+.orders-empty {
+    text-align: center;
+    padding: 65px 20px;
+}
+
+    .orders-empty i {
+        font-size: 36px;
+        color: #bac3cf;
+    }
+
+    .orders-empty h5 {
+        margin-top: 15px;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .orders-empty p {
+        color: #89909c;
+        font-size: 13px;
+    }
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .orders-card-header {
+        align-items: stretch;
+    }
+
+    .orders-table {
+        min-width: 950px;
+    }
+
+
+}
+/* Baker Manage Orders - Table Spacing */
+
+.manage-orders-card .table-responsive {
+    padding: 0 24px 20px;
+}
+
+.manage-orders-card .orders-table {
+    width: 100%;
+}
+
+/* Baker Cakes and Cake Options - Pastel Actions */
+
+.cake-table .btn-warning,
+#cakeOptionsTabContent .btn-warning {
+    background: #fff1cc;
+    border-color: #fff1cc;
+    color: #987120;
+}
+
+    .cake-table .btn-warning:hover,
+    #cakeOptionsTabContent .btn-warning:hover {
+        background: #ffe6a3;
+        border-color: #ffe6a3;
+        color: #805c12;
+    }
+
+.cake-table .btn-danger,
+#cakeOptionsTabContent .btn-danger {
+    background: #ffdddd;
+    border-color: #ffdddd;
+    color: #b63b38;
+}
+
+    .cake-table .btn-danger:hover,
+    #cakeOptionsTabContent .btn-danger:hover {
+        background: #ffcaca;
+        border-color: #ffcaca;
+        color: #a52e2b;
+    }
+.cake-table .btn,
+#cakeOptionsTabContent .btn-sm {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Baker Edit and Delete Icon Buttons */
+
+.btn-edit-icon,
+.btn-delete-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 8px;
+    font-size: 16px;
+    border: none;
+}
+
+.btn-edit-icon {
+    background-color: #fff1cc;
+    color: #987120;
+}
+
+    .btn-edit-icon:hover {
+        background-color: #ffe6a3;
+        color: #805c12;
+    }
+
+.btn-delete-icon {
+    background-color: #ffdddd;
+    color: #b63b38;
+}
+
+    .btn-delete-icon:hover {
+        background-color: #ffcaca;
+        color: #a52e2b;
+    }

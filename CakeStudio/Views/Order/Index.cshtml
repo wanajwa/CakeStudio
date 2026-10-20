@@ -2,11 +2,24 @@
 
 @{
     ViewData["Title"] = "Manage Orders";
+
+    var orders = Model ?? new List<CakeStudio.Models.Order>();
+
+    var totalOrders = orders.Count;
+    var preparingOrders = orders.Count(o => o.OrderStatus == "Preparing");
+    var readyOrders = orders.Count(o => o.OrderStatus == "Ready");
+    var completedOrders = orders.Count(o => o.OrderStatus == "Completed");
 }
 
-<div class="container mt-4 mb-5">
+<div class="container-fluid manage-orders-page mt-4 mb-5">
 
-    <h2 class="mb-4">Manage Customer Orders</h2>
+    <!-- Page Header -->
+    <div class="manage-orders-header">
+        <div>
+            <h2>Manage Orders</h2>
+            <p>View and manage customer cake orders.</p>
+        </div>
+    </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
@@ -22,109 +35,223 @@
         </div>
     }
 
-    @if (!Model.Any())
-    {
-        <div class="alert alert-info">
-            No orders found.
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-6 col-xl-3">
+            <div class="order-summary-card">
+                <div class="summary-icon icon-total">
+                    <i class="bi bi-bag"></i>
+                </div>
+                <div>
+                    <p>Total Orders</p>
+                    <h3>@totalOrders</h3>
+                </div>
+            </div>
         </div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>No.</th>
-                        <th>Customer Name</th>
-                        <th>Cake Name</th>
-                        <th>Required Date</th>
-                        <th>Total Price</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
 
-                <tbody>
-                    @for (int i = 0; i < Model.Count; i++)
-                    {
-                        var order = Model[i];
+        <div class="col-md-6 col-xl-3">
+            <div class="order-summary-card">
+                <div class="summary-icon icon-preparing">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div>
+                    <p>Preparing</p>
+                    <h3>@preparingOrders</h3>
+                </div>
+            </div>
+        </div>
 
+        <div class="col-md-6 col-xl-3">
+            <div class="order-summary-card">
+                <div class="summary-icon icon-ready">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div>
+                    <p>Ready for Pickup</p>
+                    <h3>@readyOrders</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="order-summary-card">
+                <div class="summary-icon icon-completed">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div>
+                    <p>Completed</p>
+                    <h3>@completedOrders</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Orders Card -->
+    <div class="manage-orders-card">
+
+        <div class="orders-card-header">
+            <div>
+                <h5>Customer Orders</h5>
+                <p>Manage and update order progress.</p>
+            </div>
+        </div>
+
+        @if (!orders.Any())
+        {
+            <div class="orders-empty">
+                <i class="bi bi-inbox"></i>
+                <h5>No orders found</h5>
+                <p>Customer orders will appear here.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle orders-table mb-0">
+
+                    <thead>
                         <tr>
-                            <td>@(i + 1)</td>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Cake</th>
+                            <th>Required Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
 
-                            <td>@(order.Customer?.Name ?? "-")</td>
-                            <td>@(order.Cake?.CakeName ?? "-")</td>
+                    <tbody>
 
-                            <td>
-                                @order.RequiredDate?.ToString("dd MMM yyyy")
-                            </td>
+                        @foreach (var order in orders)
+                        {
+                            string statusClass = order.OrderStatus switch
+                            {
+                                "Pending" => "status-pending",
+                                "Accepted" => "status-accepted",
+                                "Preparing" => "status-preparing",
+                                "Ready" => "status-ready",
+                                "Completed" => "status-completed",
+                                "Rejected" => "status-rejected",
+                                _ => "status-default"
+                            };
 
-                            <td>
-                                RM @order.TotalPrice.ToString("F2")
-                            </td>
+                            string[] nextStatuses = order.OrderStatus switch
+                            {
+                                "Pending" => new[] { "Accepted" },
+                                "Accepted" => new[] { "Preparing" },
+                                "Preparing" => new[] { "Ready" },
+                                "Ready" => new[] { "Completed" },
+                                _ => Array.Empty<string>()
+                            };
 
-                            <td>
-                                <span class="badge bg-secondary">
-                                    @order.OrderStatus
-                                </span>
-                            </td>
+                            <tr>
 
-                            <td>
-                                <a asp-action="Details"
-                                   asp-route-id="@order.OrderId"
-                                   class="btn btn-sm btn-outline-primary mb-2">
-                                    Details
-                                </a>
+                                <td>
+                                    <span class="order-id">
+                                        #@order.OrderId
+                                    </span>
+                                </td>
 
+                                <td>
+                                    <span class="customer-name">
+                                        @(order.Customer?.Name ?? "-")
+                                    </span>
+                                </td>
 
-                                @{
-                                    string[] nextStatuses = order.OrderStatus switch
-                                    {
-                                        "Pending" => new[] { "Accepted", "Rejected" },
-                                        "Accepted" => new[] { "Preparing" },
-                                        "Preparing" => new[] { "Ready" },
-                                        "Ready" => new[] { "Completed" },
-                                        _ => Array.Empty<string>()
-                                    };
-                                }
+                                <td>
+                                    @(order.Cake?.CakeName ?? "-")
+                                </td>
+
+                                <td>
+                                    @order.RequiredDate?.ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    <strong class="order-price">
+                                        RM @order.TotalPrice.ToString("F2")
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    <span class="order-status @statusClass">
+                                        @(order.OrderStatus == "Ready"
+                                                                        ? "Ready for Pickup"
+                                                                        : order.OrderStatus)
+                            </span>
+                        </td>
+
+                                <td>
+                                    <div class="order-actions">
+
+                                        <a asp-controller="Order"
+                                           asp-action="Details"
+                                           asp-route-id="@order.OrderId"
+                                           class="order-details-btn">
+                                            Details
+                                        </a>
 
                                 @if (nextStatuses.Length > 0)
-                                {
-                                    <form asp-controller="Order"
-                                          asp-action="UpdateStatus"
-                                          method="post">
+                                        {
+                                            <form asp-controller="Order"
+                                                  asp-action="UpdateStatus"
+                                                  method="post"
+                                                  class="order-update-form">
 
-                                        @Html.AntiForgeryToken()
+                                                @Html.AntiForgeryToken()
 
-                                        <input type="hidden"
-                                               name="orderId"
-                                               value="@order.OrderId" />
+                                                <input type="hidden"
+                                                       name="orderId"
+                                                       value="@order.OrderId" />
 
-                                        <select name="status"
-                                                class="form-select form-select-sm mb-2"
-                                                required>
+                                                <select name="status"
+                                                        class="form-select form-select-sm"
+                                                        aria-label="Update order #@order.OrderId status"
+                                                        required>
 
-                                            <option value="">Select Action</option>
+                                                    <option value="">
+                                                        Update Status
+                                                    </option>
 
-                                            @foreach (var status in nextStatuses)
-                                            {
-                                                <option value="@status">
-                                                    @status
-                                                </option>
-                                            }
-                                        </select>
+                                                    @foreach (var status in nextStatuses)
+                                                    {
+                                                        <option value="@status">
+                                                            @(status == "Ready"
+                                                                                                        ? "Ready for Pickup"
+                                                                                                        : status)
+                                        </option>
+                                                                                }
 
-                                        <button type="submit"
-                                                class="btn btn-sm btn-success">
-                                            Update
-                                        </button>
-                                    </form>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
+                                                </select>
+
+                                                <button type="submit"
+                                                        class="order-update-btn"
+                                                        title="Save status"
+                                                        aria-label="Save order #@order.OrderId status">
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+
+                                            </form>
+                                        }
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="orders-table-footer">
+                Total: @orders.Count orders
+            </div>
+
+            
+        }
+
+    </div>
 </div>

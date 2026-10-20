@@ -70,15 +70,19 @@
                     <a asp-controller="Cake"
                        asp-action="Edit"
                        asp-route-id="@cake.CakeId"
-                       class="btn btn-warning">
-                        Edit
+                           class="btn btn-edit-icon"
+                           title="Edit cake"
+                           aria-label="Edit cake">
+                            <i class="bi bi-pencil"></i>
                     </a>
 
                     <a asp-controller="Cake"
                        asp-action="Delete"
                        asp-route-id="@cake.CakeId"
-                       class="btn btn-danger">
-                        Delete
+                           class="btn btn-delete-icon"
+                           title="Delete cake"
+                           aria-label="Delete cake">
+                            <i class="bi bi-trash"></i>
                     </a>
                 </td>
             </tr>

@@ -41,7 +41,8 @@ namespace CakeStudio.Services
             using var session = _nhibernateHelper.OpenSession();
 
             cakeFlavour.FlavourName = CultureInfo.CurrentCulture.TextInfo
-    .ToTitleCase(cakeFlavour.FlavourName.Trim().ToLower());
+                .ToTitleCase(cakeFlavour.FlavourName.Trim().ToLower());
+
             // Check whether the flavour already exists
             var existingFlavour = session.QueryOver<CakeFlavour>()
                 .Where(x => x.FlavourName == cakeFlavour.FlavourName)
@@ -75,7 +76,7 @@ namespace CakeStudio.Services
         {
             using var session = _nhibernateHelper.OpenSession();
             cakeFlavour.FlavourName = CultureInfo.CurrentCulture.TextInfo
-    .ToTitleCase(cakeFlavour.FlavourName.Trim().ToLower());
+                .ToTitleCase(cakeFlavour.FlavourName.Trim().ToLower());
             var existingFlavour = session.QueryOver<CakeFlavour>()
                 .Where(x => x.FlavourName == cakeFlavour.FlavourName
                 && x.FlavourId != cakeFlavour.FlavourId)

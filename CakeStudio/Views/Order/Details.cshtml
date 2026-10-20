@@ -34,40 +34,36 @@
 
     </div>
 
+    @{
+        string statusClass = Model.Order.OrderStatus switch
+        {
+            "Pending" => "status-pending",
+            "Accepted" => "status-accepted",
+            "Preparing" => "status-preparing",
+            "Ready" => "status-ready",
+            "Completed" => "status-completed",
+            "Rejected" => "status-rejected",
+            _ => "status-default"
+        };
+    }
 
+    <div class="order-details-header">
 
-            @{
-                string statusClass = Model.Order.OrderStatus switch
-                {
-                    "Pending" => "status-pending",
-                    "Accepted" => "status-accepted",
-                    "Preparing" => "status-preparing",
-                    "Ready" => "status-ready",
-                    "Completed" => "status-completed",
-                    "Rejected" => "status-rejected",
-                    _ => "status-default"
-                };
-            }
-
-            <div class="order-details-header">
-
-                <div>
+        <div>
             <h3 class="mb-2">
                 Order Details
             </h3>
 
-                    <p class="text-muted mb-0">
-                        Placed on @Model.Order.CreatedAt.ToString("dd MMM yyyy")
-                    </p>
-                </div>
+            <p class="text-muted mb-0">
+                Placed on @Model.Order.CreatedAt.ToString("dd MMM yyyy")
+            </p>
+        </div>
 
-                <span class="order-status @statusClass">
-                    @Model.Order.OrderStatus
-                </span>
+        <span class="order-status @statusClass">
+            @Model.Order.OrderStatus
+        </span>
 
-            </div>
-
-           
+    </div>
 
     <div class="card order-details-card">
         <div class="card-body p-4">

@@ -157,18 +157,22 @@
                                     <td>
                                         <!-- Edit Button - Yellow -->
                                         <button type="button"
-                                                class="btn btn-sm btn-warning"
+                                                class="btn btn-edit-icon"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#editSizeModal-@size.SizeId">
-                                            Edit
+                                                data-bs-target="#editSizeModal-@size.SizeId"
+                                                title="Edit Size"
+                                                aria-label="Edit Size">
+                                            <i class="bi bi-pencil"></i>
                                         </button>
 
                                         <!-- Delete Button - Red -->
                                         <button type="button"
-                                                class="btn btn-sm btn-danger"
+                                                class="btn btn-delete-icon"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#deleteSizeModal-@size.SizeId">
-                                            Delete
+                                                data-bs-target="#deleteSizeModal-@size.SizeId"
+                                                title="Delete Size"
+                                                aria-label="Delete Size">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
