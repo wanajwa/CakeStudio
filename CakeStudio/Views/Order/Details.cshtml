@@ -13,20 +13,74 @@
         </div>
     }
 
-    <div class="card shadow-sm">
+    <div class="order-details-footer">
+
+        @if (User.IsInRole("Customer"))
+        {
+            <a asp-action="MyOrders"
+               class="order-back-btn">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to My Orders
+            </a>
+        }
+        else if (User.IsInRole("Baker"))
+        {
+            <a asp-action="Index"
+               class="order-back-btn">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Orders
+            </a>
+        }
+
+    </div>
+
+
+
+            @{
+                string statusClass = Model.Order.OrderStatus switch
+                {
+                    "Pending" => "status-pending",
+                    "Accepted" => "status-accepted",
+                    "Preparing" => "status-preparing",
+                    "Ready" => "status-ready",
+                    "Completed" => "status-completed",
+                    "Rejected" => "status-rejected",
+                    _ => "status-default"
+                };
+            }
+
+            <div class="order-details-header">
+
+                <div>
+            <h3 class="mb-2">
+                Order Details
+            </h3>
+
+                    <p class="text-muted mb-0">
+                        Placed on @Model.Order.CreatedAt.ToString("dd MMM yyyy")
+                    </p>
+                </div>
+
+                <span class="order-status @statusClass">
+                    @Model.Order.OrderStatus
+                </span>
+
+            </div>
+
+           
+
+    <div class="card order-details-card">
         <div class="card-body p-4">
 
-            <h3>Order #@Model.Order.OrderId</h3>
 
-            <span class="badge bg-primary mb-3">
-                @Model.Order.OrderStatus
-            </span>
+            <div class="order-info-section">
 
-            <hr />
+                <h5 class="order-section-title">
+                    <i class="bi bi-receipt me-2"></i>
+                    Order Information
+                </h5>
 
-            <h5>Order Information</h5>
-
-            <dl class="row">
+                <dl class="row order-info-list">
 
                 <dt class="col-sm-4">Order Date</dt>
                 <dd class="col-sm-8">
@@ -44,33 +98,6 @@
                     @Model.Order.RequiredDate?.ToString("hh:mm tt")
                 </dd>
 
-
-
-                <!-- Cake Name -->
-                <dt class="col-sm-4">Cake Name</dt>
-                <dd class="col-sm-8">
-                    @Model.CakeName
-                </dd>
-
-                <!-- Cake Flavour -->
-                <dt class="col-sm-4">Cake Flavour</dt>
-                <dd class="col-sm-8">
-                    @Model.FlavourName
-                </dd>
-
-                <!-- Cake Size -->
-                <dt class="col-sm-4">Cake Size</dt>
-                <dd class="col-sm-8">
-                    @Model.SizeName
-                </dd>
-
-                <!-- Cake Tier -->
-                <dt class="col-sm-4">Cake Tier</dt>
-                <dd class="col-sm-8">
-                    @Model.TierName
-                </dd>
-
-
                 <dt class="col-sm-4">Collection Method</dt>
                 <dd class="col-sm-8">
                     @Model.Order.CollectionMethod
@@ -84,39 +111,67 @@
                     </dd>
                 }
 
-                <dt class="col-sm-4">Cake Message</dt>
-                <dd class="col-sm-8">
-                    @(Model.Order.MessageOnCakes ?? "-")
-                </dd>
-
-            </dl>
-
-            <hr />
-
-            <div class="d-flex justify-content-between">
-                <h5>Total Price</h5>
-
-                <h5 class="text-primary">
-                    RM @Model.Order.TotalPrice.ToString("F2")
-                </h5>
+                </dl>
             </div>
 
-            <hr />
+            <!-- Order Items Section -->
+            <div class="order-items-section">
 
-            @if (User.IsInRole("Customer"))
-            {
-                <a asp-action="MyOrders"
-                   class="btn btn-outline-secondary">
-                    Back to My Orders
-                </a>
-            }
-            else if (User.IsInRole("Baker"))
-            {
-                <a asp-action="Index"
-                   class="btn btn-outline-secondary">
-                    Back to Orders
-                </a>
-            }
+                <h5 class="order-section-title">
+                    <i class="bi bi-cake2 me-2"></i>
+                    Order Items
+                </h5>
+
+                <div class="order-item-name">
+                    @Model.CakeName
+                </div>
+
+                <div class="order-item-options">
+
+                    <div>
+                        <span>Flavour</span>
+                        <strong>@Model.FlavourName</strong>
+                    </div>
+
+                    <div>
+                        <span>Size</span>
+                        <strong>@Model.SizeName</strong>
+                    </div>
+
+                    <div>
+                        <span>Tier</span>
+                        <strong>@Model.TierName</strong>
+                    </div>
+                    </div>
+
+                    <div class="order-cake-message">
+                        <span>Cake Message</span>
+                        <p class="mb-0">
+                            @(string.IsNullOrWhiteSpace(Model.Order.MessageOnCakes)
+                                                        ? "-"
+                                                        : Model.Order.MessageOnCakes)
+                        </p>
+                    </div>
+
+                
+
+            </div>
+
+            <!-- Total Price Section -->
+            <div class="order-total-section">
+
+                <div>
+                    <h5 class="mb-1">Total Price</h5>
+                    <small>Final order amount</small>
+                </div>
+
+                <h4 class="order-total-amount mb-0">
+                    RM @Model.Order.TotalPrice.ToString("F2")
+                </h4>
+
+            </div>
+
+          
 
         </div>
     </div>
