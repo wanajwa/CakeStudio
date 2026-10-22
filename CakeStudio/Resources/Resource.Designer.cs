@@ -97,6 +97,69 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cake flavour added successfully..
+        /// </summary>
+        public static string CakeFlavourAddedSuccess {
+            get {
+                return ResourceManager.GetString("CakeFlavourAddedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to add cake flavour. Please try again..
+        /// </summary>
+        public static string CakeFlavourAddFailed {
+            get {
+                return ResourceManager.GetString("CakeFlavourAddFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cake flavour deleted successfully!.
+        /// </summary>
+        public static string CakeFlavourDeletedSuccess {
+            get {
+                return ResourceManager.GetString("CakeFlavourDeletedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to delete cake flavour. It may already be used in an order..
+        /// </summary>
+        public static string CakeFlavourDeleteFailed {
+            get {
+                return ResourceManager.GetString("CakeFlavourDeleteFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A cake flavour is required.
+        /// </summary>
+        public static string CakeFlavourRequired {
+            get {
+                return ResourceManager.GetString("CakeFlavourRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cake flavour updated successfully!.
+        /// </summary>
+        public static string CakeFlavourUpdatedSuccess {
+            get {
+                return ResourceManager.GetString("CakeFlavourUpdatedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to update cake flavour. Please try again..
+        /// </summary>
+        public static string CakeFlavourUpdateFailed {
+            get {
+                return ResourceManager.GetString("CakeFlavourUpdateFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please select cake size, flavour and tier.
         /// </summary>
         public static string CakeOptionsRequired {
@@ -111,6 +174,114 @@ namespace CakeStudio.Resources {
         public static string CakeRequired {
             get {
                 return ResourceManager.GetString("CakeRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cake size added successfully!.
+        /// </summary>
+        public static string CakeSizeAddedSuccess {
+            get {
+                return ResourceManager.GetString("CakeSizeAddedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to add cake size. Please try again..
+        /// </summary>
+        public static string CakeSizeAddFailed {
+            get {
+                return ResourceManager.GetString("CakeSizeAddFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cake size deleted successfully..
+        /// </summary>
+        public static string CakeSizeDeletedSuccess {
+            get {
+                return ResourceManager.GetString("CakeSizeDeletedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to delete cake size. It may already be used in an order..
+        /// </summary>
+        public static string CakeSizeDeleteFailed {
+            get {
+                return ResourceManager.GetString("CakeSizeDeleteFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cake size updated successfully!.
+        /// </summary>
+        public static string CakeSizeUpdatedSuccess {
+            get {
+                return ResourceManager.GetString("CakeSizeUpdatedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to update cake size. Please try again.
+        /// </summary>
+        public static string CakeSizeUpdateFailed {
+            get {
+                return ResourceManager.GetString("CakeSizeUpdateFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cake tier added successfully!.
+        /// </summary>
+        public static string CakeTierAddedSuccess {
+            get {
+                return ResourceManager.GetString("CakeTierAddedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to add cake tier. Please try again..
+        /// </summary>
+        public static string CakeTierAddFailed {
+            get {
+                return ResourceManager.GetString("CakeTierAddFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cake tier deleted successfully!.
+        /// </summary>
+        public static string CakeTierDeletedSuccess {
+            get {
+                return ResourceManager.GetString("CakeTierDeletedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to delete cake tier. It may already be used in an order..
+        /// </summary>
+        public static string CakeTierDeleteFailed {
+            get {
+                return ResourceManager.GetString("CakeTierDeleteFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cake tier updated successfully!.
+        /// </summary>
+        public static string CakeTierUpdatedSuccess {
+            get {
+                return ResourceManager.GetString("CakeTierUpdatedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to update cake tier. Please try again..
+        /// </summary>
+        public static string CakeTierUpdateFailed {
+            get {
+                return ResourceManager.GetString("CakeTierUpdateFailed", resourceCulture);
             }
         }
         
@@ -147,6 +318,33 @@ namespace CakeStudio.Resources {
         public static string DeliveryAddressRequired {
             get {
                 return ResourceManager.GetString("DeliveryAddressRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This cake flavour already exists..
+        /// </summary>
+        public static string DuplicateCakeFlavour {
+            get {
+                return ResourceManager.GetString("DuplicateCakeFlavour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This cake size already exists..
+        /// </summary>
+        public static string DuplicateCakeSize {
+            get {
+                return ResourceManager.GetString("DuplicateCakeSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This cake tier already exists..
+        /// </summary>
+        public static string DuplicateCakeTier {
+            get {
+                return ResourceManager.GetString("DuplicateCakeTier", resourceCulture);
             }
         }
         
@@ -214,11 +412,47 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid cake flavour information. Please check the fields..
+        /// </summary>
+        public static string InvalidCakeFlavour {
+            get {
+                return ResourceManager.GetString("InvalidCakeFlavour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid cake options selected.
         /// </summary>
         public static string InvalidCakeOptions {
             get {
                 return ResourceManager.GetString("InvalidCakeOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid cake size information. Please check the fields..
+        /// </summary>
+        public static string InvalidCakeSize {
+            get {
+                return ResourceManager.GetString("InvalidCakeSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter a valid cake size between 1 and 100 inches.
+        /// </summary>
+        public static string InvalidCakeSizeValue {
+            get {
+                return ResourceManager.GetString("InvalidCakeSizeValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid cake tier information. Please check the fields..
+        /// </summary>
+        public static string InvalidCakeTier {
+            get {
+                return ResourceManager.GetString("InvalidCakeTier", resourceCulture);
             }
         }
         

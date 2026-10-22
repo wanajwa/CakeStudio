@@ -1,6 +1,7 @@
 ﻿using CakeStudio.Data;
 using CakeStudio.Models;
 using CakeStudio.Services.Interfaces;
+using CakeStudio.Resources;
 
 namespace CakeStudio.Services
 {
@@ -40,9 +41,7 @@ namespace CakeStudio.Services
 
             if (existingTier != null)
             {
-                throw new InvalidOperationException(
-                    "This cake tier already exists."
-                );
+                throw new InvalidOperationException(Resource.DuplicateCakeTier );
             }
             using var transaction = session.BeginTransaction();
             try
@@ -69,9 +68,7 @@ namespace CakeStudio.Services
 
             if (existingTier != null)
             {
-                throw new InvalidOperationException(
-                    "This cake tier already exists."
-                );
+                throw new InvalidOperationException(Resource.DuplicateCakeTier );
             }
             using var transaction = session.BeginTransaction();
 

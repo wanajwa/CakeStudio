@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using CakeStudio.Models;
 using CakeStudio.Services.Interfaces;
 using CakeStudio.ViewModels;
+using CakeStudio.Resources;
 
 namespace CakeStudio.Controllers
 {
@@ -20,7 +21,6 @@ namespace CakeStudio.Controllers
             _cakeTierService = cakeTierService;
         }
 
-        // READ: Display Cake Options page
         // READ: Display Cake Sizes, Cake Flavours, and Cake Tiers  
         [HttpGet]
         public IActionResult Index()
@@ -45,7 +45,7 @@ namespace CakeStudio.Controllers
                 sizeValue.Value < 1 ||
                 sizeValue.Value > 100)
             {
-                TempData["ErrorMessage"] = "Please enter a valid cake size between 1 and 100 inches.";
+                TempData["ErrorMessage"] = Resource.InvalidCakeSizeValue;
 
                 return RedirectToAction(nameof(Index), new { tab = "sizes" });
             }
@@ -59,9 +59,7 @@ namespace CakeStudio.Controllers
             // Validate the completed CakeSize model
             if (!TryValidateModel(cakeSize))
             {
-                TempData["ErrorMessage"] =
-                    "Invalid cake size information. Please check the fields.";
-
+                TempData["ErrorMessage"] = Resource.InvalidCakeSize;
                 return RedirectToAction(nameof(Index), new { tab = "sizes" });
             }
 
@@ -69,24 +67,20 @@ namespace CakeStudio.Controllers
             {
                 _cakeSizeService.Create(cakeSize);
 
-                TempData["SuccessMessage"] =
-                    "Cake size added successfully.";
+                TempData["SuccessMessage"] = Resource.CakeSizeAddedSuccess;
             }
             catch (InvalidOperationException)
             {
-                TempData["ErrorMessage"] =
-                    "This cake size already exists.";
+                TempData["ErrorMessage"] = Resource.DuplicateCakeSize;
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] =
-                    "Unable to add cake size. Please try again.";
+                TempData["ErrorMessage"] = Resource.CakeSizeAddFailed;
             }
 
             return RedirectToAction(nameof(Index), new { tab = "sizes" });
         }
 
-        // UPDATE: Save changes to an existing size
         // UPDATE: Save changes to an existing cake size
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -97,9 +91,7 @@ namespace CakeStudio.Controllers
                 sizeValue.Value < 1 ||
                 sizeValue.Value > 100)
             {
-                TempData["ErrorMessage"] =
-                    "Please enter a valid cake size between 1 and 100 inches.";
-
+                TempData["ErrorMessage"] = Resource.InvalidCakeSizeValue;
                 return RedirectToAction(nameof(Index), new { tab = "sizes" });
             }
 
@@ -112,8 +104,7 @@ namespace CakeStudio.Controllers
             // Validate the completed CakeSize model
             if (!TryValidateModel(cakeSize))
             {
-                TempData["ErrorMessage"] =
-                    "Invalid cake size information. Please check the fields.";
+                TempData["ErrorMessage"] = Resource.InvalidCakeSize;
 
                 return RedirectToAction(nameof(Index), new { tab = "sizes" });
             }
@@ -131,18 +122,15 @@ namespace CakeStudio.Controllers
                 // Update cake size
                 _cakeSizeService.Update(cakeSize);
 
-                TempData["SuccessMessage"] =
-                    "Cake size updated successfully.";
+                TempData["SuccessMessage"] = Resource.CakeSizeUpdatedSuccess;
             }
             catch (InvalidOperationException)
             {
-                TempData["ErrorMessage"] =
-                    "This cake size already exists.";
+                TempData["ErrorMessage"] = Resource.DuplicateCakeSize;
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] =
-                    "Unable to update cake size. Please try again.";
+                TempData["ErrorMessage"] = Resource.CakeSizeUpdateFailed;
             }
 
             return RedirectToAction(nameof(Index), new { tab = "sizes" });
@@ -164,13 +152,11 @@ namespace CakeStudio.Controllers
 
                 _cakeSizeService.Delete(id);
 
-                TempData["SuccessMessage"] =
-                    "Cake size deleted successfully.";
+                TempData["SuccessMessage"] = Resource.CakeSizeDeletedSuccess;
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] =
-                    "Unable to delete cake size. It may already be used in an order.";
+                TempData["ErrorMessage"] = Resource.CakeSizeDeleteFailed;
             }
 
             return RedirectToAction(nameof(Index));
@@ -199,18 +185,15 @@ namespace CakeStudio.Controllers
             {
                 _cakeFlavourService.Create(cakeFlavour);
 
-                TempData["SuccessMessage"] =
-                    "Cake flavour added successfully.";
+                TempData["SuccessMessage"] = Resource.CakeFlavourAddedSuccess;
             }
             catch (InvalidOperationException ex)
             {
-                TempData["ErrorMessage"] =
-                    "This cake flavour already exists.";
+                TempData["ErrorMessage"] = Resource.DuplicateCakeFlavour;
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] =
-                    "Unable to add cake flavour. Please try again.";
+                TempData["ErrorMessage"] = Resource.CakeFlavourAddFailed;
             }
 
             return RedirectToAction(nameof(Index), new { tab = "flavours" });
@@ -223,8 +206,7 @@ namespace CakeStudio.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] =
-                    "Invalid cake flavour information. Please check the fields.";
+                TempData["ErrorMessage"] = Resource.InvalidCakeFlavour;
 
                 return RedirectToAction(nameof(Index), new { tab = "flavours" });
             }
@@ -241,13 +223,15 @@ namespace CakeStudio.Controllers
 
                 _cakeFlavourService.Update(cakeFlavour);
 
-                TempData["SuccessMessage"] =
-                    "Cake flavour updated successfully.";
+                TempData["SuccessMessage"] = Resource.CakeFlavourUpdatedSuccess;
+            }
+            catch (InvalidOperationException)
+            {
+                TempData["ErrorMessage"] = Resource.DuplicateCakeFlavour;
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] =
-                    "Unable to update cake flavour. Please try again.";
+                TempData["ErrorMessage"] = Resource.CakeFlavourUpdateFailed;
             }
 
             return RedirectToAction(nameof(Index), new { tab = "flavours" });
@@ -269,13 +253,11 @@ namespace CakeStudio.Controllers
 
                 _cakeFlavourService.Delete(id);
 
-                TempData["SuccessMessage"] =
-                    "Cake flavour deleted successfully.";
+                TempData["SuccessMessage"] = Resource.CakeFlavourDeletedSuccess;
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] =
-                    "Unable to delete cake flavour. It may already be used in an order.";
+                TempData["ErrorMessage"] = Resource.CakeFlavourDeleteFailed;
             }
 
             return RedirectToAction(nameof(Index), new { tab = "flavours" });
@@ -302,18 +284,15 @@ namespace CakeStudio.Controllers
             try
             {
                 _cakeTierService.Create(cakeTier);
-                TempData["SuccessMessage"] =
-                    "Cake tier added successfully.";
+                TempData["SuccessMessage"] = Resource.CakeTierAddedSuccess;
             }
             catch (InvalidOperationException ex)
             {
-                TempData["ErrorMessage"] =
-                    "This cake tier already exists.";
+                TempData["ErrorMessage"] = Resource.DuplicateCakeTier;
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] =
-                    "Unable to add cake tier. Please try again.";
+                TempData["ErrorMessage"] = Resource.CakeTierAddFailed;
             }
             return RedirectToAction(nameof(Index), new { tab = "tiers" });
         }
@@ -326,8 +305,7 @@ namespace CakeStudio.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] =
-                    "Invalid cake tier information. Please check the fields.";
+                TempData["ErrorMessage"] = Resource.InvalidCakeTier;
                 return RedirectToAction(nameof(Index), new { tab = "tiers" });
             }
             try
@@ -338,13 +316,15 @@ namespace CakeStudio.Controllers
                     return NotFound();
                 }
                 _cakeTierService.Update(cakeTier);
-                TempData["SuccessMessage"] =
-                    "Cake tier updated successfully.";
+                TempData["SuccessMessage"] = Resource.CakeTierUpdatedSuccess;
+            }
+            catch (InvalidOperationException)
+            {
+                TempData["ErrorMessage"] = Resource.DuplicateCakeTier;
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] =
-                    "Unable to update cake tier. Please try again.";
+                TempData["ErrorMessage"] = Resource.CakeTierUpdateFailed;
             }
             return RedirectToAction(nameof(Index), new { tab = "tiers" });
 
@@ -363,13 +343,11 @@ namespace CakeStudio.Controllers
                     return NotFound();
                 }
                 _cakeTierService.Delete(id);
-                TempData["SuccessMessage"] =
-                    "Cake tier deleted successfully.";
+                TempData["SuccessMessage"] = Resource.CakeTierDeletedSuccess;
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] =
-                    "Unable to delete cake tier. It may already be used in an order.";
+                TempData["ErrorMessage"] = Resource.CakeTierDeleteFailed;
             }
             return RedirectToAction(nameof(Index), new { tab = "tiers" });
         }

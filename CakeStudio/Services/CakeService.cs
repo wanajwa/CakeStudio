@@ -2,6 +2,7 @@
 using CakeStudio.Models;
 using NHibernate.Linq;
 using NHibernate;
+using CakeStudio.Resources;
 namespace CakeStudio.Services
 {
     public class CakeService : ICakeService
@@ -90,7 +91,7 @@ namespace CakeStudio.Services
             {
                 if (cake.Flavour == null)
                 {
-                    throw new ArgumentException("A cake flavour is required.");
+                    throw new ArgumentException(Resource.CakeFlavourRequired);
                 }
 
                 // Reload the flavour within this NHibernate session.
@@ -98,7 +99,7 @@ namespace CakeStudio.Services
 
                 if (flavour == null || !flavour.IsAvailable)
                 {
-                    throw new ArgumentException("The selected flavour is unavailable.");
+                    throw new ArgumentException(Resource.FlavourUnavailable);
                 }
 
                 cake.Flavour = flavour;
@@ -144,14 +145,14 @@ namespace CakeStudio.Services
                 }
                 if (cake.Flavour == null)
                 {
-                    throw new ArgumentException("A cake flavour is required.");
+                    throw new ArgumentException(Resource.CakeFlavourRequired);
                 }
 
                 var flavour = session.Get<CakeFlavour>(cake.Flavour.FlavourId);
 
                 if (flavour == null || !flavour.IsAvailable)
                 {
-                    throw new ArgumentException("The selected flavour is unavailable.");
+                    throw new ArgumentException(Resource.FlavourUnavailable);
                 }
 
                 existingCake.Flavour = flavour;

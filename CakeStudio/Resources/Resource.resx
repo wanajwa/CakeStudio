@@ -237,4 +237,82 @@
   <data name="InvalidOrderStatusTransition" xml:space="preserve">
     <value>Cannot change order status from 0 to 1</value>
   </data>
+  <data name="InvalidCakeSizeValue" xml:space="preserve">
+    <value>Please enter a valid cake size between 1 and 100 inches</value>
+  </data>
+  <data name="InvalidCakeSize" xml:space="preserve">
+    <value>Invalid cake size information. Please check the fields.</value>
+  </data>
+  <data name="CakeSizeAddedSuccess" xml:space="preserve">
+    <value>Cake size added successfully!</value>
+  </data>
+  <data name="DuplicateCakeSize" xml:space="preserve">
+    <value>This cake size already exists.</value>
+  </data>
+  <data name="CakeSizeAddFailed" xml:space="preserve">
+    <value>Unable to add cake size. Please try again.</value>
+  </data>
+  <data name="CakeSizeUpdatedSuccess" xml:space="preserve">
+    <value>Cake size updated successfully!</value>
+  </data>
+  <data name="CakeSizeUpdateFailed" xml:space="preserve">
+    <value>Unable to update cake size. Please try again</value>
+  </data>
+  <data name="CakeSizeDeletedSuccess" xml:space="preserve">
+    <value>Cake size deleted successfully.</value>
+  </data>
+  <data name="CakeSizeDeleteFailed" xml:space="preserve">
+    <value>Unable to delete cake size. It may already be used in an order.</value>
+  </data>
+  <data name="CakeFlavourAddedSuccess" xml:space="preserve">
+    <value>Cake flavour added successfully.</value>
+  </data>
+  <data name="DuplicateCakeFlavour" xml:space="preserve">
+    <value>This cake flavour already exists.</value>
+  </data>
+  <data name="CakeFlavourAddFailed" xml:space="preserve">
+    <value>Unable to add cake flavour. Please try again.</value>
+  </data>
+  <data name="InvalidCakeFlavour" xml:space="preserve">
+    <value>Invalid cake flavour information. Please check the fields.</value>
+  </data>
+  <data name="CakeFlavourUpdatedSuccess" xml:space="preserve">
+    <value>Cake flavour updated successfully!</value>
+  </data>
+  <data name="CakeFlavourUpdateFailed" xml:space="preserve">
+    <value>Unable to update cake flavour. Please try again.</value>
+  </data>
+  <data name="CakeFlavourDeletedSuccess" xml:space="preserve">
+    <value>Cake flavour deleted successfully!</value>
+  </data>
+  <data name="CakeFlavourDeleteFailed" xml:space="preserve">
+    <value>Unable to delete cake flavour. It may already be used in an order.</value>
+  </data>
+  <data name="CakeTierAddedSuccess" xml:space="preserve">
+    <value>Cake tier added successfully!</value>
+  </data>
+  <data name="DuplicateCakeTier" xml:space="preserve">
+    <value>This cake tier already exists.</value>
+  </data>
+  <data name="CakeTierAddFailed" xml:space="preserve">
+    <value>Unable to add cake tier. Please try again.</value>
+  </data>
+  <data name="InvalidCakeTier" xml:space="preserve">
+    <value>Invalid cake tier information. Please check the fields.</value>
+  </data>
+  <data name="CakeTierUpdatedSuccess" xml:space="preserve">
+    <value>Cake tier updated successfully!</value>
+  </data>
+  <data name="CakeTierUpdateFailed" xml:space="preserve">
+    <value>Unable to update cake tier. Please try again.</value>
+  </data>
+  <data name="CakeTierDeletedSuccess" xml:space="preserve">
+    <value>Cake tier deleted successfully!</value>
+  </data>
+  <data name="CakeTierDeleteFailed" xml:space="preserve">
+    <value>Unable to delete cake tier. It may already be used in an order.</value>
+  </data>
+  <data name="CakeFlavourRequired" xml:space="preserve">
+    <value>A cake flavour is required</value>
+  </data>
 </root>

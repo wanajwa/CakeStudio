@@ -1,6 +1,7 @@
 ﻿using CakeStudio.Data;
 using CakeStudio.Models;
 using CakeStudio.Services.Interfaces;
+using CakeStudio.Resources;
 
 namespace CakeStudio.Services
 {
@@ -46,9 +47,7 @@ namespace CakeStudio.Services
 
             if (existingSize != null)
             {
-                throw new InvalidOperationException(
-                    "This cake size already exists."
-                );
+                throw new InvalidOperationException(Resource.DuplicateCakeSize);
             }
             using var transaction = session.BeginTransaction();
 
@@ -78,9 +77,7 @@ namespace CakeStudio.Services
 
             if (existingSize != null)
             {
-                throw new InvalidOperationException(
-                    "This cake size already exists."
-                );
+                throw new InvalidOperationException(Resource.DuplicateCakeSize );
             }
             using var transaction = session.BeginTransaction();
 

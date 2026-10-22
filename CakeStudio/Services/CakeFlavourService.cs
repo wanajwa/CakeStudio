@@ -3,6 +3,7 @@ using CakeStudio.Data;
 using CakeStudio.Models;
 using CakeStudio.Services.Interfaces;
 using System.Globalization;
+using CakeStudio.Resources;
 namespace CakeStudio.Services
 {
     public class CakeFlavourService : ICakeFlavourService
@@ -50,9 +51,7 @@ namespace CakeStudio.Services
 
             if (existingFlavour != null)
             {
-                throw new InvalidOperationException(
-                    "This cake flavour already exists."
-                );
+                throw new InvalidOperationException(Resource.DuplicateCakeFlavour);
             }
 
             using var transaction = session.BeginTransaction();
@@ -84,9 +83,7 @@ namespace CakeStudio.Services
 
             if (existingFlavour != null)
             {
-                throw new InvalidOperationException(
-                    "This cake flavour already exists."
-                );
+                throw new InvalidOperationException( Resource.DuplicateCakeFlavour);
             }
             using var transaction = session.BeginTransaction();
 
