@@ -1,6 +1,7 @@
 ﻿using CakeStudio.Data;
 using CakeStudio.Models;
 using Microsoft.AspNetCore.Identity;
+using CakeStudio.Resources;
 
 namespace CakeStudio.Services
 {
@@ -31,7 +32,7 @@ namespace CakeStudio.Services
                 // Check whether user exists
                 if (user == null)
                 {
-                    serviceResponse.Message = "Invalid email or password.";
+                    serviceResponse.Message = Resource.InvalidLoginCredentials;
                     return serviceResponse;
                 }
 
@@ -45,7 +46,7 @@ namespace CakeStudio.Services
                 // Check whether password is correct
                 if (passwordResult == PasswordVerificationResult.Failed)
                 {
-                    serviceResponse.Message = "Invalid email or password.";
+                    serviceResponse.Message = Resource.InvalidLoginCredentials;
                     return serviceResponse;
                 }
 
@@ -57,7 +58,7 @@ namespace CakeStudio.Services
             {
                 System.Diagnostics.Debug.WriteLine(ex.ToString());
 
-                serviceResponse.Message = "An error occurred during login.";
+                serviceResponse.Message = Resource.LoginFailed;
             }
 
             return serviceResponse;
@@ -74,7 +75,7 @@ namespace CakeStudio.Services
                     string.IsNullOrWhiteSpace(user.Email) ||
                     string.IsNullOrWhiteSpace(password))
                 {
-                    serviceResponse.Message = "Please complete all required fields.";
+                    serviceResponse.Message = Resource.RequiredFieldMissing;
                     return serviceResponse;
                 }
 
@@ -87,7 +88,7 @@ namespace CakeStudio.Services
 
                 if (existingUser != null)
                 {
-                    serviceResponse.Message = "Email is already registered.";
+                    serviceResponse.Message = Resource.EmailAlreadyRegistered;
                     return serviceResponse;
                 }
 
@@ -96,7 +97,7 @@ namespace CakeStudio.Services
 
                 if (user is not Customer)
                 {
-                    serviceResponse.Message = "Invalid registration type.";
+                    serviceResponse.Message = Resource.InvalidRegistrationType;
                     return serviceResponse;
                 }
 
@@ -111,14 +112,14 @@ namespace CakeStudio.Services
 
                 // Registration successful
                 serviceResponse.Status = true;
-                serviceResponse.Message = "Customer registered successfully.";
+                serviceResponse.Message = Resource.CustomerRegisteredSuccess;
                 serviceResponse.Data = user.UserId;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.ToString());
 
-                serviceResponse.Message = "An error occurred during registration.";
+                serviceResponse.Message = Resource.RegistrationFailed;
             }
 
             return serviceResponse;

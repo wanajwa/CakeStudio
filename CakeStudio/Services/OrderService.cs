@@ -4,6 +4,7 @@ using CakeStudio.Models;
 using CakeStudio.ViewModels;
 using NHibernate.Linq;
 using CakeStudio.Constant;
+using CakeStudio.Resources;
 
 namespace CakeStudio.Services
 {
@@ -47,22 +48,20 @@ namespace CakeStudio.Services
         public int Create(int customerId, OrderViewModel model)
         {
             if (!model.CakeId.HasValue)
-                throw new ArgumentException("Please select a cake.");
+                throw new ArgumentException(Resource.CakeRequired);
 
             if (!model.SizeId.HasValue ||
                 !model.FlavourId.HasValue ||
                 !model.TierId.HasValue)
             {
-                throw new ArgumentException(
-                    "Please select cake size, flavour and tier.");
+                throw new ArgumentException(Resource.CakeOptionsRequired);
             }
 
 
             if (!model.RequiredDate.HasValue ||
                 !model.RequiredTime.HasValue)
             {
-                throw new ArgumentException(
-                    "Please select a required date and time.");
+                throw new ArgumentException(Resource.InvalidRequiredDateTime);
             }
 
             DateTime requiredDateTime = model.RequiredDate.Value.Date
@@ -70,8 +69,7 @@ namespace CakeStudio.Services
 
             if (requiredDateTime <= DateTime.Now)
             {
-                throw new ArgumentException(
-                    "Pickup or delivery date and time must be in the future.");
+                throw new ArgumentException(Resource.InvalidRequiredDateTime);
             }
 
 
@@ -80,14 +78,12 @@ namespace CakeStudio.Services
 
 
             if (method != "Pickup" && method != "Delivery")
-                throw new ArgumentException(
-                    "Invalid collection method.");
+                throw new ArgumentException(Resource.InvalidCollectionMethod);
 
             if (method == "Delivery" &&
                 string.IsNullOrWhiteSpace(model.DeliveryAddress))
             {
-                throw new ArgumentException(
-                    "Delivery address is required.");
+                throw new ArgumentException(Resource.DeliveryAddressRequired);
             }
 
             using var session = _nhibernateHelper.OpenSession();
@@ -101,16 +97,14 @@ namespace CakeStudio.Services
                 if (customer == null ||
                     customer.GetRoleName() != "Customer")
                 {
-                    throw new ArgumentException(
-                        "Invalid customer account.");
+                    throw new ArgumentException(Resource.InvalidCustomerAccount);
                 }
 
                 // Validate selected cake
                 var cake = session.Get<Cake>(model.CakeId.Value);
 
                 if (cake == null || !cake.IsAvailable)
-                    throw new ArgumentException(
-                        "Selected cake is unavailable.");
+                    throw new ArgumentException(Resource.CakeUnavailable);
 
                 decimal totalPrice = cake.BasePrice;
 
@@ -121,8 +115,7 @@ namespace CakeStudio.Services
                         model.SizeId.Value);
 
                     if (size == null || !size.IsAvailable)
-                        throw new ArgumentException(
-                            "Selected size is unavailable.");
+                        throw new ArgumentException(Resource.SizeUnavailable);
 
 
                     bool isDefaultSize = size.SizeName.Trim()
@@ -142,8 +135,7 @@ namespace CakeStudio.Services
                         model.FlavourId.Value);
 
                     if (flavour == null || !flavour.IsAvailable)
-                        throw new ArgumentException(
-                            "Selected flavour is unavailable.");
+                        throw new ArgumentException(Resource.FlavourUnavailable);
 
 
                     bool isDefaultFlavour =
@@ -163,8 +155,7 @@ namespace CakeStudio.Services
                         model.TierId.Value);
 
                     if (tier == null || !tier.IsAvailable)
-                        throw new ArgumentException(
-                            "Selected tier is unavailable.");
+                        throw new ArgumentException(Resource.TierUnavailable);
 
 
                     bool isDefaultTier = tier.TierName.Trim()
@@ -178,8 +169,7 @@ namespace CakeStudio.Services
                 }
 
                 if (totalPrice <= 0 || totalPrice > 100000)
-                    throw new ArgumentException(
-                        "Calculated order price is invalid.");
+                    throw new ArgumentException(Resource.InvalidOrderPrice);
 
                 // Create Order entity
                 var order = new Order
@@ -285,15 +275,13 @@ namespace CakeStudio.Services
                 if (baker == null ||
                     baker.GetRoleName() != "Baker")
                 {
-                    throw new UnauthorizedAccessException(
-                        "Invalid baker account.");
+                    throw new UnauthorizedAccessException(Resource.InvalidBakerAccount);
                 }
 
                 var order = session.Get<Order>(orderId);
 
                 if (order == null)
-                    throw new ArgumentException(
-                        "Order not found.");
+                    throw new ArgumentException(Resource.OrderNotFound);
 
                 var allowedTransitions = new Dictionary<string, string[]>
                 {
@@ -334,8 +322,7 @@ namespace CakeStudio.Services
                 if (!allowedTransitions.TryGetValue(
                     order.OrderStatus, out var allowedStatuses))
                 {
-                    throw new InvalidOperationException(
-                        "Unknown current order status.");
+                    throw new InvalidOperationException(Resource.UnknownOrderStatus);
                 }
 
 
@@ -343,7 +330,12 @@ namespace CakeStudio.Services
                 if (!allowedStatuses.Contains(status))
                 {
                     throw new InvalidOperationException(
-                        $"Cannot change order status from {order.OrderStatus} to {status}.");
+                        string.Format(
+                            Resource.InvalidOrderStatusTransition,
+                            order.OrderStatus,
+                            status
+                        )
+                     );
                 }
 
                 order.OrderStatus = status;

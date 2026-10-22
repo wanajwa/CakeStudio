@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using CakeStudio.ViewModels;
+using CakeStudio.Resources;
 
 namespace CakeStudio.Controllers
 {
@@ -61,7 +62,7 @@ namespace CakeStudio.Controllers
 
             if (user.Role != "Baker" && user.Role != "Customer")
             {
-                ModelState.AddModelError("", "Invalid account role.");
+                ModelState.AddModelError("", Resource.InvalidAccountRole);
                 return View(model);
             }
 
@@ -158,7 +159,7 @@ namespace CakeStudio.Controllers
         [HttpGet]
         public IActionResult AccessDenied()
         {
-            return Content("Access denied.");
+            return Content(Resource.AccessDenied);
         }
     }
 

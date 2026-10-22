@@ -6,6 +6,7 @@ using CakeStudio.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using CakeStudio.Resources;
 
 namespace CakeStudio.Controllers
 {
@@ -18,12 +19,7 @@ namespace CakeStudio.Controllers
         private readonly ICakeFlavourService _flavourService;
         private readonly ICakeTierService _tierService;
 
-        public OrderController(
-            IOrderService orderService,
-            ICakeService cakeService,
-            ICakeSizeService sizeService,
-            ICakeFlavourService flavourService,
-            ICakeTierService tierService)
+        public OrderController( IOrderService orderService, ICakeService cakeService, ICakeSizeService sizeService,ICakeFlavourService flavourService,ICakeTierService tierService)
         {
             _orderService = orderService;
             _cakeService = cakeService;
@@ -34,15 +30,14 @@ namespace CakeStudio.Controllers
 
         private int? GetCurrentUserId()
         {
-            var value = User.FindFirstValue(
-                ClaimTypes.NameIdentifier);
+            var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             return int.TryParse(value, out int id)
                 ? id
                 : null;
         }
 
-        // untuk retrieve customer slected option in form again when invalid
+        // untuk retrieve customer selected option in form again when invalid
         private void LoadCakeInfo(OrderViewModel model) 
         {
             if (model.CakeId.HasValue)
@@ -145,8 +140,6 @@ namespace CakeStudio.Controllers
             ViewBag.Tiers = _tierService.GetAll()
                 .Where(x => x.IsAvailable)
                 .ToList();
-
-
         }
 
 
@@ -177,7 +170,7 @@ namespace CakeStudio.Controllers
             var tier = tiers.FirstOrDefault(x => x.TierId == tierId);
 
             if (size == null || flavour == null || tier == null)
-                return BadRequest("Invalid cake options selected.");
+                return BadRequest(Resource.InvalidCakeOptions);
 
             //create object
             var model = new OrderViewModel
@@ -276,12 +269,12 @@ namespace CakeStudio.Controllers
 
             if (model.RequiredDate.HasValue && model.RequiredDate.Value.Date < DateTime.Today)
             {
-                ModelState.AddModelError(nameof(model.RequiredDate), "Required date cannot be in the past.");
+                ModelState.AddModelError(nameof(model.RequiredDate), Resource.RequiredDateInPast);
             }
 
             if (model.CollectionMethod == "Delivery" && string.IsNullOrWhiteSpace(model.DeliveryAddress))
             {
-                ModelState.AddModelError( nameof(model.DeliveryAddress),"Delivery address is required.");
+                ModelState.AddModelError( nameof(model.DeliveryAddress),Resource.DeliveryAddressRequired);
             }
 
             if (!ModelState.IsValid)
@@ -294,7 +287,7 @@ namespace CakeStudio.Controllers
             {
                 int orderId = _orderService.Create(customerId.Value, model);
 
-                TempData["SuccessMessage"] = "Order placed successfully!";
+                TempData["SuccessMessage"] = Resource.OrderPlacedSuccess;
 
                 return RedirectToAction(nameof(Details), new { id = orderId });
             }
@@ -309,7 +302,7 @@ namespace CakeStudio.Controllers
             }
             catch (Exception)
             {
-                ModelState.AddModelError(string.Empty,"Unable to place order. Please try again.");
+                ModelState.AddModelError(string.Empty,Resource.OrderPlacementFailed);
 
                 LoadCakeInfo(model);
                 return View(model);
@@ -391,7 +384,7 @@ namespace CakeStudio.Controllers
                     orderId, status, bakerId.Value);
 
                 TempData["SuccessMessage"] =
-                    "Order status updated successfully.";
+                    Resource.OrderStatusUpdatedSuccess;
             }
             catch (ArgumentException ex)
             {
@@ -408,7 +401,7 @@ namespace CakeStudio.Controllers
             catch (Exception)
             {
                 TempData["ErrorMessage"] =
-                    "Unable to update order status.";
+                    Resource.OrderStatusUpdateFailed;
             }
 
             return RedirectToAction(nameof(Index));

@@ -117,7 +117,124 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InvalidData" xml:space="preserve">
-    <value>Invalid Data. Please Try Again</value>
+  <data name="CakeCreatedSuccess" xml:space="preserve">
+    <value>Cake created successfully!</value>
+  </data>
+  <data name="CakeOptionsRequired" xml:space="preserve">
+    <value>Please select cake size, flavour and tier</value>
+  </data>
+  <data name="CakeRequired" xml:space="preserve">
+    <value>Please select a cake</value>
+  </data>
+  <data name="CakeUnavailable" xml:space="preserve">
+    <value>Selected cake is unavailable</value>
+  </data>
+  <data name="CakeUpdatedSuccess" xml:space="preserve">
+    <value>Cake updated successfully!</value>
+  </data>
+  <data name="DeliveryAddressRequired" xml:space="preserve">
+    <value>Delivery address is required</value>
+  </data>
+  <data name="FlavourRequired" xml:space="preserve">
+    <value>Please select a flavour</value>
+  </data>
+  <data name="FlavourUnavailable" xml:space="preserve">
+    <value>Selected flavour is unavailable</value>
+  </data>
+  <data name="ImageEmpty" xml:space="preserve">
+    <value>The uploaded image file cannot be empty.</value>
+  </data>
+  <data name="ImageSizeExceeded" xml:space="preserve">
+    <value>Image size must not exceed 5MB.</value>
+  </data>
+  <data name="InvalidBakerAccount" xml:space="preserve">
+    <value>Invalid baker account</value>
+  </data>
+  <data name="InvalidCakeOptions" xml:space="preserve">
+    <value>Invalid cake options selected</value>
+  </data>
+  <data name="InvalidCollectionMethod" xml:space="preserve">
+    <value>Invalid collection method</value>
+  </data>
+  <data name="InvalidCustomerAccount" xml:space="preserve">
+    <value>Invalid customer account</value>
+  </data>
+  <data name="InvalidImageExtension" xml:space="preserve">
+    <value>Only JPG, JPEG, and PNG images are allowed.</value>
+  </data>
+  <data name="InvalidImageType" xml:space="preserve">
+    <value>Invalid image file type</value>
+  </data>
+  <data name="InvalidOrderPrice" xml:space="preserve">
+    <value>Calculated order price is invalid</value>
+  </data>
+  <data name="InvalidRequiredDateTime" xml:space="preserve">
+    <value>Pickup or delivery date and time must be in the future</value>
+  </data>
+  <data name="OrderNotFound" xml:space="preserve">
+    <value>Order not found</value>
+  </data>
+  <data name="OrderPlacedSuccess" xml:space="preserve">
+    <value>Order placed successfully!</value>
+  </data>
+  <data name="OrderPlacementFailed" xml:space="preserve">
+    <value>Unable to place order. Please try again</value>
+  </data>
+  <data name="OrderStatusUpdatedSuccess" xml:space="preserve">
+    <value>Order status updated successfully.</value>
+  </data>
+  <data name="OrderStatusUpdateFailed" xml:space="preserve">
+    <value>Unable to update order status</value>
+  </data>
+  <data name="RequiredDateInPast" xml:space="preserve">
+    <value>Required date cannot be in the past</value>
+  </data>
+  <data name="RequiredDateTime" xml:space="preserve">
+    <value>Please select a required date and time</value>
+  </data>
+  <data name="SizeUnavailable" xml:space="preserve">
+    <value>Selected size is unavailable</value>
+  </data>
+  <data name="TierUnavailable" xml:space="preserve">
+    <value>Selected tier is unavailable</value>
+  </data>
+  <data name="UnknownOrderStatus" xml:space="preserve">
+    <value>Unknown current order status</value>
+  </data>
+  <data name="AvailableFlavourRequired" xml:space="preserve">
+    <value>Please select an available flavour</value>
+  </data>
+  <data name="CakeDeletedSuccess" xml:space="preserve">
+    <value>Cake deleted successfully!</value>
+  </data>
+  <data name="InvalidAccountRole" xml:space="preserve">
+    <value>Invalid account role</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Access denied!</value>
+  </data>
+  <data name="InvalidLoginCredentials" xml:space="preserve">
+    <value>Invalid email or password</value>
+  </data>
+  <data name="LoginFailed" xml:space="preserve">
+    <value>An error occurred during login.</value>
+  </data>
+  <data name="RequiredFieldMissing" xml:space="preserve">
+    <value>Please complete all required fields.</value>
+  </data>
+  <data name="EmailAlreadyRegistered" xml:space="preserve">
+    <value>Email is already registered</value>
+  </data>
+  <data name="InvalidRegistrationType" xml:space="preserve">
+    <value>Invalid registration type</value>
+  </data>
+  <data name="CustomerRegisteredSuccess" xml:space="preserve">
+    <value>Customer registered successfully</value>
+  </data>
+  <data name="RegistrationFailed" xml:space="preserve">
+    <value>An error occurred during registration</value>
+  </data>
+  <data name="InvalidOrderStatusTransition" xml:space="preserve">
+    <value>Cannot change order status from 0 to 1</value>
   </data>
 </root>

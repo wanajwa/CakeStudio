@@ -4,6 +4,7 @@ using CakeStudio.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using CakeStudio.Services.Interfaces;
+using CakeStudio.Resources;
 
 namespace CakeStudio.Controllers
 {
@@ -14,9 +15,7 @@ namespace CakeStudio.Controllers
         private readonly ICakeService _cakeService;
         private readonly ICakeFlavourService _cakeFlavourService;
 
-        public CakeController(
-            ICakeService cakeService,
-            ICakeFlavourService cakeFlavourService)
+        public CakeController(ICakeService cakeService, ICakeFlavourService cakeFlavourService)
         {
             _cakeService = cakeService;
             _cakeFlavourService = cakeFlavourService;
@@ -42,7 +41,6 @@ namespace CakeStudio.Controllers
         private void AssignFlavour(Cake cake, int? flavourId)
         {
             // The form submits flavourId, not a complete Flavour object.
-            // Remove automatic validation for that navigation object.
             var flavourKeys = ModelState.Keys
                 .Where(key => key == nameof(Cake.Flavour)
                     || key.StartsWith(nameof(Cake.Flavour) + "."))
@@ -55,7 +53,7 @@ namespace CakeStudio.Controllers
 
             if (!flavourId.HasValue)
             {
-                ModelState.AddModelError("flavourId", "Please select a flavour.");
+                ModelState.AddModelError("flavourId", Resource.FlavourRequired);
                 return;
             }
 
@@ -65,7 +63,7 @@ namespace CakeStudio.Controllers
             {
                 ModelState.AddModelError(
                     "flavourId",
-                    "Please select an available flavour.");
+                    Resource.AvailableFlavourRequired);
 
                 return;
             }
@@ -82,7 +80,7 @@ namespace CakeStudio.Controllers
             {
                 ModelState.AddModelError(
                     "imageFile",
-                    "The uploaded image file cannot be empty.");
+                    Resource.ImageEmpty);
 
                 return false;
             }
@@ -92,7 +90,7 @@ namespace CakeStudio.Controllers
             {
                 ModelState.AddModelError(
                     "imageFile", 
-                    "Image size must not exceed 5MB");
+                    Resource.ImageSizeExceeded);
                 return false;
             }
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
@@ -102,7 +100,7 @@ namespace CakeStudio.Controllers
             {
                 ModelState.AddModelError(
                     "imageFile",
-                    "Only JPG, JPEG, and PNG images are allowed.");
+                    Resource.InvalidImageExtension);
                 return false;
             }
             var allowedContentTypes = new[]
@@ -116,7 +114,7 @@ namespace CakeStudio.Controllers
             {
                 ModelState.AddModelError(
                     "imageFile",
-                    "Invalide image file type.");
+                    Resource.InvalidImageType);
                 return false;
             }
             return true;
@@ -129,7 +127,6 @@ namespace CakeStudio.Controllers
             return View(cakes);
         }
 
-        //Get cake
         // GET: Display the Create Cake form.
         [HttpGet]
         public IActionResult Create()
@@ -139,14 +136,10 @@ namespace CakeStudio.Controllers
             return View();
         }
 
-        //PostCake
         // receive submit save cake
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-    Cake cake,
-    int? flavourId,
-    IFormFile? imageFile)
+        public async Task<IActionResult> Create(Cake cake, int? flavourId, IFormFile? imageFile)
         {
             AssignFlavour(cake, flavourId);
             ValidateImage(imageFile);
@@ -172,11 +165,11 @@ namespace CakeStudio.Controllers
             }
 
             _cakeService.Create(cake);
-            TempData["SuccessMessage"] = "Cake created successfully.";
+            TempData["SuccessMessage"] = Resource.CakeCreatedSuccess;
             return RedirectToAction("Index");
         }
 
-        // GET: /Cake/Edit/3
+
         // Display the existing cake information.
         public IActionResult Edit(int id)
         {
@@ -222,11 +215,10 @@ namespace CakeStudio.Controllers
             }
 
             _cakeService.Update(cake);
-            TempData["SuccessMessage"] = "Cake updated successfully.";
+            TempData["SuccessMessage"] = Resource.CakeUpdatedSuccess;
             return RedirectToAction("Index");
         }
 
-        // GET: /Cake/Delete/3
         // Display the cake before deleting it.
         public IActionResult Delete(int id)
         {
@@ -245,14 +237,13 @@ namespace CakeStudio.Controllers
         }
 
 
-        // POST: /Cake/DeleteConfirmed/3
         // Actually delete the Cake from the database.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
                _cakeService.Delete(id);
-            TempData["SuccessMessage"] = "Cake deleted successfully.";
+            TempData["SuccessMessage"] = Resource.CakeDeletedSuccess;
 
             return RedirectToAction("Index");
         }
