@@ -1,5 +1,5 @@
-﻿@model CakeStudio.ViewModels.OrderDetailsViewModel
-
+﻿@using CakeStudio.Constant
+@model CakeStudio.ViewModels.OrderDetailsViewModel
 @{
     ViewData["Title"] = "Order Details";
 }
@@ -37,12 +37,11 @@
     @{
         string statusClass = Model.Order.OrderStatus switch
         {
-            "Pending" => "status-pending",
-            "Accepted" => "status-accepted",
-            "Preparing" => "status-preparing",
-            "Ready" => "status-ready",
-            "Completed" => "status-completed",
-            "Rejected" => "status-rejected",
+            Constant.OrderStatus.Pending => "status-pending",
+            Constant.OrderStatus.Preparing => "status-preparing",
+            Constant.OrderStatus.Ready => "status-ready",
+            Constant.OrderStatus.Completed => "status-completed",
+            Constant.OrderStatus.Rejected => "status-rejected",
             _ => "status-default"
         };
     }

@@ -1,4 +1,5 @@
-﻿@model List<CakeStudio.Models.Order>
+﻿@using CakeStudio.Constant
+@model List<CakeStudio.Models.Order>
 
 @{
     ViewData["Title"] = "My Orders";
@@ -53,12 +54,11 @@
                                 @{
                                     string statusClass = order.OrderStatus switch
                                     {
-                                            "Pending" => "status-pending",
-                                            "Accepted" => "status-accepted",
-                                            "Preparing" => "status-preparing",
-                                            "Ready" => "status-ready",
-                                            "Completed" => "status-completed",
-                                            "Rejected" => "status-rejected",
+                                            Constant.OrderStatus.Pending => "status-pending",
+                                            Constant.OrderStatus.Preparing => "status-preparing",
+                                            Constant.OrderStatus.Ready => "status-ready",
+                                            Constant.OrderStatus.Completed => "status-completed",
+                                            Constant.OrderStatus.Rejected => "status-rejected",
                                             _ => "status-default"
                                     };
                                 }

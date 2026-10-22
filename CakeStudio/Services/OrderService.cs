@@ -3,6 +3,7 @@ using CakeStudio.Data;
 using CakeStudio.Models;
 using CakeStudio.ViewModels;
 using NHibernate.Linq;
+using CakeStudio.Constant;
 
 namespace CakeStudio.Services
 {
@@ -202,7 +203,7 @@ namespace CakeStudio.Services
                         model.MessageOnCakes?.Trim(),
 
                     TotalPrice = totalPrice,
-                    OrderStatus = "Pending",
+                    OrderStatus = Constant.Constant.OrderStatus.Pending,
                     CreatedAt = DateTime.Now,
                     CreatedId = customerId
                 };
@@ -296,12 +297,37 @@ namespace CakeStudio.Services
 
                 var allowedTransitions = new Dictionary<string, string[]>
                 {
-                    { "Pending", new[] {"Accepted", "Rejected"} },
-                    {"Accepted", new[] {"Preparing"} },
-                    {"Preparing", new[] {"Ready"} },
-                    {"Ready", new[]{"Completed"} },
-                    {"Rejected", Array.Empty<string>() },
-                    {"Completed", Array.Empty<string>() }
+                    { 
+                        Constant.Constant.OrderStatus.Pending, new[] 
+                        { 
+                            Constant.Constant.OrderStatus.Preparing, Constant.Constant.OrderStatus.Rejected
+                        }
+                    },
+
+
+                    {
+                        Constant.Constant.OrderStatus.Preparing, new[] 
+                        {
+                            Constant.Constant.OrderStatus.Ready,
+                        } 
+                    },
+
+                    {
+                        Constant.Constant.OrderStatus.Ready, new[]
+                        {
+                            Constant.Constant.OrderStatus.Completed,
+                        } 
+                    },
+
+                    {
+                        Constant.Constant.OrderStatus.Rejected, 
+                        Array.Empty<string>() 
+                    },
+
+                    {
+                        Constant.Constant.OrderStatus.Completed, 
+                        Array.Empty<string>() 
+                    }
                 };
 
                 // Validate current status
