@@ -1,8 +1,276 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model CakeStudio.ViewModels.DashboardViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/dashboard.css"
+          asp-append-version="true" />
+}
+
+<div class="container-fluid dashboard-page mt-4 mb-5">
+
+    <!-- Header -->
+    <div class="dashboard-header mb-4">
+        <h2>Dashboard</h2>
+        <p>Welcome back! Here's your cake shop overview.</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body p-4">
+                    <div class="dashboard-card-label">Total Cakes</div>
+                    <h3 class="dashboard-card-value">@Model.TotalCakes</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body p-4">
+                    <div class="dashboard-card-label">Available Cakes</div>
+                    <h3 class="dashboard-card-value">@Model.AvailableCakes</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body p-4">
+                    <div class="dashboard-card-label">Pending Orders</div>
+                    <h3 class="dashboard-card-value">@Model.PendingOrders</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body p-4">
+                    <div class="dashboard-card-label">Total Sales</div>
+                    <h3 class="dashboard-card-value">
+                        RM @Model.TotalSales.ToString("N2")
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Analytics Charts -->
+    <div class="row g-4 mb-4">
+
+        <!-- Sales Overview -->
+        <div class="col-lg-7">
+            <div class="card dashboard-card h-100">
+                <div class="card-body p-4">
+
+                    <div class="dashboard-chart-header">
+                        <h5 class="dashboard-section-title mb-0">
+                            Sales Overview
+                        </h5>
+
+                        <select id="salesPeriod"
+                                class="form-select dashboard-period-select">
+                            <option value="Daily">Daily</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Monthly" selected>Monthly</option>
+                            <option value="Yearly">Yearly</option>
+                        </select>
+                    </div>
+
+                    <div class="dashboard-chart-container">
+                        <canvas id="monthlySalesChart"></canvas>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Cakes -->
+        <div class="col-lg-5">
+            <div class="card dashboard-card h-100">
+                <div class="card-body p-4">
+
+                    <h5 class="dashboard-section-title">
+                        Most Popular Cakes
+                    </h5>
+
+                    <div class="dashboard-chart-container">
+                        <canvas id="popularCakesChart"></canvas>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Upcoming Orders -->
+    <div class="card dashboard-card mb-4">
+        <div class="card-body p-4">
+
+            <div class="dashboard-chart-header">
+                <h5 class="dashboard-section-title mb-0">
+                    Upcoming Orders
+                </h5>
+
+                <a asp-controller="Order"
+                   asp-action="Index"
+                   class="dashboard-view-all">
+                    View All Orders
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table dashboard-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Customer</th>
+                            <th>Cake</th>
+                            <th>Required Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (!Model.UpcomingOrders.Any())
+                        {
+                            <tr>
+                                <td colspan="6"
+                                    class="text-center text-muted py-4">
+                                    No upcoming orders.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            var no = 1;
+
+                            foreach (var order in Model.UpcomingOrders)
+                            {
+                                <tr>
+                                    <td>@no</td>
+
+                                    <td>@order.Customer?.Name</td>
+
+                                    <td>
+                                        <a asp-controller="Order"
+                                           asp-action="Details"
+                                           asp-route-id="@order.OrderId"
+                                           class="dashboard-cake-link">
+                                            @order.Cake?.CakeName
+                                        </a>
+                                    </td>
+
+                                    <td>
+                                        @order.RequiredDate?.ToString("dd MMM yyyy, hh:mm tt")
+                                    </td>
+
+                                    <td>
+                                        RM @order.TotalPrice.ToString("N2")
+                                    </td>
+
+                                    <td>
+                                        <span class="dashboard-status"
+                                              data-status="@order.OrderStatus">
+                                            @order.OrderStatus
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                no++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
+    <script>
+        const salesByPeriod = @Html.Raw(JsonSerializer.Serialize(Model.SalesByPeriod));
+
+        const cakeLabels = @Html.Raw(JsonSerializer.Serialize(Model.CakeLabels));
+        const cakeCounts = @Html.Raw(JsonSerializer.Serialize(Model.CakeOrderCounts));
+
+        // Sales Overview
+        const periodSelector = document.getElementById('salesPeriod');
+        const initialData = salesByPeriod['Monthly'];
+
+        const salesChart = new Chart(
+            document.getElementById('monthlySalesChart'),
+            {
+                type: 'line',
+                data: {
+                    labels: initialData.Labels,
+                    datasets: [{
+                        label: 'Sales (RM)',
+                        data: initialData.Values,
+                        borderColor: '#8b83d7',
+                        backgroundColor: 'rgba(139, 131, 215, 0.12)',
+                        fill: true,
+                        tension: 0.35
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            }
+        );
+
+        periodSelector.addEventListener('change', function () {
+            const selectedData = salesByPeriod[this.value];
+
+            salesChart.data.labels = selectedData.Labels;
+            salesChart.data.datasets[0].data = selectedData.Values;
+
+            salesChart.update();
+        });
+
+        // Most Popular Cakes
+        new Chart(document.getElementById('popularCakesChart'), {
+            type: 'bar',
+            data: {
+                labels: cakeLabels,
+                datasets: [{
+                    label: 'Orders',
+                    data: cakeCounts,
+                    backgroundColor: '#b9b2ee',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+}

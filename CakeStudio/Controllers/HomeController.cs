@@ -1,22 +1,149 @@
 using System.Diagnostics;
 using CakeStudio.Models;
 using Microsoft.AspNetCore.Mvc;
+using CakeStudio.Services;
+using CakeStudio.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace CakeStudio.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly ICakeService _cakeService;
+        private readonly IOrderService _orderService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ICakeService cakeService, IOrderService orderService)
         {
             _logger = logger;
+            _cakeService = cakeService;
+            _orderService = orderService;
         }
 
+
+        [HttpGet]
+        [Authorize(Roles = "Baker")]
         public IActionResult Index()
         {
-            return View();
+            var cakes = _cakeService.GetAll();
+            var orders = _orderService.GetAll();
+
+            // Monthly completed order value for the current year
+            var currentYear = DateTime.Now.Year;
+
+            var today = DateTime.Today;
+            var completedOrders = orders
+                .Where(o => o.OrderStatus == "Completed")
+                .ToList();
+
+            var salesByPeriod = new Dictionary<string, ChartPeriodData>();
+
+            // Daily - last 7 days
+            var dailyDates = Enumerable.Range(0, 7)
+                .Select(i => today.AddDays(i - 6))
+                .ToList();
+
+            salesByPeriod["Daily"] = new ChartPeriodData
+            {
+                Labels = dailyDates.Select(d => d.ToString("dd MMM")).ToList(),
+                Values = dailyDates.Select(d => completedOrders
+                    .Where(o => o.CreatedAt.Date == d)
+                    .Sum(o => o.TotalPrice)).ToList()
+            };
+
+            // Weekly - last 8 weeks, starting Monday
+            var currentMonday = today.AddDays(
+                -((7 + (int)today.DayOfWeek - (int)DayOfWeek.Monday) % 7));
+
+            var weekStarts = Enumerable.Range(0, 8)
+                .Select(i => currentMonday.AddDays((i - 7) * 7))
+                .ToList();
+
+            salesByPeriod["Weekly"] = new ChartPeriodData
+            {
+                Labels = weekStarts.Select(d => d.ToString("dd MMM")).ToList(),
+                Values = weekStarts.Select(start => completedOrders
+                    .Where(o => o.CreatedAt >= start &&
+                                o.CreatedAt < start.AddDays(7))
+                    .Sum(o => o.TotalPrice)).ToList()
+            };
+
+            // Monthly - current year
+            var months = Enumerable.Range(1, 12).ToList();
+
+            salesByPeriod["Monthly"] = new ChartPeriodData
+            {
+                Labels = months.Select(m =>
+                    new DateTime(today.Year, m, 1).ToString("MMM")).ToList(),
+
+                Values = months.Select(m => completedOrders
+                    .Where(o => o.CreatedAt.Year == today.Year &&
+                                o.CreatedAt.Month == m)
+                    .Sum(o => o.TotalPrice)).ToList()
+            };
+
+            // Yearly - last 5 years
+            var years = Enumerable.Range(today.Year - 4, 5).ToList();
+
+            salesByPeriod["Yearly"] = new ChartPeriodData
+            {
+                Labels = years.Select(y => y.ToString()).ToList(),
+                Values = years.Select(y => completedOrders
+                    .Where(o => o.CreatedAt.Year == y)
+                    .Sum(o => o.TotalPrice)).ToList()
+            };
+
+            // Top 5 most ordered cakes
+            var popularCakes = orders
+                .Where(o => o.OrderStatus != "Rejected" &&
+                            o.Cake != null)
+                .GroupBy(o => o.Cake!.CakeName)
+                .Select(g => new
+                {
+                    CakeName = g.Key,
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .Take(5)
+                .ToList();
+
+            // Upcoming orders - next 5 orders
+            var upcomingOrders = orders
+                .Where(o => o.RequiredDate.HasValue &&
+                            o.RequiredDate.Value >= today &&
+                            o.OrderStatus != "Completed" &&
+                            o.OrderStatus != "Rejected")
+                .OrderBy(o => o.RequiredDate)
+                .Take(5)
+                .ToList();
+
+            var model = new DashboardViewModel
+            {
+                TotalCakes = cakes.Count,
+
+                AvailableCakes = cakes.Count(c => c.IsAvailable),
+
+                PendingOrders = orders.Count(o => o.OrderStatus == "Pending"),
+
+                TotalSales = completedOrders.Sum(o => o.TotalPrice),
+
+                SalesByPeriod = salesByPeriod,
+
+                CakeLabels = popularCakes
+                .Select(x => x.CakeName)
+                .ToList(),
+
+                CakeOrderCounts = popularCakes
+                .Select(x => x.Count)
+                .ToList(),
+
+                UpcomingOrders = upcomingOrders
+            };
+
+            return View(model);
         }
+
 
         public IActionResult Privacy()
         {
