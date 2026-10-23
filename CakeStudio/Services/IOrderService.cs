@@ -13,6 +13,7 @@ namespace CakeStudio.Services
         OrderDetailsViewModel? GetOrderDetails(int id);
 
         List<Order> GetOrdersByCustomer(int customerId);
+        List<Payment> GetAllPayments();
 
         int Create(int customerId, OrderViewModel model, string paymentMethod);
 

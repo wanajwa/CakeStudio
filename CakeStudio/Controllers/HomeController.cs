@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using CakeStudio.Services;
 using CakeStudio.ViewModels;
 using Microsoft.AspNetCore.Authorization;
-
+using CakeStudio.Constant;
 
 namespace CakeStudio.Controllers
 {
@@ -29,13 +29,14 @@ namespace CakeStudio.Controllers
             var cakes = _cakeService.GetAll();
             var orders = _orderService.GetAll();
 
-            // Monthly completed order value for the current year
-            var currentYear = DateTime.Now.Year;
-
             var today = DateTime.Today;
-            var completedOrders = orders
-                .Where(o => o.OrderStatus == "Completed")
+            // Retrieve successful, non-refunded payments
+            var payments = _orderService.GetAllPayments();
+
+            var paidPayments = payments
+                .Where(p => p.PaymentStatus == Constant.Constant.PaymentStatus.Paid)
                 .ToList();
+
 
             var salesByPeriod = new Dictionary<string, ChartPeriodData>();
 
@@ -46,15 +47,21 @@ namespace CakeStudio.Controllers
 
             salesByPeriod["Daily"] = new ChartPeriodData
             {
-                Labels = dailyDates.Select(d => d.ToString("dd MMM")).ToList(),
-                Values = dailyDates.Select(d => completedOrders
-                    .Where(o => o.CreatedAt.Date == d)
-                    .Sum(o => o.TotalPrice)).ToList()
+                Labels = dailyDates
+                    .Select(d => d.ToString("dd MMM"))
+                    .ToList(),
+
+                Values = dailyDates
+                    .Select(d => paidPayments
+                        .Where(p => p.PaidAt.HasValue && p.PaidAt.Value.Date == d)
+                        .Sum(p => p.Amount))
+                    .ToList()
             };
 
-            // Weekly - last 8 weeks, starting Monday
+            // Weekly - last 8 weeks
             var currentMonday = today.AddDays(
-                -((7 + (int)today.DayOfWeek - (int)DayOfWeek.Monday) % 7));
+                -((7 + (int)today.DayOfWeek -
+                   (int)DayOfWeek.Monday) % 7));
 
             var weekStarts = Enumerable.Range(0, 8)
                 .Select(i => currentMonday.AddDays((i - 7) * 7))
@@ -62,11 +69,15 @@ namespace CakeStudio.Controllers
 
             salesByPeriod["Weekly"] = new ChartPeriodData
             {
-                Labels = weekStarts.Select(d => d.ToString("dd MMM")).ToList(),
-                Values = weekStarts.Select(start => completedOrders
-                    .Where(o => o.CreatedAt >= start &&
-                                o.CreatedAt < start.AddDays(7))
-                    .Sum(o => o.TotalPrice)).ToList()
+                Labels = weekStarts
+                    .Select(d => d.ToString("dd MMM"))
+                    .ToList(),
+
+                Values = weekStarts
+                    .Select(start => paidPayments
+                        .Where(p => p.PaidAt.HasValue && p.PaidAt.Value >= start && p.PaidAt.Value < start.AddDays(7))
+                        .Sum(p => p.Amount))
+                    .ToList()
             };
 
             // Monthly - current year
@@ -74,13 +85,17 @@ namespace CakeStudio.Controllers
 
             salesByPeriod["Monthly"] = new ChartPeriodData
             {
-                Labels = months.Select(m =>
-                    new DateTime(today.Year, m, 1).ToString("MMM")).ToList(),
+                Labels = months
+                    .Select(m => new DateTime(today.Year, m, 1)
+                        .ToString("MMM"))
+                    .ToList(),
 
-                Values = months.Select(m => completedOrders
-                    .Where(o => o.CreatedAt.Year == today.Year &&
-                                o.CreatedAt.Month == m)
-                    .Sum(o => o.TotalPrice)).ToList()
+                Values = months
+                    .Select(m => paidPayments
+                        .Where(p => p.PaidAt.HasValue && p.PaidAt.Value.Year == today.Year &&
+                                    p.PaidAt.Value.Month == m)
+                        .Sum(p => p.Amount))
+                    .ToList()
             };
 
             // Yearly - last 5 years
@@ -88,11 +103,17 @@ namespace CakeStudio.Controllers
 
             salesByPeriod["Yearly"] = new ChartPeriodData
             {
-                Labels = years.Select(y => y.ToString()).ToList(),
-                Values = years.Select(y => completedOrders
-                    .Where(o => o.CreatedAt.Year == y)
-                    .Sum(o => o.TotalPrice)).ToList()
+                Labels = years
+                    .Select(y => y.ToString())
+                    .ToList(),
+
+                Values = years
+                    .Select(y => paidPayments
+                        .Where(p => p.PaidAt.HasValue && p.PaidAt.Value.Year == y)
+                        .Sum(p => p.Amount))
+                    .ToList()
             };
+
 
             // Top 5 most ordered cakes
             var popularCakes = orders
@@ -126,7 +147,7 @@ namespace CakeStudio.Controllers
 
                 PendingOrders = orders.Count(o => o.OrderStatus == "Pending"),
 
-                TotalSales = completedOrders.Sum(o => o.TotalPrice),
+                TotalSales = paidPayments.Sum(p => p.Amount),
 
                 SalesByPeriod = salesByPeriod,
 

@@ -28,7 +28,14 @@ namespace CakeStudio.Services
                 .OrderByDescending(x => x.CreatedAt)
                 .ToList();
         }
+        public List<Payment> GetAllPayments()
+        {
+            using var session = _nhibernateHelper.OpenSession();
 
+            return session.Query<Payment>()
+                .OrderByDescending(p => p.PaidAt)
+                .ToList();
+        }
         public Order? GetById(int id)
         {
             using var session = _nhibernateHelper.OpenSession();
