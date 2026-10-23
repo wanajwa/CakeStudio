@@ -236,6 +236,15 @@ namespace CakeStudio.Services
                 if (paymentMethod != Constant.Constant.PaymentMethod.Card)
                     throw new ArgumentException("Invalid payment method.");
 
+                // Retrieve the Baker account
+                var baker = session.Query<User>()
+                    .ToList()
+                    .FirstOrDefault(u => u.GetRoleName() == "Baker");
+
+                if (baker == null)
+                {
+                    throw new InvalidOperationException("Baker account not found.");
+                }
                 // Create Order entity
                 var order = new Order
                 {
@@ -244,7 +253,7 @@ namespace CakeStudio.Services
                     FlavourId = model.FlavourId,
                     SizeId = model.SizeId,
                     TierId = model.TierId,
-
+                    BakerId = baker.UserId,
 
                     RequiredDate = requiredDateTime,
 
