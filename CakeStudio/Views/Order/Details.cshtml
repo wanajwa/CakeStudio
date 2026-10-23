@@ -166,6 +166,74 @@
 
             </div>
 
+            <!-- Payment Information Section -->
+            <div class="order-info-section mt-4">
+
+                <h5 class="order-section-title">
+                    <i class="bi bi-credit-card me-2"></i>
+                    Payment Information
+                </h5>
+
+                @if (Model.Payment != null)
+                {
+                    <dl class="row order-info-list">
+
+                        <dt class="col-sm-4">Payment Method</dt>
+                        <dd class="col-sm-8">
+                            Debit / Credit Card
+                        </dd>
+
+                        <dt class="col-sm-4">Payment Status</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Payment.PaymentStatus == Constant.PaymentStatus.Paid)
+                            {
+                                <span class="order-status status-completed">
+                                    Paid
+                                </span>
+                            }
+                            else if (Model.Payment.PaymentStatus == Constant.PaymentStatus.Refunded)
+                            {
+                                <span class="order-status status-rejected">
+                                    Refunded
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="order-status status-default">
+                                    @Model.Payment.PaymentStatus
+                                </span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Amount Paid</dt>
+                        <dd class="col-sm-8">
+                            RM @Model.Payment.Amount.ToString("F2")
+                        </dd>
+
+                        <dt class="col-sm-4">Payment Date</dt>
+                        <dd class="col-sm-8">
+                            @(Model.Payment.PaidAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "-")
+                        </dd>
+
+                        @if (Model.Payment.PaymentStatus == Constant.PaymentStatus.Refunded)
+                        {
+                            <dt class="col-sm-4">Refund Date</dt>
+                            <dd class="col-sm-8">
+                                @(Model.Payment.RefundedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "-")
+                            </dd>
+                        }
+
+                    </dl>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">
+                        No payment information available for this order.
+                    </p>
+                }
+
+            </div>
+
           
 
         </div>

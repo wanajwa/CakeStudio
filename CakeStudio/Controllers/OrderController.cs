@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using CakeStudio.Resources;
+using System.Text.Json;
+using CakeStudio.Constant;
 
 namespace CakeStudio.Controllers
 {
@@ -285,11 +287,9 @@ namespace CakeStudio.Controllers
 
             try
             {
-                int orderId = _orderService.Create(customerId.Value, model);
+                HttpContext.Session.SetString("PendingOrder", JsonSerializer.Serialize(model));
 
-                TempData["SuccessMessage"] = Resource.OrderPlacedSuccess;
-
-                return RedirectToAction(nameof(Details), new { id = orderId });
+                return RedirectToAction(nameof(Payment));
             }
             catch (ArgumentException ex) 
             {
@@ -406,5 +406,211 @@ namespace CakeStudio.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        private PaymentViewModel BuildPaymentViewModel(OrderViewModel order)
+        {
+            var cake = _cakeService.GetById(order.CakeId!.Value);
+            var size = _sizeService.GetById(order.SizeId!.Value);
+            var flavour = _flavourService.GetById(order.FlavourId!.Value);
+            var tier = _tierService.GetById(order.TierId!.Value);
+
+            if (cake == null || size == null || flavour == null || tier == null)
+                throw new ArgumentException("Invalid cake or cake options.");
+
+            bool isDefaultSize = size.SizeName.Trim()
+                .Equals("6 inch", StringComparison.OrdinalIgnoreCase);
+
+            bool isDefaultFlavour = cake.Flavour != null &&
+                flavour.FlavourId == cake.Flavour.FlavourId;
+
+            bool isDefaultTier = tier.TierName.Trim()
+                .Equals("1", StringComparison.OrdinalIgnoreCase);
+
+            return new PaymentViewModel
+            {
+                Amount = _orderService.CalculateTotalPrice(order),
+                PaymentMethod = Constant.Constant.PaymentMethod.Card,
+
+                CakeName = cake.CakeName,
+                BasePrice = cake.BasePrice,
+
+                SizeName = size.SizeName,
+                SizePrice = isDefaultSize ? 0m : size.AdditionalPrice,
+
+                FlavourName = flavour.FlavourName,
+                FlavourPrice = isDefaultFlavour ? 0m : flavour.AdditionalPrice,
+
+                TierName = tier.TierName,
+                TierPrice = isDefaultTier ? 0m : tier.AdditionalPrice,
+
+                RequiredDate = order.RequiredDate,
+                RequiredTime = order.RequiredTime,
+                CollectionMethod = order.CollectionMethod
+            };
+        }
+
+        [Authorize(Roles = "Customer")]
+        [HttpGet]
+        public IActionResult Payment()
+        {
+            var pendingOrder = HttpContext.Session.GetString("PendingOrder");
+
+            if (string.IsNullOrEmpty(pendingOrder))
+                return RedirectToAction(nameof(MyOrders));
+
+            var order = JsonSerializer.Deserialize<OrderViewModel>(pendingOrder);
+
+            if (order == null)
+                return RedirectToAction(nameof(MyOrders));
+
+            var model = BuildPaymentViewModel(order);
+            return View(model);
+        }
+
+
+        [Authorize(Roles = "Customer")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Payment(PaymentViewModel model)
+        {
+            int? customerId = GetCurrentUserId();
+
+            if (!customerId.HasValue)
+                return Challenge();
+
+            var pendingOrder = HttpContext.Session.GetString("PendingOrder");
+
+            if (string.IsNullOrEmpty(pendingOrder))
+                return RedirectToAction(nameof(MyOrders));
+
+            var order = JsonSerializer.Deserialize<OrderViewModel>(pendingOrder);
+
+            if (order == null)
+                return RedirectToAction(nameof(MyOrders));
+
+            // Validate predefined dummy card details only
+            string cardNumber = (model.CardNumber ?? "")
+                .Replace(" ", "");
+
+            string expiryDate = (model.ExpiryDate ?? "").Trim();
+            string securityCode = (model.SecurityCode ?? "").Trim();
+
+            // Validate card number format (16 digits)
+            if (!System.Text.RegularExpressions.Regex.IsMatch(
+                cardNumber, @"^\d{16}$"))
+            {
+                ModelState.AddModelError(
+                    nameof(model.CardNumber),
+                    "Card number must contain 16 digits.");
+            }
+
+            // Validate expiry date format and expiration
+            if (!DateTime.TryParseExact(
+                expiryDate,
+                "MM/yy",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out DateTime expiry))
+            {
+                ModelState.AddModelError(
+                    nameof(model.ExpiryDate),
+                    "Enter a valid expiry date (MM/YY).");
+            }
+            else
+            {
+                // Card is valid until the end of its expiry month
+                DateTime currentMonth = new DateTime(
+                    DateTime.Today.Year,
+                    DateTime.Today.Month,
+                    1);
+
+                if (expiry.Year < currentMonth.Year ||
+                    (expiry.Year == currentMonth.Year &&
+                     expiry.Month < currentMonth.Month))
+                {
+                    ModelState.AddModelError(
+                        nameof(model.ExpiryDate),
+                        "Card has expired. Please enter a valid expiry date.");
+                }
+            }
+
+            // Validate security code format (3 digits)
+            if (!System.Text.RegularExpressions.Regex.IsMatch(
+                securityCode, @"^\d{3}$"))
+            {
+                ModelState.AddModelError(
+                    nameof(model.SecurityCode),
+                    "Security code must contain 3 digits.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var invalidSummary = BuildPaymentViewModel(order);
+
+                // Preserve validation errors and the submitted test fields.
+                model.Amount = invalidSummary.Amount;
+                model.PaymentMethod = invalidSummary.PaymentMethod;
+                model.CakeName = invalidSummary.CakeName;
+                model.BasePrice = invalidSummary.BasePrice;
+                model.SizeName = invalidSummary.SizeName;
+                model.SizePrice = invalidSummary.SizePrice;
+                model.FlavourName = invalidSummary.FlavourName;
+                model.FlavourPrice = invalidSummary.FlavourPrice;
+                model.TierName = invalidSummary.TierName;
+                model.TierPrice = invalidSummary.TierPrice;
+                model.RequiredDate = invalidSummary.RequiredDate;
+                model.RequiredTime = invalidSummary.RequiredTime;
+                model.CollectionMethod = invalidSummary.CollectionMethod;
+                return View(model);
+            }
+
+            try
+            {
+                int orderId = _orderService.Create(
+                    customerId.Value,
+                    order,
+                    Constant.Constant.PaymentMethod.Card
+                );
+
+                HttpContext.Session.Remove("PendingOrder");
+
+                TempData["SuccessMessage"] = Resource.OrderPlacedSuccess;
+
+                return RedirectToAction(nameof(Details), new { id = orderId });
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Payment could not be completed. Please try again."
+                );
+            }
+
+            var summary = BuildPaymentViewModel(order);
+
+            // Preserve validation errors and the submitted test fields.
+            model.Amount = summary.Amount;
+            model.PaymentMethod = summary.PaymentMethod;
+            model.CakeName = summary.CakeName;
+            model.BasePrice = summary.BasePrice;
+            model.SizeName = summary.SizeName;
+            model.SizePrice = summary.SizePrice;
+            model.FlavourName = summary.FlavourName;
+            model.FlavourPrice = summary.FlavourPrice;
+            model.TierName = summary.TierName;
+            model.TierPrice = summary.TierPrice;
+            model.RequiredDate = summary.RequiredDate;
+            model.RequiredTime = summary.RequiredTime;
+            model.CollectionMethod = summary.CollectionMethod;
+
+            return View(model);
+        }
     }
+
+
 }

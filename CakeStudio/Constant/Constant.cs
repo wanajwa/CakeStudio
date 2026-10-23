@@ -12,5 +12,16 @@
             public const string Rejected = "Rejected";
         }
 
+        public static class PaymentStatus
+        {
+            public const string Paid = "Paid";
+            public const string Refunded = "Refunded";
+        }
+
+        public static class PaymentMethod
+        {
+            public const string Card = "Card";
+        }
+
     }
 }

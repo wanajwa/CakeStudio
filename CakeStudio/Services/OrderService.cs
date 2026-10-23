@@ -1,10 +1,11 @@
 ﻿
+using CakeStudio.Constant;
 using CakeStudio.Data;
 using CakeStudio.Models;
+using CakeStudio.Resources;
 using CakeStudio.ViewModels;
 using NHibernate.Linq;
-using CakeStudio.Constant;
-using CakeStudio.Resources;
+using static CakeStudio.Constant.Constant;
 
 namespace CakeStudio.Services
 {
@@ -45,7 +46,61 @@ namespace CakeStudio.Services
                 .ToList();
         }
 
-        public int Create(int customerId, OrderViewModel model)
+        public decimal CalculateTotalPrice(OrderViewModel model)
+        {
+            if (!model.CakeId.HasValue ||
+                !model.SizeId.HasValue ||
+                !model.FlavourId.HasValue ||
+                !model.TierId.HasValue)
+            {
+                throw new ArgumentException(Resource.CakeOptionsRequired);
+            }
+
+            using var session = _nhibernateHelper.OpenSession();
+
+            var cake = session.Get<Cake>(model.CakeId.Value);
+            var size = session.Get<CakeSize>(model.SizeId.Value);
+            var flavour = session.Get<CakeFlavour>(model.FlavourId.Value);
+            var tier = session.Get<CakeTier>(model.TierId.Value);
+
+            if (cake == null || !cake.IsAvailable)
+                throw new ArgumentException(Resource.CakeUnavailable);
+
+            if (size == null || !size.IsAvailable)
+                throw new ArgumentException(Resource.SizeUnavailable);
+
+            if (flavour == null || !flavour.IsAvailable)
+                throw new ArgumentException(Resource.FlavourUnavailable);
+
+            if (tier == null || !tier.IsAvailable)
+                throw new ArgumentException(Resource.TierUnavailable);
+
+            decimal totalPrice = cake.BasePrice;
+
+            // Default size: 6 inch
+            bool isDefaultSize = size.SizeName.Trim()
+                .Equals("6 inch", StringComparison.OrdinalIgnoreCase);
+
+            if (!isDefaultSize)
+                totalPrice += size.AdditionalPrice;
+
+            // Default flavour: cake's original flavour
+            if (flavour.FlavourId != cake.Flavour.FlavourId)
+                totalPrice += flavour.AdditionalPrice;
+
+            // Default tier: 1
+            bool isDefaultTier = tier.TierName.Trim()
+                .Equals("1", StringComparison.OrdinalIgnoreCase);
+
+            if (!isDefaultTier)
+                totalPrice += tier.AdditionalPrice;
+
+            if (totalPrice <= 0 || totalPrice > 100000)
+                throw new ArgumentException(Resource.InvalidOrderPrice);
+
+            return totalPrice;
+        }
+        public int Create(int customerId, OrderViewModel model, string paymentMethod)
         {
             if (!model.CakeId.HasValue)
                 throw new ArgumentException(Resource.CakeRequired);
@@ -171,6 +226,9 @@ namespace CakeStudio.Services
                 if (totalPrice <= 0 || totalPrice > 100000)
                     throw new ArgumentException(Resource.InvalidOrderPrice);
 
+                if (paymentMethod != Constant.Constant.PaymentMethod.Card)
+                    throw new ArgumentException("Invalid payment method.");
+
                 // Create Order entity
                 var order = new Order
                 {
@@ -199,6 +257,18 @@ namespace CakeStudio.Services
                 };
 
                 session.Save(order);
+
+                var payment = new Payment
+                {
+                    Order = order,
+                    Amount = totalPrice,
+                    PaymentMethod = Constant.Constant.PaymentMethod.Card,
+                    PaymentStatus = Constant.Constant.PaymentStatus.Paid,
+                    PaidAt = DateTime.Now
+                };
+
+                session.Save(payment);
+
                 transaction.Commit();
 
                 return order.OrderId;
@@ -252,13 +322,17 @@ namespace CakeStudio.Services
             if (order == null)
                 return null;
 
+            var payment = session.Query<Payment>()
+            .SingleOrDefault(p => p.Order.OrderId == id);
+
             return new OrderDetailsViewModel
             {
                 Order = order,
                 CakeName = order.Cake?.CakeName ?? "Unknown Cake",
                 FlavourName = order.Flavour?.FlavourName ?? "-",
                 SizeName = order.Size?.SizeName ?? "-",
-                TierName = order.Tier?.TierName ?? "-"
+                TierName = order.Tier?.TierName ?? "-",
+                Payment= payment
             };
         }
 
@@ -344,6 +418,29 @@ namespace CakeStudio.Services
                 order.UpdatedId = bakerId;
 
                 session.Update(order);
+
+                if (status == Constant.Constant.OrderStatus.Rejected)
+                {
+                    var payment = session.Query<Payment>()
+                        .SingleOrDefault(p => p.Order.OrderId == orderId);
+
+                    if (payment == null)
+                    {
+                        throw new InvalidOperationException(
+                            "Payment record not found for this order.");
+                    }
+
+                    if (payment.PaymentStatus != Constant.Constant.PaymentStatus.Paid)
+                    {
+                        throw new InvalidOperationException(
+                            "Only paid payments can be refunded.");
+                    }
+
+                    payment.PaymentStatus = Constant.Constant.PaymentStatus.Refunded;
+                    payment.RefundedAt = DateTime.Now;
+
+                    session.Update(payment);
+                }
                 transaction.Commit();
             }
             catch

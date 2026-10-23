@@ -1,0 +1,240 @@
+﻿@model CakeStudio.ViewModels.PaymentViewModel
+
+@{
+    ViewData["Title"] = "Payment";
+}
+
+<div class="container mt-4 mb-5">
+
+    <div class="mb-4">
+        <h3>Complete Payment</h3>
+        <p class="text-muted">
+            Enter your test card details to complete payment.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Left: Card Details -->
+        <div class="col-lg-8">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-body p-4">
+
+                    <form asp-controller="Order"
+                          asp-action="Payment"
+                          method="post"
+                          id="paymentForm">
+
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                         </div>
+                
+                        <!-- Card Details -->
+                        <h5 class="mb-3">Card Details</h5>
+
+           
+                        <!-- Card Number -->
+                        <div class="mb-3">
+                            <label asp-for="CardNumber" class="form-label">
+                                Card Number
+                            </label>
+
+                            <input asp-for="CardNumber"
+                                   class="form-control rounded-3"
+                                   placeholder="0000 0000 0000 0000"
+                                   maxlength="19"
+                                   inputmode="numeric"
+                                   autocomplete="off" />
+
+                            <span asp-validation-for="CardNumber"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-4">
+
+                            <!-- Expiry Date -->
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label asp-for="ExpiryDate" class="form-label">
+                                    Expiry Date
+                                </label>
+
+                                <input asp-for="ExpiryDate"
+                                       class="form-control rounded-3"
+                                       placeholder="MM/YY"
+                                       maxlength="5"
+                                       autocomplete="off" />
+
+                                <span asp-validation-for="ExpiryDate"
+                                      class="text-danger"></span>
+                            </div>
+
+                            <!-- Security Code -->
+                            <div class="col-md-6">
+                                <label asp-for="SecurityCode" class="form-label">
+                                    Security Code (CVV)
+                                </label>
+
+                                <input asp-for="SecurityCode"
+                                       type="password"
+                                       class="form-control rounded-3"
+                                       placeholder="000"
+                                       maxlength="3"
+                                       inputmode="numeric"
+                                       autocomplete="off" />
+
+                                <span asp-validation-for="SecurityCode"
+                                      class="text-danger"></span>
+                            </div>
+
+                        </div>
+
+                        <button type="submit"
+                                id="payButton"
+                                class="btn btn-primary w-100 rounded-3">
+                            <i class="bi bi-credit-card me-2"></i>
+                            Pay RM @Model.Amount.ToString("F2")
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Order Summary -->
+        <div class="col-lg-4">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-body p-4">
+
+                    <h5 class="mb-3">Order Summary</h5>
+                    <hr />
+
+                    <h6 class="mb-3">@Model.CakeName</h6>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Base Price</span>
+                        <span>RM @Model.BasePrice.ToString("F2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Size - @Model.SizeName</span>
+                        <span>+RM @Model.SizePrice.ToString("F2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Flavour - @Model.FlavourName</span>
+                        <span>+RM @Model.FlavourPrice.ToString("F2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Tier - @Model.TierName</span>
+                        <span>+RM @Model.TierPrice.ToString("F2")</span>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between fw-bold mb-3">
+                        <span>Total Price</span>
+                        <span>RM @Model.Amount.ToString("F2")</span>
+                    </div>
+
+                    <hr />
+
+                    <h6 class="mb-3">Order Information</h6>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Required Date</span>
+                        <span>@Model.RequiredDate?.ToString("dd/MM/yyyy")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Required Time</span>
+                        <span>@Model.RequiredTime?.ToString(@"hh\:mm")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Collection</span>
+                        <span>@Model.CollectionMethod</span>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between">
+                        <span>Payment Method</span>
+                        <strong>Card</strong>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+
+                const paymentForm = document.getElementById("paymentForm");
+                const payButton = document.getElementById("payButton");
+                const cardNumberInput = document.getElementById("CardNumber");
+
+                if (cardNumberInput) {
+                    cardNumberInput.addEventListener("input", function () {
+
+                        let value = this.value.replace(/\D/g, "").substring(0, 16);
+
+                        this.value = value.replace(/(\d{4})(?=\d)/g, "$1 ");
+                    });
+                }
+                const expiryInput = document.getElementById("ExpiryDate");
+
+                if (expiryInput) {
+                    expiryInput.addEventListener("input", function () {
+                        let value = this.value.replace(/\D/g, "").substring(0, 4);
+
+                        if (value.length > 2) {
+                            value = value.substring(0, 2) + "/" + value.substring(2);
+                        }
+
+                        this.value = value;
+                    });
+                }
+
+                if (!paymentForm || !payButton) return;
+
+                let isSubmitting = false;
+
+                paymentForm.addEventListener("submit", function (event) {
+
+                    if (isSubmitting) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    if (!paymentForm.checkValidity()) {
+                        return;
+                    }
+
+                    if (window.jQuery &&
+                        $.validator &&
+                        !$(paymentForm).valid()) {
+                        return;
+                    }
+
+                    isSubmitting = true;
+
+                    payButton.disabled = true;
+                    payButton.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2"
+                              role="status"
+                              aria-hidden="true"></span>
+                        Processing Payment...
+                    `;
+                });
+
+            });
+        </script>
+    }

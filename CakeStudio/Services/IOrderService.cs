@@ -9,18 +9,16 @@ namespace CakeStudio.Services
         List<Order> GetAll();
 
         Order? GetById(int id);
+
         OrderDetailsViewModel? GetOrderDetails(int id);
 
         List<Order> GetOrdersByCustomer(int customerId);
 
-        int Create(int customerId, OrderViewModel model);
+        int Create(int customerId, OrderViewModel model, string paymentMethod);
 
-        void UpdateStatus(
-            int orderId,
-            string status,
-            int bakerId
-        );
+        void UpdateStatus(int orderId, string status, int bakerId);
 
-       
+        decimal CalculateTotalPrice(OrderViewModel model);
+
     }
 }

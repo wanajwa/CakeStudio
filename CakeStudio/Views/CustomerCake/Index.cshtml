@@ -106,7 +106,7 @@
     </div> <!-- End left column -->
 
     <!-- RIGHT: Cake Details Panel -->
-    <div class="col-lg-5">
+    <div class="col-lg-5" id="cakeDetailsSection">
 
         <h4 class="fw-semibold mb-3">
             Cake Details
@@ -211,17 +211,29 @@
                             }
 
                             panel.innerHTML = await response.text();
-                          
-
-                            if (window.innerWidth < 992) {
-                                panel.scrollIntoView({
-                                    behavior: "smooth",
-                                    block: "start"
-                                });
-                            }
-
+                       
                             initializePriceCalculation();
 
+                            // Scroll to Cake Details heading
+                            const detailsSection = document.getElementById("cakeDetailsSection");
+                            const pageHeader = document.querySelector(".cake-page-header");
+
+                            if (detailsSection) {
+                                const headerHeight = pageHeader
+                                    ? pageHeader.getBoundingClientRect().height
+                                    : 0;
+
+                                const targetTop =
+                                    detailsSection.getBoundingClientRect().top +
+                                    window.scrollY -
+                                    headerHeight -
+                                    20;
+
+                                window.scrollTo({
+                                    top: Math.max(0, targetTop),
+                                    behavior: "smooth"
+                                });
+                            }
                         } catch (error) {
                             if (error.name === "AbortError") return;
 

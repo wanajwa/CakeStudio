@@ -163,10 +163,6 @@ body {
             }
 }
 
-#cakeDetailsPanel {
-    scroll-margin-top: 100px;
-}
-
 /* Keep sidebar visible while scrolling */
 .sidebar {
     position: sticky;
@@ -848,3 +844,4 @@ body {
         background-color: #ffcaca;
         color: #a52e2b;
     }
+

@@ -12,5 +12,7 @@ namespace CakeStudio.ViewModels
         public string FlavourName { get; set; } = "";
         public string SizeName { get; set; } = "";
         public string TierName { get; set; } = "";
+
+        public Payment? Payment { get; set; }
     }
 }
