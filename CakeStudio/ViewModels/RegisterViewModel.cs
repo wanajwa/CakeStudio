@@ -24,6 +24,7 @@ namespace CakeStudio.ViewModels
         [DataType(DataType.Password)]
         public string ConfirmPassword { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Phone number is required.")]
         [Phone(ErrorMessage = "Invalid phone number.")]
         [StringLength(20)]
         public string PhoneNumber { get; set; } = string.Empty;

@@ -73,6 +73,7 @@ namespace CakeStudio.Services
                 // Validate required registration information
                 if (string.IsNullOrWhiteSpace(user.Name) ||
                     string.IsNullOrWhiteSpace(user.Email) ||
+                    string.IsNullOrWhiteSpace(user.PhoneNumber) ||
                     string.IsNullOrWhiteSpace(password))
                 {
                     serviceResponse.Message = Resource.RequiredFieldMissing;

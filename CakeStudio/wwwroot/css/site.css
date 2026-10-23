@@ -845,3 +845,15 @@ body {
         color: #a52e2b;
     }
 
+
+
+.cake-name-link {
+    color: #52657a;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+    .cake-name-link:hover {
+        color: #8265c9;
+        text-decoration: underline;
+    }

@@ -66,7 +66,45 @@
 
     <div class="card order-details-card">
         <div class="card-body p-4">
+            @if (User.IsInRole("Baker"))
+            {
+                <div class="order-info-section mb-4">
 
+                    <h5 class="order-section-title">
+                        <i class="bi bi-person me-2"></i>
+                        Customer Information
+                    </h5>
+
+                    <dl class="row order-info-list">
+
+                        <dt class="col-sm-4">Customer Name</dt>
+                        <dd class="col-sm-8">
+                            @Model.CustomerName
+                        </dd>
+
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">
+                            @Model.CustomerEmail
+                        </dd>
+
+                        <dt class="col-sm-4">Phone Number</dt>
+                        <dd class="col-sm-8">
+                            @(string.IsNullOrWhiteSpace(Model.CustomerPhone)
+                                                    ? "-"
+                                                    : Model.CustomerPhone)
+                                                                      </dd>
+
+                        <dt class="col-sm-4">Address</dt>
+                        <dd class="col-sm-8">
+                            @(string.IsNullOrWhiteSpace(Model.CustomerAddress)
+                                                    ? "-"
+                                                    : Model.CustomerAddress)
+                    </dd>
+
+                    </dl>
+
+                </div>
+                        }
 
             <div class="order-info-section">
 

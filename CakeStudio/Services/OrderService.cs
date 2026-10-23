@@ -291,6 +291,7 @@ namespace CakeStudio.Services
             CakeSize s = null!;
             CakeFlavour f = null!;
             CakeTier t = null!;
+            User u = null!;
 
             var order = session.QueryOver<Order>(() => o)
             // SELECT o. *
@@ -313,6 +314,9 @@ namespace CakeStudio.Services
             .Left.JoinAlias(
                 () => o.Tier,
                 () => t)
+            .Left.JoinAlias(
+                () => o.Customer,
+                () => u)
 
             //WHERE o.OrderId = id;
             .Where(() => o.OrderId == id)
@@ -332,7 +336,11 @@ namespace CakeStudio.Services
                 FlavourName = order.Flavour?.FlavourName ?? "-",
                 SizeName = order.Size?.SizeName ?? "-",
                 TierName = order.Tier?.TierName ?? "-",
-                Payment= payment
+                CustomerName = order.Customer?.Name ?? "-",
+                CustomerEmail = order.Customer?.Email ?? "-",
+                CustomerPhone = order.Customer?.PhoneNumber,
+                CustomerAddress = order.Customer?.Address,
+                Payment = payment
             };
         }
 

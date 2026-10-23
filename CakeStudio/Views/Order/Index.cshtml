@@ -119,7 +119,7 @@
 
                     <thead>
                         <tr>
-                            <th>Order ID</th>
+                            <th>No.</th>
                             <th>Customer</th>
                             <th>Cake</th>
                             <th>Required Date</th>
@@ -130,7 +130,9 @@
                     </thead>
 
                     <tbody>
-
+                        @{
+                            int no = 1;
+                        }
                         @foreach (var order in orders)
                         {
                             string statusClass = order.OrderStatus switch
@@ -167,7 +169,7 @@
 
                                 <td>
                                     <span class="order-id">
-                                        #@order.OrderId
+                                        @no
                                     </span>
                                 </td>
 
@@ -178,7 +180,12 @@
                                 </td>
 
                                 <td>
-                                    @(order.Cake?.CakeName ?? "-")
+                                    <a asp-controller="Order"
+                                       asp-action="Details"
+                                       asp-route-id="@order.OrderId"
+                                       class="cake-name-link">
+                                        @order.Cake?.CakeName
+                                    </a>
                                 </td>
 
                                 <td>
@@ -202,12 +209,7 @@
                                 <td>
                                     <div class="order-actions">
 
-                                        <a asp-controller="Order"
-                                           asp-action="Details"
-                                           asp-route-id="@order.OrderId"
-                                           class="order-details-btn">
-                                            Details
-                                        </a>
+                                    
 
                                 @if (nextStatuses.Length > 0)
                                         {
@@ -256,6 +258,8 @@
                                 </td>
 
                             </tr>
+                            no++;
+                        
                         }
 
                     </tbody>

@@ -119,10 +119,12 @@ namespace CakeStudio.Controllers
             // Convert RegisterViewModel into User model
             var user = new Customer
             {
-                Name = model.Name,
-                Email = model.Email,
-                PhoneNumber = model.PhoneNumber,
-                Address = model.Address
+                Name = model.Name.Trim(),
+                Email = model.Email.Trim(),
+                PhoneNumber = model.PhoneNumber.Trim(),
+                Address = string.IsNullOrWhiteSpace(model.Address)
+                    ? null
+                    : model.Address.Trim()
             };
 
             // Call UserService to register customer
