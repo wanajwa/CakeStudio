@@ -88,9 +88,7 @@ namespace CakeStudio.Controllers
 
             if(imageFile.Length > maxFileSize)
             {
-                ModelState.AddModelError(
-                    "imageFile", 
-                    Resource.ImageSizeExceeded);
+                ModelState.AddModelError("imageFile",Resource.ImageSizeExceeded);
                 return false;
             }
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
@@ -98,9 +96,7 @@ namespace CakeStudio.Controllers
                 .ToLowerInvariant();
             if (!allowedExtensions.Contains(extension))
             {
-                ModelState.AddModelError(
-                    "imageFile",
-                    Resource.InvalidImageExtension);
+                ModelState.AddModelError("imageFile",Resource.InvalidImageExtension);
                 return false;
             }
             var allowedContentTypes = new[]
@@ -112,9 +108,7 @@ namespace CakeStudio.Controllers
             if (!allowedContentTypes.Contains(
                 imageFile.ContentType.ToLowerInvariant()))
             {
-                ModelState.AddModelError(
-                    "imageFile",
-                    Resource.InvalidImageType);
+                ModelState.AddModelError("imageFile",Resource.InvalidImageType);
                 return false;
             }
             return true;

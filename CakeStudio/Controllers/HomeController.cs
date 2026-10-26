@@ -30,11 +30,12 @@ namespace CakeStudio.Controllers
             var orders = _orderService.GetAll();
 
             var today = DateTime.Today;
+
             // Retrieve successful, non-refunded payments
             var payments = _orderService.GetAllPayments();
 
             var paidPayments = payments
-                .Where(p => p.PaymentStatus == Constant.Constant.PaymentStatus.Paid)
+                .Where(p => p.PaymentStatus == PaymentStatus.Paid)
                 .ToList();
 
 

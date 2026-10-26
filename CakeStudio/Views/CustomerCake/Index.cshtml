@@ -157,10 +157,10 @@
 
                     let visibleCount = 0;
 
-                    cakeItems.forEach(cake => {
+                    cakeItems.forEach(cake => 
+                    {
 
-                        const cakeName =
-                            (cake.dataset.cakeName || "").toLowerCase();
+                        const cakeName = (cake.dataset.cakeName || "").toLowerCase();
 
                         const isMatch = cakeName.includes(searchText);
 
@@ -195,11 +195,12 @@
                         panel.innerHTML =
                             '<div class="text-center p-4">Loading cake details...</div>';
 
-                        try {
-                            const url = '@Url.Action("DetailsPanel", "CustomerCake")'
-                                + '?id=' + encodeURIComponent(cakeId);
+                        try 
+                        {
+                            const url = '@Url.Action("DetailsPanel", "CustomerCake")' + '?id=' + encodeURIComponent(cakeId);
 
-                            const response = await fetch(url, {
+                            const response = await fetch(url, 
+                            {
                                 signal: controller.signal
                             });
 
@@ -254,8 +255,7 @@
                 const totalElement = panel.querySelector("#totalPrice");
                 if (!totalElement) return;
 
-                const basePrice =
-                    parseFloat(totalElement.dataset.basePrice) || 0;
+                const basePrice =  parseFloat(totalElement.dataset.basePrice) || 0;
 
                 const dropdowns = panel.querySelectorAll(".cake-option");
 

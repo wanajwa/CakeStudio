@@ -6,7 +6,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold">Cake Options</h2>
+        <h2 class="mb-0">Cake Options</h2>
        
     </div>
 </div>
@@ -99,7 +99,7 @@
          role="tabpanel"
          aria-labelledby="sizes-tab">
 
-        <div class="card border-0 shadow-sm">
+        <div class="card cake-options-card">
             <div class="card-body">
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -203,7 +203,7 @@
          role="tabpanel"
          aria-labelledby="flavours-tab">
 
-        <div class="card border-0 shadow-sm">
+        <div class="card cake-options-card">
             <div class="card-body">
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -259,18 +259,22 @@
                                     <td>
                                         <!-- Edit Button - Yellow -->
                                         <button type="button"
-                                                class="btn btn-sm btn-warning"
+                                                class="btn btn-edit-icon"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#editFlavourModal-@flavour.FlavourId">
-                                            Edit
+                                                data-bs-target="#editSizeModal-@flavour.FlavourId"
+                                                title="Edit Size"
+                                                aria-label="Edit Size">
+                                            <i class="bi bi-pencil"></i>
                                         </button>
 
                                         <!-- Delete Button - Red -->
                                         <button type="button"
-                                                class="btn btn-sm btn-danger"
+                                                class="btn btn-delete-icon"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#deleteFlavourModal-@flavour.FlavourId">
-                                            Delete
+                                                data-bs-target="#deleteSizeModal-@flavour.FlavourId"
+                                                title="Delete Size"
+                                                aria-label="Delete Size">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -303,7 +307,7 @@
          role="tabpanel"
          aria-labelledby="tiers-tab">
 
-        <div class="card border-0 shadow-sm">
+        <div class="card cake-options-card">
             <div class="card-body">
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -359,18 +363,22 @@
                                     <td>
                                         <!-- Edit Button - Yellow -->
                                         <button type="button"
-                                                class="btn btn-sm btn-warning"
+                                                class="btn btn-edit-icon"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#editTierModal-@tier.TierId">
-                                            Edit
+                                                data-bs-target="#editSizeModal-@tier.TierId"
+                                                title="Edit Size"
+                                                aria-label="Edit Size">
+                                            <i class="bi bi-pencil"></i>
                                         </button>
 
                                         <!-- Delete Button - Red -->
                                         <button type="button"
-                                                class="btn btn-sm btn-danger"
+                                                class="btn btn-delete-icon"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#deleteTierModal-@tier.TierId">
-                                            Delete
+                                                data-bs-target="#deleteSizeModal-@tier.TierId"
+                                                title="Delete Size"
+                                                aria-label="Delete Size">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
                                 </tr>

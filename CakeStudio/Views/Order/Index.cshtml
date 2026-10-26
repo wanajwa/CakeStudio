@@ -4,26 +4,100 @@
 @{
     ViewData["Title"] = "Manage Orders";
 
-    var orders = Model ?? new List<CakeStudio.Models.Order>();
+    var sourceOrders = Model ?? new List<CakeStudio.Models.Order>();
 
-    var totalOrders = orders.Count;
+    // Summary cards always count all orders.
+    var totalOrders = sourceOrders.Count;
+    var preparingOrders = sourceOrders.Count(
+        o => o.OrderStatus == OrderStatus.Preparing);
+    var readyOrders = sourceOrders.Count(
+        o => o.OrderStatus == OrderStatus.Ready);
+    var completedOrders = sourceOrders.Count(
+        o => o.OrderStatus == OrderStatus.Completed);
 
-    var preparingOrders = orders.Count(
-        o => o.OrderStatus == Constant.OrderStatus.Preparing);
+    string sort = Context.Request.Query["sort"].ToString();
 
-    var readyOrders = orders.Count(
-        o => o.OrderStatus == Constant.OrderStatus.Ready);
+    var validChoices = new[]
+    {
+        "", "nearest", "pending", "preparing", "ready",
+        "completed", "rejected", "newest"
+    };
 
-    var completedOrders = orders.Count(
-        o => o.OrderStatus == Constant.OrderStatus.Completed);
+    if (!validChoices.Contains(sort))
+    {
+        sort = "";
+    }
+
+    if (!validChoices.Contains(sort))
+    {
+        sort = "nearest";
+    }
+
+    // Choose which orders to display.
+    var filteredOrders = sort switch
+    {
+        "pending" => sourceOrders.Where(
+            o => o.OrderStatus == OrderStatus.Pending),
+
+        "preparing" => sourceOrders.Where(
+            o => o.OrderStatus == OrderStatus.Preparing),
+
+        "ready" => sourceOrders.Where(
+            o => o.OrderStatus == OrderStatus.Ready),
+
+        "completed" => sourceOrders.Where(
+            o => o.OrderStatus == OrderStatus.Completed),
+
+        "rejected" => sourceOrders.Where(
+            o => o.OrderStatus == OrderStatus.Rejected),
+
+        "newest" => sourceOrders.AsEnumerable(),
+
+        // Nearest required date: show unfinished orders.
+        _ => sourceOrders.Where(o =>
+            o.OrderStatus == OrderStatus.Pending ||
+            o.OrderStatus == OrderStatus.Preparing ||
+            o.OrderStatus == OrderStatus.Ready)
+    };
+
+    // Finished orders and order history: newest placed first.
+    // Unfinished orders: earliest required date first.
+    var sortedOrders =
+        sort == "completed" || sort == "rejected" || sort == "newest"
+        ? filteredOrders.OrderByDescending(o => o.CreatedAt)
+        : filteredOrders.OrderBy(
+            o => o.RequiredDate ?? DateTime.MaxValue);
+
+    var orders = sortedOrders
+        .ThenBy(o => o.OrderId)
+        .ToList();
+
+    int pageSize = 5;
+
+    int currentPage = int.TryParse(
+        Context.Request.Query["page"].ToString(), out int page)
+        ? page
+        : 1;
+
+    // Pagination counts the displayed orders.
+    int totalPages = Math.Max(
+        1,
+        (int)Math.Ceiling(orders.Count / (double)pageSize));
+
+    currentPage = Math.Clamp(currentPage, 1, totalPages);
+
+    var pagedOrders = orders
+        .Skip((currentPage - 1) * pageSize)
+        .Take(pageSize)
+        .ToList();
 }
 
 <div class="container-fluid manage-orders-page mt-4 mb-5">
 
     <!-- Page Header -->
-    <div class="manage-orders-header">
+    <div class="manage-orders-header mb-4">
         <div>
-            <h2>Manage Orders</h2>
+            <h2 class=" mb-0">Manage Orders</h2>
         </div>
     </div>
 
@@ -97,11 +171,68 @@
     <!-- Orders Card -->
     <div class="manage-orders-card">
 
-        <div class="orders-card-header">
-            <div>
-                <h5>Customer Orders</h5>
+        <div class="orders-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h5 class="mb-0">Customer Orders</h5>
 
-            </div>
+            <form asp-controller="Order"
+                  asp-action="Index"
+                  method="get"
+                  class="d-flex align-items-center gap-2">
+
+                
+
+                <select id="orderSort"
+                        name="sort"
+                        class="form-select form-select-sm @(sort == "" ? "text-muted" : "")"
+                        onchange="this.form.submit()">
+
+                    <option value="" disabled selected="@(sort == "")">
+                        Sort by
+                    </option>
+
+                    <option class="text-dark"
+                            value="nearest"
+                            selected="@(sort == "nearest")">
+                        Nearest required date
+                    </option>
+
+                    <option class="text-dark"
+                            value="pending"
+                            selected="@(sort == "pending")">
+                        Pending
+                    </option>
+
+                    <option class="text-dark"
+                            value="preparing"
+                            selected="@(sort == "preparing")">
+                        Preparing
+                    </option>
+
+                    <option class="text-dark"
+                            value="ready"
+                            selected="@(sort == "ready")">
+                        Ready for Pickup
+                    </option>
+
+                    <option class="text-dark"
+                            value="completed"
+                            selected="@(sort == "completed")">
+                        Completed
+                    </option>
+
+                    <option class="text-dark"
+                            value="rejected"
+                            selected="@(sort == "rejected")">
+                        Rejected
+                    </option>
+
+                    <option class="text-dark"
+                            value="newest"
+                            selected="@(sort == "newest")">
+                        All orders: Newest
+                    </option>
+                </select>
+            </form>
         </div>
 
         @if (!orders.Any())
@@ -125,47 +256,51 @@
                             <th>Required Date</th>
                             <th>Total</th>
                             <th>Status</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         @{
-                            int no = 1;
+                            int no = (currentPage - 1) * pageSize + 1;
                         }
-                        @foreach (var order in orders)
+                        @foreach (var order in pagedOrders)
                         {
                             string statusClass = order.OrderStatus switch
                             {
-                                Constant.OrderStatus.Pending => "status-pending",
-                                Constant.OrderStatus.Preparing => "status-preparing",
-                                Constant.OrderStatus.Ready => "status-ready",
-                                Constant.OrderStatus.Completed => "status-completed",
-                                Constant.OrderStatus.Rejected => "status-rejected",
+                                OrderStatus.Pending => "status-pending",
+                                OrderStatus.Preparing => "status-preparing",
+                                OrderStatus.Ready => "status-ready",
+                                OrderStatus.Completed => "status-completed",
+                                OrderStatus.Rejected => "status-rejected",
                                 _ => "status-default"
                             };
 
                             string[] nextStatuses = order.OrderStatus switch
                             {
-                                Constant.OrderStatus.Pending => new[]
+                                OrderStatus.Pending => new[]
                                 {
-                                        Constant.OrderStatus.Preparing,
-                                        Constant.OrderStatus.Rejected
+                                        OrderStatus.Preparing,
+                                        OrderStatus.Rejected
                                 },
 
-                                Constant.OrderStatus.Preparing => new[]
+                                OrderStatus.Preparing => new[]
                                 {
-                                        Constant.OrderStatus.Ready
+                                        OrderStatus.Ready
                                 },
 
-                                Constant.OrderStatus.Ready => new[]
+                                OrderStatus.Ready => new[]
                                 {
-                                        Constant.OrderStatus.Completed
+                                        OrderStatus.Completed
                                 },
                                 _ => Array.Empty<string>()
                             };
 
-                            <tr>
+                            <tr class="order-row"
+                                data-url="@Url.Action("Details", "Order", new { id = order.OrderId })"
+                                tabindex="0"
+                                aria-label="View order @no details"
+                                onclick="if (!event.target.closest('a, button, input, select, textarea, form')) { window.location.href = this.dataset.url; }"
+                                onkeydown="if (event.target === this && event.key === 'Enter') { window.location.href = this.dataset.url; }">
 
                                 <td>
                                     <span class="order-id">
@@ -180,12 +315,9 @@
                                 </td>
 
                                 <td>
-                                    <a asp-controller="Order"
-                                       asp-action="Details"
-                                       asp-route-id="@order.OrderId"
-                                       class="cake-name-link">
+                                    <span class="cake-name">
                                         @order.Cake?.CakeName
-                                    </a>
+                                    </span>
                                 </td>
 
                                 <td>
@@ -199,62 +331,55 @@
                                 </td>
 
                                 <td>
-                                    <span class="order-status @statusClass">
-                                        @(order.OrderStatus == Constant.OrderStatus.Ready
-                                                                        ? "Ready for Pickup"
-                                                                        : order.OrderStatus)
-                            </span>
-                        </td>
+                                    @if (nextStatuses.Length > 0)
+                                    {
+                                        <div class="dropdown">
+                                            <button type="button"
+                                                    class="order-status @statusClass dropdown-toggle status-dropdown-toggle"
+                                                    data-bs-toggle="dropdown"
+                                                    aria-expanded="false"
+                                                    aria-label="Change order @no status">
+                                                @(order.OrderStatus == OrderStatus.Ready
+                                                                                    ? "Ready for Pickup"
+                                                                                    : order.OrderStatus)
+                                </button>
 
-                                <td>
-                                    <div class="order-actions">
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                    @foreach (var status in nextStatuses)
+                                                {
+                                                    <li>
+                                                        <form asp-controller="Order"
+                                                              asp-action="UpdateStatus"
+                                                              method="post">
 
-                                    
+                                                            @Html.AntiForgeryToken()
 
-                                @if (nextStatuses.Length > 0)
-                                        {
-                                            <form asp-controller="Order"
-                                                  asp-action="UpdateStatus"
-                                                  method="post"
-                                                  class="order-update-form">
+                                                            <input type="hidden"
+                                                                   name="orderId"
+                                                                   value="@order.OrderId" />
 
-                                                @Html.AntiForgeryToken()
+                                                            <input type="hidden"
+                                                                   name="status"
+                                                                   value="@status" />
 
-                                                <input type="hidden"
-                                                       name="orderId"
-                                                       value="@order.OrderId" />
-
-                                                <select name="status"
-                                                        class="form-select form-select-sm"
-                                                        aria-label="Update order #@order.OrderId status"
-                                                        required>
-
-                                                    <option value="">
-                                                        Update Status
-                                                    </option>
-
-                                                    @foreach (var status in nextStatuses)
-                                                    {
-                                                        <option value="@status">
-                                                            @(status == Constant.OrderStatus.Ready
-                                                                                                        ? "Ready for Pickup"
-                                                                                                        : status)
-                                        </option>
-                                                                                }
-
-                                                </select>
-
-                                                <button type="submit"
-                                                        class="order-update-btn"
-                                                        title="Save status"
-                                                        aria-label="Save order #@order.OrderId status">
-                                                    <i class="bi bi-check-lg"></i>
-                                                </button>
-
-                                            </form>
-                                        }
-
-                                    </div>
+                                                            <button type="submit"
+                                                                    class="dropdown-item">
+                                                                @(status == OrderStatus.Ready
+                                                                                                                ? "Ready for Pickup"
+                                                                                                                : status)
+                                            </button>
+                                        </form>
+                                    </li>
+                                                                        }
+                                            </ul>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="order-status @statusClass">
+                                            @order.OrderStatus
+                                        </span>
+                                    }
                                 </td>
 
                             </tr>
@@ -266,8 +391,81 @@
                 </table>
             </div>
 
-            <div class="orders-table-footer">
-                Total: @orders.Count orders
+            <div class="orders-table-footer d-flex justify-content-end align-items-center flex-wrap gap-3">
+
+                @if (totalPages > 1)
+                {
+                    <nav 
+                        aria-label="Order pages">
+                        <ul class="pagination orders-pagination mb-0">
+
+                            @if (currentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       asp-controller="Order"
+                                       asp-action="Index"
+                                       asp-route-page="@(currentPage - 1)"
+                                       asp-route-sort="@sort"
+                                       aria-label="Previous page">
+                                        &lt;
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link" aria-disabled="true">&lt;</span>
+                                </li>
+                            }
+
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                if (i == currentPage)
+                                {
+                                    <li class="page-item active">
+                                        <span class="page-link" aria-current="page">
+                                            @i
+                                        </span>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           asp-controller="Order"
+                                           asp-action="Index"
+                                           asp-route-page="@i"
+                                           asp-route-sort="@sort" >
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+                            }
+
+                            @if (currentPage < totalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       asp-controller="Order"
+                                       asp-action="Index"
+                                       asp-route-page="@(currentPage + 1)"
+                                       asp-route-sort="@sort"
+                                       aria-label="Next page">
+                                        &gt;
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link" aria-disabled="true">&gt;</span>
+                                </li>
+                            }
+
+                        </ul>
+                    </nav>
+                }
             </div>
 
             

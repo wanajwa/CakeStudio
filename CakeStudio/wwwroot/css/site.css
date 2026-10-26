@@ -484,7 +484,7 @@ body {
 
     .manage-orders-header h2 {
         font-size: 28px;
-        font-weight: 700;
+        font-weight: 600;
         color: #252b37;
         margin-bottom: 6px;
     }
@@ -856,4 +856,93 @@ body {
     .cake-name-link:hover {
         color: #8265c9;
         text-decoration: underline;
+    }
+
+/*    cake option*/
+.cake-options-card {
+    background: #ffffff;
+    border: 1px solid #edf0f3;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: none;
+}
+
+#cakeOptionsTabs .nav-link {
+    color: #4b5563;
+}
+
+    #cakeOptionsTabs .nav-link.active {
+        color: #252b37;
+        font-weight: 600;
+    }
+
+/*    page*/
+.orders-pagination {
+    gap: 6px;
+}
+
+    .orders-pagination .page-item .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #edf0f3;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #52657a;
+        font-size: 14px;
+        text-decoration: none;
+        box-shadow: none;
+    }
+
+    .orders-pagination .page-link:hover {
+        background: #f4f0ff;
+        color: #7455b5;
+    }
+
+    .orders-pagination .page-item.active .page-link {
+        background: #eee5ff;
+        border-color: #eee5ff;
+        color: #7455b5;
+        font-weight: 600;
+    }
+
+    .orders-pagination .page-item.disabled .page-link {
+        background: #fafbfd;
+        color: #c0c5ce;
+    }
+
+
+/*    myorder*/
+
+.my-orders-card .order-row {
+    cursor: pointer;
+}
+
+    .my-orders-card .order-row:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: -2px;
+    }
+
+/*    manage order*/
+.manage-orders-card .order-row {
+    cursor: pointer;
+}
+
+    .manage-orders-card .order-row:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: -2px;
+    }
+.status-dropdown-toggle {
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+    .status-dropdown-toggle::after {
+        margin-left: 0.5rem;
+        vertical-align: middle;
     }

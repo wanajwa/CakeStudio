@@ -187,7 +187,7 @@ namespace CakeStudio.Controllers
 
                 TempData["SuccessMessage"] = Resource.CakeFlavourAddedSuccess;
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException )
             {
                 TempData["ErrorMessage"] = Resource.DuplicateCakeFlavour;
             }
@@ -286,7 +286,7 @@ namespace CakeStudio.Controllers
                 _cakeTierService.Create(cakeTier);
                 TempData["SuccessMessage"] = Resource.CakeTierAddedSuccess;
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException )
             {
                 TempData["ErrorMessage"] = Resource.DuplicateCakeTier;
             }

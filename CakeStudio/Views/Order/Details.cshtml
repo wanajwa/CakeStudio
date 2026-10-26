@@ -37,11 +37,11 @@
     @{
         string statusClass = Model.Order.OrderStatus switch
         {
-            Constant.OrderStatus.Pending => "status-pending",
-            Constant.OrderStatus.Preparing => "status-preparing",
-            Constant.OrderStatus.Ready => "status-ready",
-            Constant.OrderStatus.Completed => "status-completed",
-            Constant.OrderStatus.Rejected => "status-rejected",
+            OrderStatus.Pending => "status-pending",
+            OrderStatus.Preparing => "status-preparing",
+            OrderStatus.Ready => "status-ready",
+            OrderStatus.Completed => "status-completed",
+            OrderStatus.Rejected => "status-rejected",
             _ => "status-default"
         };
     }
@@ -223,13 +223,13 @@
 
                         <dt class="col-sm-4">Payment Status</dt>
                         <dd class="col-sm-8">
-                            @if (Model.Payment.PaymentStatus == Constant.PaymentStatus.Paid)
+                            @if (Model.Payment.PaymentStatus == PaymentStatus.Paid)
                             {
                                 <span class="order-status status-completed">
                                     Paid
                                 </span>
                             }
-                            else if (Model.Payment.PaymentStatus == Constant.PaymentStatus.Refunded)
+                            else if (Model.Payment.PaymentStatus == PaymentStatus.Refunded)
                             {
                                 <span class="order-status status-rejected">
                                     Refunded
@@ -253,7 +253,7 @@
                             @(Model.Payment.PaidAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "-")
                         </dd>
 
-                        @if (Model.Payment.PaymentStatus == Constant.PaymentStatus.Refunded)
+                        @if (Model.Payment.PaymentStatus == PaymentStatus.Refunded)
                         {
                             <dt class="col-sm-4">Refund Date</dt>
                             <dd class="col-sm-8">

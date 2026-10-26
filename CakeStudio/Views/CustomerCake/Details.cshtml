@@ -198,20 +198,15 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-            // Base price includes the original flavour
-            // and standard 6-inch cake size.
-            const basePrice =
-                @Model.Cake.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            // Base price 
+            const basePrice = @Model.Cake.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
             // Get cake option dropdowns.
-            const sizeSelect =
-                document.getElementById("cakeSize");
+            const sizeSelect = document.getElementById("cakeSize");
 
-            const flavourSelect =
-                document.getElementById("cakeFlavour");
+            const flavourSelect = document.getElementById("cakeFlavour");
 
-            const tierSelect =
-                document.getElementById("cakeTier");
+            const tierSelect = document.getElementById("cakeTier");
 
             // Get total price element.
             const totalPriceElement =

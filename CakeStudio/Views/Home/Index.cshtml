@@ -199,11 +199,12 @@
 </div>
 
 @section Scripts {
+    @* load Chart.js *@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 
     <script>
+        //receive chart from razor
         const salesByPeriod = @Html.Raw(JsonSerializer.Serialize(Model.SalesByPeriod));
-
         const cakeLabels = @Html.Raw(JsonSerializer.Serialize(Model.CakeLabels));
         const cakeCounts = @Html.Raw(JsonSerializer.Serialize(Model.CakeOrderCounts));
 

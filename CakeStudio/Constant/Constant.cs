@@ -1,27 +1,26 @@
 ﻿namespace CakeStudio.Constant
 {
-    public static class Constant
+
+    public static class OrderStatus
     {
-        public static class OrderStatus
-        {
-            public const string Pending = "Pending";
-            //public const string Accepted = "Accepted";
-            public const string Preparing = "Preparing";
-            public const string Ready = "Ready";
-            public const string Completed = "Completed";
-            public const string Rejected = "Rejected";
-        }
-
-        public static class PaymentStatus
-        {
-            public const string Paid = "Paid";
-            public const string Refunded = "Refunded";
-        }
-
-        public static class PaymentMethod
-        {
-            public const string Card = "Card";
-        }
-
+        public const string Pending = "Pending";
+        //public const string Accepted = "Accepted";
+        public const string Preparing = "Preparing";
+        public const string Ready = "Ready";
+        public const string Completed = "Completed";
+        public const string Rejected = "Rejected";
     }
+
+    public static class PaymentStatus
+    {
+        public const string Paid = "Paid";
+        public const string Refunded = "Refunded";
+    }
+
+    public static class PaymentMethod
+    {
+        public const string Card = "Card";
+    }
+
+    
 }

@@ -3,6 +3,30 @@
 
 @{
     ViewData["Title"] = "My Orders";
+
+    int pageSize = 5;
+    int currentPage;
+
+    if (int.TryParse(
+        Context.Request.Query["page"].ToString(), out int page))
+    {
+        currentPage = page;
+    }
+    else
+    {
+        currentPage = 1;
+    }
+
+    int totalPages = Math.Max(
+        1,
+        (int)Math.Ceiling(Model.Count / (double)pageSize));
+
+    currentPage = Math.Clamp(currentPage, 1, totalPages);
+
+    var pagedOrders = Model
+        .Skip((currentPage - 1) * pageSize)
+        .Take(pageSize)
+        .ToList();
 }
 
 <div class="container mt-4">
@@ -33,17 +57,21 @@
                         <th>Required Date</th>
                         <th>Total Price</th>
                         <th>Status</th>
-                        <th>Action</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    @for (int i = 0; i < Model.Count; i++)
+                    @for (int i = 0; i < pagedOrders.Count; i++)
                     {
-                        var order = Model[i];
+                        var order = pagedOrders[i];
 
-                        <tr>
-                            <td>@(i + 1)</td>
+                            <tr class="order-row"
+                                data-url="@Url.Action("Details", "Order", new { id = order.OrderId })"
+                                tabindex="0"
+                                aria-label="View order @((currentPage - 1) * pageSize + i + 1) details"
+                                onclick="window.location.href = this.dataset.url"
+                                onkeydown="if (event.key === 'Enter') { window.location.href = this.dataset.url; }">
+                            <td>@((currentPage - 1) * pageSize + i + 1)</td>
                             <td>@order.CreatedAt.ToString("dd MMM yyyy")</td>
                             <td>
                                 @(order.RequiredDate?.ToString("dd MMM yyyy, hh:mm tt") ?? "-")
@@ -54,11 +82,11 @@
                                 @{
                                     string statusClass = order.OrderStatus switch
                                     {
-                                            Constant.OrderStatus.Pending => "status-pending",
-                                            Constant.OrderStatus.Preparing => "status-preparing",
-                                            Constant.OrderStatus.Ready => "status-ready",
-                                            Constant.OrderStatus.Completed => "status-completed",
-                                            Constant.OrderStatus.Rejected => "status-rejected",
+                                            OrderStatus.Pending => "status-pending",
+                                            OrderStatus.Preparing => "status-preparing",
+                                            OrderStatus.Ready => "status-ready",
+                                            OrderStatus.Completed => "status-completed",
+                                            OrderStatus.Rejected => "status-rejected",
                                             _ => "status-default"
                                     };
                                 }
@@ -67,20 +95,87 @@
                                     @order.OrderStatus
                                 </span>
                             </td>
-
-                            <td>
-                                <a asp-controller="Order"
-                                   asp-action="Details"
-                                   asp-route-id="@order.OrderId"
-                                       class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                    View Details
-                                </a>
-                            </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
-        </div>
+            <div class="orders-table-footer d-flex justify-content-end align-items-center flex-wrap gap-3">
+
+                @if (totalPages > 1)
+                {
+                    <nav aria-label="My order pages">
+                        <ul class="pagination orders-pagination mb-0">
+
+                            @if (currentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       asp-controller="Order"
+                                       asp-action="MyOrders"
+                                       asp-route-page="@(currentPage - 1)"
+                                       aria-label="Previous page">
+                                        &lt;
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link" aria-disabled="true">
+                                        &lt;
+                                    </span>
+                                </li>
+                            }
+
+                            @for (int pageNo = 1; pageNo <= totalPages; pageNo++)
+                            {
+                                if (pageNo == currentPage)
+                                {
+                                    <li class="page-item active">
+                                        <span class="page-link" aria-current="page">
+                                            @pageNo
+                                        </span>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           asp-controller="Order"
+                                           asp-action="MyOrders"
+                                           asp-route-page="@pageNo">
+                                            @pageNo
+                                        </a>
+                                    </li>
+                                }
+                            }
+
+                            @if (currentPage < totalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       asp-controller="Order"
+                                       asp-action="MyOrders"
+                                       asp-route-page="@(currentPage + 1)"
+                                       aria-label="Next page">
+                                        &gt;
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link" aria-disabled="true">
+                                        &gt;
+                                    </span>
+                                </li>
+                            }
+
+                        </ul>
+                    </nav>
+                }
+            </div>
+    </div>
     }
 </div>

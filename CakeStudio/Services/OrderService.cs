@@ -1,11 +1,9 @@
-﻿
-using CakeStudio.Constant;
-using CakeStudio.Data;
+﻿using CakeStudio.Data;
 using CakeStudio.Models;
 using CakeStudio.Resources;
 using CakeStudio.ViewModels;
 using NHibernate.Linq;
-using static CakeStudio.Constant.Constant;
+using CakeStudio.Constant;
 
 namespace CakeStudio.Services
 {
@@ -233,7 +231,7 @@ namespace CakeStudio.Services
                 if (totalPrice <= 0 || totalPrice > 100000)
                     throw new ArgumentException(Resource.InvalidOrderPrice);
 
-                if (paymentMethod != Constant.Constant.PaymentMethod.Card)
+                if (paymentMethod != PaymentMethod.Card)
                     throw new ArgumentException("Invalid payment method.");
 
                 // Retrieve the Baker account
@@ -267,7 +265,7 @@ namespace CakeStudio.Services
                         model.MessageOnCakes?.Trim(),
 
                     TotalPrice = totalPrice,
-                    OrderStatus = Constant.Constant.OrderStatus.Pending,
+                    OrderStatus = OrderStatus.Pending,
                     CreatedAt = DateTime.Now,
                     CreatedId = customerId
                 };
@@ -278,8 +276,8 @@ namespace CakeStudio.Services
                 {
                     Order = order,
                     Amount = totalPrice,
-                    PaymentMethod = Constant.Constant.PaymentMethod.Card,
-                    PaymentStatus = Constant.Constant.PaymentStatus.Paid,
+                    PaymentMethod = PaymentMethod.Card,
+                    PaymentStatus = PaymentStatus.Paid,
                     PaidAt = DateTime.Now
                 };
 
@@ -384,34 +382,34 @@ namespace CakeStudio.Services
                 var allowedTransitions = new Dictionary<string, string[]>
                 {
                     { 
-                        Constant.Constant.OrderStatus.Pending, new[] 
+                        OrderStatus.Pending, new[] 
                         { 
-                            Constant.Constant.OrderStatus.Preparing, Constant.Constant.OrderStatus.Rejected
+                            Constant.OrderStatus.Preparing, Constant.OrderStatus.Rejected
                         }
                     },
 
 
                     {
-                        Constant.Constant.OrderStatus.Preparing, new[] 
+                        OrderStatus.Preparing, new[] 
                         {
-                            Constant.Constant.OrderStatus.Ready,
+                            OrderStatus.Ready,
                         } 
                     },
 
                     {
-                        Constant.Constant.OrderStatus.Ready, new[]
+                        OrderStatus.Ready, new[]
                         {
-                            Constant.Constant.OrderStatus.Completed,
+                            OrderStatus.Completed,
                         } 
                     },
 
                     {
-                        Constant.Constant.OrderStatus.Rejected, 
+                        OrderStatus.Rejected, 
                         Array.Empty<string>() 
                     },
 
                     {
-                        Constant.Constant.OrderStatus.Completed, 
+                        OrderStatus.Completed, 
                         Array.Empty<string>() 
                     }
                 };
@@ -443,7 +441,7 @@ namespace CakeStudio.Services
 
                 session.Update(order);
 
-                if (status == Constant.Constant.OrderStatus.Rejected)
+                if (status == OrderStatus.Rejected)
                 {
                     var payment = session.Query<Payment>()
                         .SingleOrDefault(p => p.Order.OrderId == orderId);
@@ -454,13 +452,13 @@ namespace CakeStudio.Services
                             "Payment record not found for this order.");
                     }
 
-                    if (payment.PaymentStatus != Constant.Constant.PaymentStatus.Paid)
+                    if (payment.PaymentStatus != PaymentStatus.Paid)
                     {
                         throw new InvalidOperationException(
                             "Only paid payments can be refunded.");
                     }
 
-                    payment.PaymentStatus = Constant.Constant.PaymentStatus.Refunded;
+                    payment.PaymentStatus = PaymentStatus.Refunded;
                     payment.RefundedAt = DateTime.Now;
 
                     session.Update(payment);

@@ -184,16 +184,16 @@
                 if (cardNumberInput) {
                     cardNumberInput.addEventListener("input", function () {
 
-                        let value = this.value.replace(/\D/g, "").substring(0, 16);
+                        let value = this.value.replace(/\D/g, "").substring(0, 16); //rm non digit
 
-                        this.value = value.replace(/(\d{4})(?=\d)/g, "$1 ");
+                        this.value = value.replace(/(\d{4})(?=\d)/g, "$1 "); //letak space after 4 digit
                     });
                 }
                 const expiryInput = document.getElementById("ExpiryDate");
 
                 if (expiryInput) {
                     expiryInput.addEventListener("input", function () {
-                        let value = this.value.replace(/\D/g, "").substring(0, 4);
+                        let value = this.value.replace(/\D/g, "").substring(0, 4); //rm non d
 
                         if (value.length > 2) {
                             value = value.substring(0, 2) + "/" + value.substring(2);

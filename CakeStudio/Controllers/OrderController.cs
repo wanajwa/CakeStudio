@@ -429,7 +429,7 @@ namespace CakeStudio.Controllers
             return new PaymentViewModel
             {
                 Amount = _orderService.CalculateTotalPrice(order),
-                PaymentMethod = Constant.Constant.PaymentMethod.Card,
+                PaymentMethod = PaymentMethod.Card,
 
                 CakeName = cake.CakeName,
                 BasePrice = cake.BasePrice,
@@ -569,7 +569,7 @@ namespace CakeStudio.Controllers
                 int orderId = _orderService.Create(
                     customerId.Value,
                     order,
-                    Constant.Constant.PaymentMethod.Card
+                    PaymentMethod.Card
                 );
 
                 HttpContext.Session.Remove("PendingOrder");
