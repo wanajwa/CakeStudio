@@ -1,39 +1,20 @@
 ﻿@using CakeStudio.Constant
-@model List<CakeStudio.Models.Order>
+@model CakeStudio.ViewModels.OrderListViewModel
 
 @{
     ViewData["Title"] = "My Orders";
 
-    int pageSize = 5;
-    int currentPage;
-
-    if (int.TryParse(
-        Context.Request.Query["page"].ToString(), out int page))
-    {
-        currentPage = page;
-    }
-    else
-    {
-        currentPage = 1;
-    }
-
-    int totalPages = Math.Max(
-        1,
-        (int)Math.Ceiling(Model.Count / (double)pageSize));
-
-    currentPage = Math.Clamp(currentPage, 1, totalPages);
-
-    var pagedOrders = Model
-        .Skip((currentPage - 1) * pageSize)
-        .Take(pageSize)
-        .ToList();
+    int pageSize = Model.PageSize;
+    int currentPage = Model.CurrentPage;
+    int totalPages = Model.TotalPages;
+    var pagedOrders = Model.Orders;
 }
 
 <div class="container mt-4">
 
     <h2 class="mb-4">My Orders</h2>
 
-    @if (!Model.Any())
+    @if (!Model.Orders.Any())
     {
         <div class="alert alert-info">
             You haven't placed any orders yet.

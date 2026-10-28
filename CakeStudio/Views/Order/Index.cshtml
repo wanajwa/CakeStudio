@@ -19,18 +19,12 @@
 
     var validChoices = new[]
     {
-        "", "nearest", "pending", "preparing", "ready",
-        "completed", "rejected", "newest"
+        "", "nearest", "pending", "preparing", "ready", "completed", "rejected", "newest"
     };
 
     if (!validChoices.Contains(sort))
     {
         sort = "";
-    }
-
-    if (!validChoices.Contains(sort))
-    {
-        sort = "nearest";
     }
 
     // Choose which orders to display.
@@ -51,22 +45,20 @@
         "rejected" => sourceOrders.Where(
             o => o.OrderStatus == OrderStatus.Rejected),
 
-        "newest" => sourceOrders.AsEnumerable(),
+        "nearest" => sourceOrders.Where(
+            o => o.OrderStatus == OrderStatus.Pending ||
+                 o.OrderStatus == OrderStatus.Preparing ||
+                 o.OrderStatus == OrderStatus.Ready),
 
-        // Nearest required date: show unfinished orders.
-        _ => sourceOrders.Where(o =>
-            o.OrderStatus == OrderStatus.Pending ||
-            o.OrderStatus == OrderStatus.Preparing ||
-            o.OrderStatus == OrderStatus.Ready)
+        // Default and "newest": include all orders.
+        _ => sourceOrders.AsEnumerable()
     };
 
-    // Finished orders and order history: newest placed first.
-    // Unfinished orders: earliest required date first.
+
     var sortedOrders =
-        sort == "completed" || sort == "rejected" || sort == "newest"
+        sort == "" || sort == "completed" || sort == "rejected" || sort == "newest"
         ? filteredOrders.OrderByDescending(o => o.CreatedAt)
-        : filteredOrders.OrderBy(
-            o => o.RequiredDate ?? DateTime.MaxValue);
+        : filteredOrders.OrderBy(o => o.RequiredDate ?? DateTime.MaxValue);
 
     var orders = sortedOrders
         .ThenBy(o => o.OrderId)
@@ -74,15 +66,19 @@
 
     int pageSize = 5;
 
-    int currentPage = int.TryParse(
-        Context.Request.Query["page"].ToString(), out int page)
-        ? page
-        : 1;
+    int currentPage;
+
+    if (int.TryParse(Context.Request.Query["page"].ToString(), out int page))
+    {
+        currentPage = page;
+    }
+    else
+    {
+        currentPage = 1;
+    }
 
     // Pagination counts the displayed orders.
-    int totalPages = Math.Max(
-        1,
-        (int)Math.Ceiling(orders.Count / (double)pageSize));
+    int totalPages = Math.Max( 1,(int)Math.Ceiling(orders.Count / (double)pageSize));
 
     currentPage = Math.Clamp(currentPage, 1, totalPages);
 
@@ -183,11 +179,11 @@
 
                 <select id="orderSort"
                         name="sort"
-                        class="form-select form-select-sm @(sort == "" ? "text-muted" : "")"
+                        class="form-select form-select-sm"
                         onchange="this.form.submit()">
 
-                    <option value="" disabled selected="@(sort == "")">
-                        Sort by
+                    <option value=""  selected="@(sort == "")">
+                        All
                     </option>
 
                     <option class="text-dark"
@@ -226,11 +222,6 @@
                         Rejected
                     </option>
 
-                    <option class="text-dark"
-                            value="newest"
-                            selected="@(sort == "newest")">
-                        All orders: Newest
-                    </option>
                 </select>
             </form>
         </div>
@@ -298,10 +289,7 @@
                             <tr class="order-row"
                                 data-url="@Url.Action("Details", "Order", new { id = order.OrderId })"
                                 tabindex="0"
-                                aria-label="View order @no details"
-                                onclick="if (!event.target.closest('a, button, input, select, textarea, form')) { window.location.href = this.dataset.url; }"
-                                onkeydown="if (event.target === this && event.key === 'Enter') { window.location.href = this.dataset.url; }">
-
+                                aria-label="View order @no details">
                                 <td>
                                     <span class="order-id">
                                         @no
@@ -340,17 +328,16 @@
                                                     aria-expanded="false"
                                                     aria-label="Change order @no status">
                                                 @(order.OrderStatus == OrderStatus.Ready
-                                                                                    ? "Ready for Pickup"
-                                                                                    : order.OrderStatus)
-                                </button>
+                                                    ? "Ready for Pickup"
+                                                    : order.OrderStatus)
+                                             </button>
 
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                    @foreach (var status in nextStatuses)
-                                                {
-                                                    <li>
-                                                        <form asp-controller="Order"
-                                                              asp-action="UpdateStatus"
-                                                              method="post">
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                        @foreach (var status in nextStatuses)
+                                        {
+                                              <li>
+                                                    <form asp-controller="Order"
+                                                     asp-action="UpdateStatus" method="post">
 
                                                             @Html.AntiForgeryToken()
 
@@ -365,13 +352,13 @@
                                                             <button type="submit"
                                                                     class="dropdown-item">
                                                                 @(status == OrderStatus.Ready
-                                                                                                                ? "Ready for Pickup"
-                                                                                                                : status)
-                                            </button>
-                                        </form>
-                                    </li>
-                                                                        }
-                                            </ul>
+                                                                       ? "Ready for Pickup"
+                                                                       : status)
+                                                            </button>
+                                                     </form>
+                                             </li>
+                                        }
+                                        </ul>
                                         </div>
                                     }
                                     else
@@ -473,3 +460,29 @@
 
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll(".order-row").forEach(function (row) 
+        {
+            row.addEventListener("click", function (e) 
+            {
+                const control = e.target.closest(
+                    "a, button, input, select, textarea, form"
+                );
+
+                if (!control) 
+                {
+                    window.location.href = row.dataset.url;
+                }
+            });
+
+            row.addEventListener("keydown", function (e) {
+                if (e.target === row && e.key === "Enter") 
+                {
+                    window.location.href = row.dataset.url;
+                }
+            });
+        });
+    </script>
+}

@@ -2,8 +2,8 @@
 using CakeStudio.Models;
 using CakeStudio.Resources;
 using CakeStudio.ViewModels;
-using NHibernate.Linq;
 using CakeStudio.Constant;
+using NHibernate;
 
 namespace CakeStudio.Services
 {
@@ -20,19 +20,21 @@ namespace CakeStudio.Services
         {
             using var session = _nhibernateHelper.OpenSession();
 
-            return session.Query<Order>()
-                .Fetch(x => x.Customer)
-                .Fetch(x => x.Cake)
-                .OrderByDescending(x => x.CreatedAt)
-                .ToList();
+            var orders = session.QueryOver<Order>()
+            .Fetch(SelectMode.Fetch, o => o.Customer)
+            .Fetch(SelectMode.Fetch, o => o.Cake)
+            .OrderBy(o => o.CreatedAt).Desc
+            .List();
+            return new List<Order>(orders);
         }
         public List<Payment> GetAllPayments()
         {
             using var session = _nhibernateHelper.OpenSession();
 
-            return session.Query<Payment>()
-                .OrderByDescending(p => p.PaidAt)
-                .ToList();
+            var payment = session.QueryOver<Payment>()
+                .OrderBy(p => p.PaidAt).Desc
+                .List();
+            return new List<Payment>(payment);
         }
         public Order? GetById(int id)
         {
@@ -45,12 +47,156 @@ namespace CakeStudio.Services
         {
             using var session = _nhibernateHelper.OpenSession();
 
-            return session.Query<Order>()
-                .Where(x => x.CustId == customerId)
-                .OrderByDescending(x => x.CreatedAt)
-                .ToList();
+            var orders = session.QueryOver<Order>()
+                .Where(o => o.CustId == customerId)
+                .OrderBy(o => o.CreatedAt).Desc
+                .List();
+
+            return new List<Order>(orders);
         }
 
+        public OrderListViewModel GetPagedOrders(int page = 1, int pageSize = 5, string sort = "")
+        {
+            using var session = _nhibernateHelper.OpenSession();
+
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var validChoices = new[]
+            {
+              "", "nearest", "pending", "preparing","ready", "completed", "rejected", "newest"
+            };
+
+            if (Array.IndexOf(validChoices, sort) < 0)
+            {
+                sort = "";
+            }
+
+            var model = GetOrderSummary(session);
+            var query = BuildOrderListQuery(session, sort);
+
+            model.FilteredOrderCount = query.Clone().RowCount();
+            model.TotalPages = Math.Max(1, (int)Math.Ceiling(model.FilteredOrderCount / (double)pageSize));
+
+            model.CurrentPage = Math.Clamp(page, 1, model.TotalPages);
+            model.PageSize = pageSize;
+            model.Sort = sort;
+
+            var orders = query
+                .Fetch(SelectMode.Fetch, o => o.Customer)
+                .Fetch(SelectMode.Fetch, o => o.Cake)
+                .Skip((model.CurrentPage - 1) * pageSize)
+                .Take(pageSize)
+                .List();
+
+            model.Orders = new List<Order>(orders);
+
+            return model;
+        }
+
+        private OrderListViewModel GetOrderSummary(NHibernate.ISession session)
+        {
+            return new OrderListViewModel
+            {
+                TotalOrders = session.QueryOver<Order>()
+                    .RowCount(),
+
+                PreparingOrders = session.QueryOver<Order>()
+                    .Where(o => o.OrderStatus == OrderStatus.Preparing)
+                    .RowCount(),
+
+                ReadyOrders = session.QueryOver<Order>()
+                    .Where(o => o.OrderStatus == OrderStatus.Ready)
+                    .RowCount(),
+
+                CompletedOrders = session.QueryOver<Order>()
+                    .Where(o => o.OrderStatus == OrderStatus.Completed)
+                    .RowCount()
+            };
+        }
+
+        private IQueryOver<Order, Order> BuildOrderListQuery(NHibernate.ISession session, string sort)
+        {
+            var query = session.QueryOver<Order>();
+
+            switch (sort)
+            {
+                case "pending":
+                    query.Where(o => o.OrderStatus == OrderStatus.Pending);
+                    break;
+
+                case "preparing":
+                    query.Where(o => o.OrderStatus == OrderStatus.Preparing);
+                    break;
+
+                case "ready":
+                    query.Where(o => o.OrderStatus == OrderStatus.Ready);
+                    break;
+
+                case "completed":
+                    query.Where(o => o.OrderStatus == OrderStatus.Completed);
+                    break;
+
+                case "rejected":
+                    query.Where(o => o.OrderStatus == OrderStatus.Rejected);
+                    break;
+
+                case "nearest":
+                    query.Where(o =>
+                        o.OrderStatus == OrderStatus.Pending ||
+                        o.OrderStatus == OrderStatus.Preparing ||
+                        o.OrderStatus == OrderStatus.Ready);
+                    break;
+            }
+
+            if (sort == "" || sort == "newest" ||
+                sort == "completed" || sort == "rejected")
+            {
+                query = query
+                    .OrderBy(o => o.CreatedAt).Desc
+                    .ThenBy(o => o.OrderId).Asc;
+            }
+            else
+            {
+                query = query
+                    .OrderBy(o => o.RequiredDate).Asc
+                    .ThenBy(o => o.OrderId).Asc;
+            }
+
+            return query;
+        }
+        public OrderListViewModel GetPagedOrdersByCustomer(int customerId, int page, int pageSize)
+        {
+            using var session = _nhibernateHelper.OpenSession();
+
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var query = session.QueryOver<Order>()
+                .Where(o => o.CustId == customerId);
+
+            int totalOrders = query.Clone().RowCount();
+
+            int totalPages = Math.Max(1,(int)Math.Ceiling(totalOrders / (double)pageSize));
+
+            int currentPage = Math.Clamp(page, 1, totalPages);
+
+            var orders = query
+                .Fetch(SelectMode.Fetch, o => o.Cake)
+                .OrderBy(o => o.CreatedAt).Desc
+                .ThenBy(o => o.OrderId).Asc
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .List();
+
+            return new OrderListViewModel
+            {
+                Orders = new List<Order>(orders),
+                CurrentPage = currentPage,
+                PageSize = pageSize,
+                TotalPages = totalPages,
+                FilteredOrderCount = totalOrders,
+                TotalOrders = totalOrders
+            };
+        }
         public decimal CalculateTotalPrice(OrderViewModel model)
         {
             if (!model.CakeId.HasValue ||
@@ -235,9 +381,18 @@ namespace CakeStudio.Services
                     throw new ArgumentException("Invalid payment method.");
 
                 // Retrieve the Baker account
-                var baker = session.Query<User>()
-                    .ToList()
-                    .FirstOrDefault(u => u.GetRoleName() == "Baker");
+                User? baker = null;
+
+                var users = session.QueryOver<User>().List();
+
+                foreach (var user in users)
+                {
+                    if (user.GetRoleName() == "Baker")
+                    {
+                        baker = user;
+                        break;
+                    }
+                }
 
                 if (baker == null)
                 {
@@ -340,8 +495,9 @@ namespace CakeStudio.Services
             if (order == null)
                 return null;
 
-            var payment = session.Query<Payment>()
-            .SingleOrDefault(p => p.Order.OrderId == id);
+            var payment = session.QueryOver<Payment>()
+                .Where(p => p.Order.OrderId == id)
+                .SingleOrDefault();
 
             return new OrderDetailsViewModel
             {
@@ -384,7 +540,7 @@ namespace CakeStudio.Services
                     { 
                         OrderStatus.Pending, new[] 
                         { 
-                            Constant.OrderStatus.Preparing, Constant.OrderStatus.Rejected
+                            OrderStatus.Preparing, OrderStatus.Rejected
                         }
                     },
 
@@ -423,7 +579,7 @@ namespace CakeStudio.Services
 
 
                 // Validate requested status
-                if (!allowedStatuses.Contains(status))
+                if (Array.IndexOf(allowedStatuses, status) < 0)
                 {
                     throw new InvalidOperationException(
                         string.Format(
@@ -443,8 +599,9 @@ namespace CakeStudio.Services
 
                 if (status == OrderStatus.Rejected)
                 {
-                    var payment = session.Query<Payment>()
-                        .SingleOrDefault(p => p.Order.OrderId == orderId);
+                    var payment = session.QueryOver<Payment>()
+                        .Where(p => p.Order.OrderId == orderId)
+                        .SingleOrDefault();
 
                     if (payment == null)
                     {

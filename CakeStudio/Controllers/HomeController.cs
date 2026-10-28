@@ -41,7 +41,7 @@ namespace CakeStudio.Controllers
 
             var salesByPeriod = new Dictionary<string, ChartPeriodData>();
 
-            // Daily - last 7 days
+            // Daily - seminggu
             var dailyDates = Enumerable.Range(0, 7)
                 .Select(i => today.AddDays(i - 6))
                 .ToList();

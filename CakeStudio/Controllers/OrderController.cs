@@ -121,8 +121,7 @@ namespace CakeStudio.Controllers
                     ViewBag.TierPrice = tierPrice;
 
                     // Restore total price
-                    ViewBag.TotalPrice =
-                        cake.BasePrice + sizePrice + flavourPrice + tierPrice;
+                    ViewBag.TotalPrice =  cake.BasePrice + sizePrice + flavourPrice + tierPrice;
                 }
             }
 
@@ -312,15 +311,14 @@ namespace CakeStudio.Controllers
         // Customer: Order history
         [Authorize(Roles = "Customer")]
         [HttpGet]
-        public IActionResult MyOrders()
+        public IActionResult MyOrders(int page = 1)
         {
             int? customerId = GetCurrentUserId();
 
             if (!customerId.HasValue)
                 return Challenge();
 
-            var orders = _orderService
-                .GetOrdersByCustomer(customerId.Value);
+            var orders = _orderService.GetPagedOrdersByCustomer(customerId.Value, page, 5);
 
             return View(orders);
         }
