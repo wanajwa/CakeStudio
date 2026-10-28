@@ -9,7 +9,7 @@
             @Model.Cake.Description
         </p>
 
-        <h5 class="text-primary mb-4">
+        <h5 class="cake-price mb-4">
             Base Price: RM @Model.Cake.BasePrice.ToString("0.00")
         </h5>
 
@@ -148,7 +148,7 @@
             <h5 class="fw-bold mb-0">Total Price</h5>
 
             <h4 id="totalPrice"
-                class="text-primary fw-bold mb-0"
+                class="cake-price fw-bold mb-0"
                 data-base-price="@Model.Cake.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture)">
                 RM @Model.Cake.BasePrice.ToString("0.00")
             </h4>
@@ -157,7 +157,7 @@
 
 
         <button type="button"
-                class="btn btn-primary w-100 mt-3"
+                class="btn order-now-btn w-100 mt-3"
                 onclick="proceedToOrder(@Model.Cake.CakeId)">
             Order Now
         </button>

@@ -92,8 +92,13 @@
 		<label asp-for="IsAvailable" class="form-check-label"></label>
 	</div>
 
-	<button type="submit" class="btn btn-primary">
+	<button type="submit" class="btn order-now-btn">
 		Save Changes
 	</button>
-
+	<a asp-controller="Cake"
+	   asp-action="Index"
+	   class="btn btn-outline-secondary rounded-pill ms-2"
+	   style="padding: 11px 24px;">
+		Cancel
+	</a>
 </form>

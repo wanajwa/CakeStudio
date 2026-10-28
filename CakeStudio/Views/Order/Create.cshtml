@@ -43,7 +43,7 @@
 
                         <h5>@Model.CakeName</h5>
 
-                        <p class="text-muted">
+                        <p class="cake-price">
                             Base Price:
                             RM @Model.BasePrice.ToString("F2")
                         </p>
@@ -183,13 +183,14 @@
 
                         <div class="d-flex gap-2">
                             <button type="submit"
-                                    class="btn btn-primary">
+                                    class="btn order-now-btn">
                                 Place Order
                             </button>
 
                             <a asp-controller="CustomerCake"
                                asp-action="Index"
-                               class="btn btn-outline-secondary">
+                               class="btn btn-outline-secondary rounded-pill"
+                               style="padding: 11px 24px;">
                                 Cancel
                             </a>
                         </div>
@@ -210,28 +211,28 @@
 
                     <div class="d-flex justify-content-between mb-2">
                         <span>Base Price</span>
-                        <span>
+                        <span class="cake-price">
                             RM @Model.BasePrice.ToString("F2")
                         </span>
                     </div>
 
                     <div class="d-flex justify-content-between mb-2">
                         <span>Size - @ViewBag.SizeName</span>
-                        <span>
+                        <span class="cake-price">
                             +RM @Convert.ToDecimal(ViewBag.SizePrice ?? 0m).ToString("F2")
                         </span>
                     </div>
 
                     <div class="d-flex justify-content-between mb-2">
                         <span>Flavour - @ViewBag.FlavourName</span>
-                        <span>
+                        <span class="cake-price">
                             +RM @Convert.ToDecimal(ViewBag.FlavourPrice ?? 0m).ToString("F2")
                         </span>
                     </div>
 
                     <div class="d-flex justify-content-between mb-2">
                         <span>Tier - @ViewBag.TierName</span>
-                        <span>
+                        <span class="cake-price">
                             +RM @Convert.ToDecimal(ViewBag.TierPrice ?? 0m).ToString("F2")
                         </span>
                     </div>
@@ -242,7 +243,7 @@
                     <div class="d-flex justify-content-between">
                         <strong>Total Price</strong>
 
-                        <strong id="totalPrice">
+                        <strong id="totalPrice" class="cake-price">
                             RM @Convert.ToDecimal(ViewBag.TotalPrice ?? Model.BasePrice).ToString("F2")
                         </strong>
                     </div>

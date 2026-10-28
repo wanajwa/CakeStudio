@@ -922,27 +922,71 @@ body {
     cursor: pointer;
 }
 
-    .my-orders-card .order-row:focus-visible {
-        outline: 2px solid var(--bs-primary);
-        outline-offset: -2px;
-    }
+.my-orders-card .order-row:focus-visible 
+{
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
+}
 
 /*    manage order*/
-.manage-orders-card .order-row {
+.manage-orders-card .order-row 
+{
     cursor: pointer;
 }
 
-    .manage-orders-card .order-row:focus-visible {
-        outline: 2px solid var(--bs-primary);
-        outline-offset: -2px;
-    }
+.manage-orders-card .order-row:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
+}
 .status-dropdown-toggle {
     border: 0;
     cursor: pointer;
     font-family: inherit;
 }
 
-    .status-dropdown-toggle::after {
-        margin-left: 0.5rem;
-        vertical-align: middle;
-    }
+.status-dropdown-toggle::after 
+{
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+/* Customer Cake - View Details Button */
+.btn.view-details-btn {
+    background: #7352a2;
+    border-color: #7352a2;
+    border-radius: 30px;
+    padding: 11px 24px;
+    font-weight: 600;
+    color: white;
+}
+
+.btn.view-details-btn:hover,
+.btn.view-details-btn:focus-visible,
+.btn.view-details-btn:active 
+{
+    background: #5e4089;
+    border-color: #5e4089;
+    color: white;
+}
+
+.cake-price {
+    color: #7352a2;
+}
+
+.btn.order-now-btn {
+    background: #7352a2;
+    border: 1px solid #7352a2;
+    border-radius: 30px;
+    padding: 11px 24px;
+    font-weight: 600;
+    color: white;
+}
+
+.btn.order-now-btn:hover,
+.btn.order-now-btn:focus-visible,
+.btn.order-now-btn:active 
+{
+     background: #5e4089;
+     border-color: #5e4089;
+     color: white;
+}
