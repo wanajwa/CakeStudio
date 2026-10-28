@@ -60,5 +60,7 @@ namespace CakeStudio.Models
 
         public virtual CakeTier? Tier { get; set; }
 
+        public virtual IList<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+
     }
 }

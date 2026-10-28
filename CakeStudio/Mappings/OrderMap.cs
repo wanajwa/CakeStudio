@@ -102,6 +102,11 @@ namespace CakeStudio.Mappings
             // User who created the order
             Map(x => x.CreatedId)
                 .Nullable();
+
+            HasMany(x => x.OrderItems)
+                .KeyColumn("OrderId")
+                .Inverse()
+                .Cascade.None();
         }
     }
 }
