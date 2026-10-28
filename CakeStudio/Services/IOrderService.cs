@@ -25,5 +25,7 @@ namespace CakeStudio.Services
 
         decimal CalculateTotalPrice(OrderViewModel model);
 
+        void UpdateCustomerOrder(int orderId, int customerId, OrderViewModel model);
+
     }
 }

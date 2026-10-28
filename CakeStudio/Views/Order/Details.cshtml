@@ -13,6 +13,13 @@
         </div>
     }
 
+    @if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
     <div class="order-details-footer">
 
         @if (User.IsInRole("Customer"))
@@ -58,9 +65,25 @@
             </p>
         </div>
 
-        <span class="order-status @statusClass">
-            @Model.Order.OrderStatus
-        </span>
+        <div class="d-flex align-items-center flex-wrap gap-3">
+
+            <span class="order-status @statusClass">
+                @Model.Order.OrderStatus
+            </span>
+
+            @if (User.IsInRole("Customer") &&
+                        Model.Order.OrderStatus == OrderStatus.Pending)
+            {
+                <a asp-controller="Order"
+                   asp-action="Edit"
+                   asp-route-id="@Model.Order.OrderId"
+                   class="btn order-now-btn">
+                    <i class="bi bi-pencil me-2"></i>
+                    Edit Order
+                </a>
+            }
+
+        </div>
 
     </div>
 

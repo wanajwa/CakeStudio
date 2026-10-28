@@ -1,0 +1,145 @@
+﻿@model CakeStudio.ViewModels.OrderViewModel
+
+@{
+    ViewData["Title"] = "Edit Order";
+}
+
+<div class="container mt-4 mb-5">
+    <h2 class="mb-4">Edit Order</h2>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <p class="text-muted">
+                        Update your order information before preparation starts.
+                    </p>
+
+                    <form asp-controller="Order"
+                          asp-action="Edit"
+                          method="post">
+
+                        <input asp-for="OrderId" type="hidden" />
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="RequiredDate"
+                                   class="form-label">
+                                Required Date
+                            </label>
+
+                            <input asp-for="RequiredDate"
+                                   type="date"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                   class="form-control" />
+
+                            <span asp-validation-for="RequiredDate"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="RequiredTime"
+                                   class="form-label">
+                                Pickup / Delivery Time
+                            </label>
+
+                            <input asp-for="RequiredTime"
+                                   type="time"
+                                   step="1800"
+                                   class="form-control" />
+
+                            <span asp-validation-for="RequiredTime"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CollectionMethod"
+                                   class="form-label">
+                                Collection Method
+                            </label>
+
+                            <select asp-for="CollectionMethod"
+                                    class="form-select"
+                                    id="collectionMethod">
+                                <option value="">Select Method</option>
+                                <option value="Pickup">Pickup</option>
+                                <option value="Delivery">Delivery</option>
+                            </select>
+
+                            <span asp-validation-for="CollectionMethod"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3" id="deliverySection">
+                            <label asp-for="DeliveryAddress"
+                                   class="form-label">
+                                Delivery Address
+                            </label>
+
+                            <textarea asp-for="DeliveryAddress"
+                                      class="form-control"
+                                      rows="3"></textarea>
+
+                            <span asp-validation-for="DeliveryAddress"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="MessageOnCakes"
+                                   class="form-label">
+                                Message on Cake
+                            </label>
+
+                            <textarea asp-for="MessageOnCakes"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="e.g. Happy Birthday!"></textarea>
+
+                            <span asp-validation-for="MessageOnCakes"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="submit"
+                                    class="btn order-now-btn">
+                                Save Changes
+                            </button>
+
+                            <a asp-controller="Order"
+                               asp-action="Details"
+                               asp-route-id="@Model.OrderId"
+                               class="btn btn-outline-secondary rounded-pill"
+                               style="padding: 11px 24px;">
+                                Cancel
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const collectionMethod = document.getElementById("collectionMethod");
+        const deliverySection = document.getElementById("deliverySection");
+        const deliveryAddress = document.getElementById("DeliveryAddress");
+
+        function toggleDelivery() {
+            const isDelivery = collectionMethod.value === "Delivery";
+
+            deliverySection.style.display = isDelivery ? "block" : "none";
+            deliveryAddress.required = isDelivery;
+        }
+
+        collectionMethod.addEventListener("change", toggleDelivery);
+        toggleDelivery();
+    </script>
+}

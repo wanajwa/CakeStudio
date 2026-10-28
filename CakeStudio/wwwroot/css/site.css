@@ -990,3 +990,17 @@ body {
      border-color: #5e4089;
      color: white;
 }
+
+/*details customer order*/
+.order-details-header .order-status,
+.order-details-header .order-now-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    box-sizing: border-box;
+}

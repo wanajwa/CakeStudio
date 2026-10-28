@@ -514,6 +514,69 @@ namespace CakeStudio.Services
             };
         }
 
+        public void UpdateCustomerOrder(int orderId, int customerId, OrderViewModel model)
+        {
+            using var session = _nhibernateHelper.OpenSession();
+            using var transaction = session.BeginTransaction();
+
+            // Lock the order while checking and updating it
+            var order = session.Get<Order>(orderId, LockMode.Upgrade);
+
+            if (order == null)
+                throw new ArgumentException(Resource.OrderNotFound);
+
+            // Customer can only edit their own order
+            if (order.CustId != customerId)
+                throw new UnauthorizedAccessException("You cannot edit this order.");
+
+            // Editing is allowed only before preparation starts
+            if (order.OrderStatus != OrderStatus.Pending)
+                throw new InvalidOperationException("Only pending orders can be edited.");
+
+            if (!model.RequiredDate.HasValue || !model.RequiredTime.HasValue)
+            {
+                throw new ArgumentException(Resource.InvalidRequiredDateTime);
+            }
+
+            if (model.RequiredTime.Value < TimeSpan.Zero ||model.RequiredTime.Value >= TimeSpan.FromDays(1))
+            {
+                throw new ArgumentException(Resource.InvalidRequiredDateTime);
+            }
+
+            DateTime requiredDateTime = model.RequiredDate.Value.Date
+                .Add(model.RequiredTime.Value);
+
+            if (requiredDateTime <= DateTime.Now)
+                throw new ArgumentException(Resource.InvalidRequiredDateTime);
+
+            string method = model.CollectionMethod?.Trim() ?? "";
+
+            if (method != "Pickup" && method != "Delivery")
+                throw new ArgumentException(Resource.InvalidCollectionMethod);
+
+            if (method == "Delivery" && string.IsNullOrWhiteSpace(model.DeliveryAddress))
+            {
+                throw new ArgumentException(Resource.DeliveryAddressRequired);
+            }
+
+            if (model.DeliveryAddress?.Length > 500 || model.MessageOnCakes?.Length > 500)
+            {
+                throw new ArgumentException("Address and cake message must not exceed 500 characters.");
+            }
+
+            // Update only the editable order information
+            order.RequiredDate = requiredDateTime;
+            order.CollectionMethod = method;
+            order.DeliveryAddress = method == "Delivery"
+                ? model.DeliveryAddress?.Trim()
+                : null;
+            order.MessageOnCakes = model.MessageOnCakes?.Trim();
+            order.UpdatedAt = DateTime.Now;
+            order.UpdatedId = customerId;
+
+            session.Update(order);
+            transaction.Commit();
+        }
         public void UpdateStatus(int orderId,string status,int bakerId)
         {
 

@@ -323,6 +323,107 @@ namespace CakeStudio.Controllers
             return View(orders);
         }
 
+        // Display customer order edit form
+        [Authorize(Roles = "Customer")]
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            int? customerId = GetCurrentUserId();
+
+            if (!customerId.HasValue)
+                return Challenge();
+
+            var order = _orderService.GetById(id);
+
+            if (order == null)
+                return NotFound();
+
+            if (order.CustId != customerId.Value)
+                return Forbid();
+
+            if (order.OrderStatus != OrderStatus.Pending)
+            {
+                TempData["ErrorMessage"] = "Only pending orders can be edited.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var model = new OrderViewModel
+            {
+                OrderId = order.OrderId,
+                CakeId = order.CakeId,
+                RequiredDate = order.RequiredDate?.Date,
+                RequiredTime = order.RequiredDate?.TimeOfDay,
+                CollectionMethod = order.CollectionMethod,
+                DeliveryAddress = order.DeliveryAddress,
+                MessageOnCakes = order.MessageOnCakes
+            };
+
+            return View(model);
+        }
+
+        // Save customer order changes
+        [Authorize(Roles = "Customer")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(OrderViewModel model)
+        {
+            int? customerId = GetCurrentUserId();
+
+            if (!customerId.HasValue)
+                return Challenge();
+
+            var order = _orderService.GetById(model.OrderId);
+
+            if (order == null)
+                return NotFound();
+
+            if (order.CustId != customerId.Value)
+                return Forbid();
+
+            if (order.OrderStatus != OrderStatus.Pending)
+            {
+                TempData["ErrorMessage"] = "Only pending orders can be edited.";
+
+                return RedirectToAction(nameof(Details), new { id = order.OrderId });
+            }
+
+            // Restore the required CakeId from the database
+            model.CakeId = order.CakeId;
+            ModelState.Remove(nameof(model.CakeId));
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
+            {
+                _orderService.UpdateCustomerOrder(model.OrderId, customerId.Value, model);
+
+                TempData["SuccessMessage"] = "Order updated successfully.";
+
+                return RedirectToAction(nameof(Details), new { id = model.OrderId });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.ToString());
+
+                ModelState.AddModelError("", "Unable to update your order. Please try again.");
+            }
+
+            return View(model);
+        }
 
         [Authorize(Roles = "Customer,Baker")]
         [HttpGet]
