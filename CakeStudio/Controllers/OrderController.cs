@@ -20,14 +20,16 @@ namespace CakeStudio.Controllers
         private readonly ICakeSizeService _sizeService;
         private readonly ICakeFlavourService _flavourService;
         private readonly ICakeTierService _tierService;
+        private readonly ICartService _cartService;
 
-        public OrderController( IOrderService orderService, ICakeService cakeService, ICakeSizeService sizeService,ICakeFlavourService flavourService,ICakeTierService tierService)
+        public OrderController( IOrderService orderService, ICakeService cakeService, ICakeSizeService sizeService,ICakeFlavourService flavourService,ICakeTierService tierService, ICartService cartService)
         {
             _orderService = orderService;
             _cakeService = cakeService;
             _sizeService = sizeService;
             _flavourService = flavourService;
             _tierService = tierService;
+            _cartService = cartService;
         }
 
         private int? GetCurrentUserId()
@@ -141,6 +143,129 @@ namespace CakeStudio.Controllers
             ViewBag.Tiers = _tierService.GetAll()
                 .Where(x => x.IsAvailable)
                 .ToList();
+        }
+
+        // Display checkout for all cart items
+        [Authorize(Roles = "Customer")]
+        [HttpGet]
+        public IActionResult Checkout()
+        {
+            int? customerId = GetCurrentUserId();
+
+            if (!customerId.HasValue)
+                return Challenge();
+
+            var cart = _cartService.GetCart();
+
+            if (!cart.Items.Any())
+            {
+                TempData["ErrorMessage"] = "Your cart is empty. Please add a cake first.";
+
+                return RedirectToAction("Index", "Cart");
+            }
+
+            var model = new OrderViewModel
+            {
+                Cart = cart
+            };
+
+            return View("Create", model);
+        }
+
+        [Authorize(Roles = "Customer")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Checkout(OrderViewModel model)
+        {
+            int? customerId = GetCurrentUserId();
+
+            if (!customerId.HasValue)
+                return Challenge();
+
+            // Replace submitted cart data with the cart from Session
+            model.Cart = _cartService.GetCart();
+
+            if (!model.Cart.Items.Any())
+            {
+                TempData["ErrorMessage"] = "Your cart is empty.";
+                return RedirectToAction("Index", "Cart");
+            }
+
+            // Single CakeId is not required for cart checkout
+            ModelState.Remove(nameof(model.CakeId));
+
+            // Validate date and time
+            if (model.RequiredDate.HasValue && model.RequiredTime.HasValue)
+            {
+                var time = model.RequiredTime.Value;
+
+                if (time < TimeSpan.Zero || time >= TimeSpan.FromDays(1) || model.RequiredDate.Value.Date.Add(time) <= DateTime.Now)
+                {
+                    ModelState.AddModelError(nameof(model.RequiredDate),Resource.InvalidRequiredDateTime);
+                }
+            }
+
+            // Validate collection method
+            if (model.CollectionMethod != "Pickup" && model.CollectionMethod != "Delivery")
+            {
+                ModelState.AddModelError(nameof(model.CollectionMethod),Resource.InvalidCollectionMethod);
+            }
+
+            // Delivery requires an address
+            if (model.CollectionMethod == "Delivery" &&
+                string.IsNullOrWhiteSpace(model.DeliveryAddress))
+            {
+                ModelState.AddModelError(
+                    nameof(model.DeliveryAddress),
+                    Resource.DeliveryAddressRequired);
+            }
+
+            try
+            {
+                foreach (var item in model.Cart.Items)
+                {
+                    if (item.Quantity < 1 || item.Quantity > 20)
+                    {
+                        throw new ArgumentException(
+                            "Quantity must be between 1 and 20.");
+                    }
+
+                    // Validate availability and calculate database price
+                    item.UnitPrice = _orderService.CalculateTotalPrice(
+                        new OrderViewModel
+                        {
+                            CakeId = item.CakeId,
+                            SizeId = item.SizeId,
+                            FlavourId = item.FlavourId,
+                            TierId = item.TierId
+                        });
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+            }
+
+            if (!ModelState.IsValid)
+                return View("Create", model);
+
+            // Copy only the intended checkout information
+            var pendingOrder = new OrderViewModel
+            {
+                RequiredDate = model.RequiredDate,
+                RequiredTime = model.RequiredTime,
+                CollectionMethod = model.CollectionMethod,
+                DeliveryAddress = model.CollectionMethod == "Delivery"
+                    ? model.DeliveryAddress?.Trim()
+                    : null,
+                Cart = model.Cart
+            };
+
+            HttpContext.Session.SetString(
+                $"PendingOrder_{customerId.Value}",
+                JsonSerializer.Serialize(pendingOrder));
+
+            return RedirectToAction(nameof(Payment));
         }
 
 
@@ -508,40 +633,37 @@ namespace CakeStudio.Controllers
 
         private PaymentViewModel BuildPaymentViewModel(OrderViewModel order)
         {
-            var cake = _cakeService.GetById(order.CakeId!.Value);
-            var size = _sizeService.GetById(order.SizeId!.Value);
-            var flavour = _flavourService.GetById(order.FlavourId!.Value);
-            var tier = _tierService.GetById(order.TierId!.Value);
+            if (!order.Cart.Items.Any())
+                throw new ArgumentException("Your checkout cart is empty.");
 
-            if (cake == null || size == null || flavour == null || tier == null)
-                throw new ArgumentException("Invalid cake or cake options.");
+            foreach (var item in order.Cart.Items)
+            {
+                if (item.Quantity < 1 || item.Quantity > 20)
+                {
+                    throw new ArgumentException("Quantity must be between 1 and 20.");
+                }
 
-            bool isDefaultSize = size.SizeName.Trim()
-                .Equals("6 inch", StringComparison.OrdinalIgnoreCase);
+                // Recheck availability and calculate the current price
+                item.UnitPrice = _orderService.CalculateTotalPrice(
+                    new OrderViewModel
+                    {
+                        CakeId = item.CakeId,
+                        SizeId = item.SizeId,
+                        FlavourId = item.FlavourId,
+                        TierId = item.TierId
+                    });
+            }
 
-            bool isDefaultFlavour = cake.Flavour != null &&
-                flavour.FlavourId == cake.Flavour.FlavourId;
+            decimal totalPrice = order.Cart.TotalPrice;
 
-            bool isDefaultTier = tier.TierName.Trim()
-                .Equals("1", StringComparison.OrdinalIgnoreCase);
+            if (totalPrice <= 0 || totalPrice > 100000)
+                throw new ArgumentException(Resource.InvalidOrderPrice);
 
             return new PaymentViewModel
             {
-                Amount = _orderService.CalculateTotalPrice(order),
+                Cart = order.Cart,
+                Amount = totalPrice,
                 PaymentMethod = PaymentMethod.Card,
-
-                CakeName = cake.CakeName,
-                BasePrice = cake.BasePrice,
-
-                SizeName = size.SizeName,
-                SizePrice = isDefaultSize ? 0m : size.AdditionalPrice,
-
-                FlavourName = flavour.FlavourName,
-                FlavourPrice = isDefaultFlavour ? 0m : flavour.AdditionalPrice,
-
-                TierName = tier.TierName,
-                TierPrice = isDefaultTier ? 0m : tier.AdditionalPrice,
-
                 RequiredDate = order.RequiredDate,
                 RequiredTime = order.RequiredTime,
                 CollectionMethod = order.CollectionMethod
@@ -552,7 +674,12 @@ namespace CakeStudio.Controllers
         [HttpGet]
         public IActionResult Payment()
         {
-            var pendingOrder = HttpContext.Session.GetString("PendingOrder");
+            int? customerId = GetCurrentUserId();
+
+            if (!customerId.HasValue)
+                return Challenge();
+
+            var pendingOrder = HttpContext.Session.GetString($"PendingOrder_{customerId.Value}");
 
             if (string.IsNullOrEmpty(pendingOrder))
                 return RedirectToAction(nameof(MyOrders));
@@ -562,8 +689,16 @@ namespace CakeStudio.Controllers
             if (order == null)
                 return RedirectToAction(nameof(MyOrders));
 
-            var model = BuildPaymentViewModel(order);
-            return View(model);
+            try
+            {
+                var model = BuildPaymentViewModel(order);
+                return View(model);
+            }
+            catch (ArgumentException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("Index", "Cart");
+            }
         }
 
 
@@ -577,7 +712,7 @@ namespace CakeStudio.Controllers
             if (!customerId.HasValue)
                 return Challenge();
 
-            var pendingOrder = HttpContext.Session.GetString("PendingOrder");
+            var pendingOrder = HttpContext.Session.GetString($"PendingOrder_{customerId.Value}");
 
             if (string.IsNullOrEmpty(pendingOrder))
                 return RedirectToAction(nameof(MyOrders));
@@ -595,8 +730,7 @@ namespace CakeStudio.Controllers
             string securityCode = (model.SecurityCode ?? "").Trim();
 
             // Validate card number format (16 digits)
-            if (!System.Text.RegularExpressions.Regex.IsMatch(
-                cardNumber, @"^\d{16}$"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(cardNumber, @"^\d{16}$"))
             {
                 ModelState.AddModelError(
                     nameof(model.CardNumber),
@@ -611,9 +745,7 @@ namespace CakeStudio.Controllers
                 System.Globalization.DateTimeStyles.None,
                 out DateTime expiry))
             {
-                ModelState.AddModelError(
-                    nameof(model.ExpiryDate),
-                    "Enter a valid expiry date (MM/YY).");
+                ModelState.AddModelError(nameof(model.ExpiryDate),"Enter a valid expiry date (MM/YY).");
             }
             else
             {
@@ -627,9 +759,7 @@ namespace CakeStudio.Controllers
                     (expiry.Year == currentMonth.Year &&
                      expiry.Month < currentMonth.Month))
                 {
-                    ModelState.AddModelError(
-                        nameof(model.ExpiryDate),
-                        "Card has expired. Please enter a valid expiry date.");
+                    ModelState.AddModelError(nameof(model.ExpiryDate),"Card has expired. Please enter a valid expiry date.");
                 }
             }
 
@@ -637,15 +767,13 @@ namespace CakeStudio.Controllers
             if (!System.Text.RegularExpressions.Regex.IsMatch(
                 securityCode, @"^\d{3}$"))
             {
-                ModelState.AddModelError(
-                    nameof(model.SecurityCode),
-                    "Security code must contain 3 digits.");
+                ModelState.AddModelError(nameof(model.SecurityCode),"Security code must contain 3 digits.");
             }
 
             if (!ModelState.IsValid)
             {
                 var invalidSummary = BuildPaymentViewModel(order);
-
+                model.Cart = invalidSummary.Cart;
                 // Preserve validation errors and the submitted test fields.
                 model.Amount = invalidSummary.Amount;
                 model.PaymentMethod = invalidSummary.PaymentMethod;
@@ -665,13 +793,10 @@ namespace CakeStudio.Controllers
 
             try
             {
-                int orderId = _orderService.Create(
-                    customerId.Value,
-                    order,
-                    PaymentMethod.Card
+                int orderId = _orderService.Create(customerId.Value,order,PaymentMethod.Card
                 );
 
-                HttpContext.Session.Remove("PendingOrder");
+                HttpContext.Session.Remove($"PendingOrder_{customerId.Value}");
 
                 TempData["SuccessMessage"] = Resource.OrderPlacedSuccess;
 
@@ -684,14 +809,11 @@ namespace CakeStudio.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Payment could not be completed. Please try again."
-                );
+                ModelState.AddModelError(string.Empty,"Payment could not be completed. Please try again.");
             }
 
             var summary = BuildPaymentViewModel(order);
-
+            model.Cart = summary.Cart;
             // Preserve validation errors and the submitted test fields.
             model.Amount = summary.Amount;
             model.PaymentMethod = summary.PaymentMethod;

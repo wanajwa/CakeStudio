@@ -92,7 +92,7 @@
 
                         <button type="submit"
                                 id="payButton"
-                                class="btn btn-primary w-100 rounded-3">
+                                class="btn order-now-btn w-100">
                             <i class="bi bi-credit-card me-2"></i>
                             Pay RM @Model.Amount.ToString("F2")
                         </button>
@@ -110,33 +110,46 @@
                     <h5 class="mb-3">Order Summary</h5>
                     <hr />
 
-                    <h6 class="mb-3">@Model.CakeName</h6>
+                    @foreach (var item in Model.Cart.Items)
+                    {
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between gap-3">
+                                <strong>@item.CakeName</strong>
+
+                                <strong class="cake-price text-nowrap">
+                                    RM @item.Subtotal.ToString("N2")
+                                </strong>
+                            </div>
+
+                            <div class="text-muted small mt-2">
+                                <div>Size: @item.SizeName</div>
+                                <div>Flavour: @item.FlavourName</div>
+                                <div>Tier: @item.TierName</div>
+                                <div>
+                                    Quantity: @item.Quantity ×
+                                    RM @item.UnitPrice.ToString("N2")
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(item.MessageOnCakes))
+                            {
+                                <p class="small mt-2 mb-0">
+                                    Message: @item.MessageOnCakes
+                                </p>
+                            }
+                        </div>
+                    }
 
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Base Price</span>
-                        <span>RM @Model.BasePrice.ToString("F2")</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Size - @Model.SizeName</span>
-                        <span>+RM @Model.SizePrice.ToString("F2")</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Flavour - @Model.FlavourName</span>
-                        <span>+RM @Model.FlavourPrice.ToString("F2")</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Tier - @Model.TierName</span>
-                        <span>+RM @Model.TierPrice.ToString("F2")</span>
+                        <span>Total quantity</span>
+                        <strong>@Model.Cart.TotalQuantity</strong>
                     </div>
 
                     <hr />
 
                     <div class="d-flex justify-content-between fw-bold mb-3">
                         <span>Total Price</span>
-                        <span>RM @Model.Amount.ToString("F2")</span>
+                        <span class="cake-price">RM @Model.Amount.ToString("F2")</span>
                     </div>
 
                     <hr />

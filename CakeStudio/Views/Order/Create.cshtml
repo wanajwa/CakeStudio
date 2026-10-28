@@ -3,24 +3,12 @@
 @using System.Globalization
 
 @{
-    ViewData["Title"] = "Place Order";
-
-    var sizes = ViewBag.Sizes as List<CakeSize>
-        ?? new List<CakeSize>();
-
-    var flavours = ViewBag.Flavours as List<CakeFlavour>
-        ?? new List<CakeFlavour>();
-
-    var tiers = ViewBag.Tiers as List<CakeTier>
-        ?? new List<CakeTier>();
-
-    var basePrice = Model.BasePrice.ToString(
-        CultureInfo.InvariantCulture);
+    ViewData["Title"] = "Checkout";
 }
 
 <div class="container mt-4 mb-5">
 
-    <h2 class="mb-4">Place Your Order</h2>
+    <h2 class="mb-4">Checkout</h2>
 
     <div class="row g-4">
 
@@ -29,62 +17,14 @@
                 <div class="card-body p-4">
 
                     <form asp-controller="Order"
-                          asp-action="Create"
+                          asp-action="Checkout"
                           method="post">
 
                         @Html.AntiForgeryToken()
 
-                        <input asp-for="CakeId"
-                               type="hidden" />
-
                         <div asp-validation-summary="ModelOnly"
                              class="text-danger mb-3">
                         </div>
-
-                        <h5>@Model.CakeName</h5>
-
-                        <p class="cake-price">
-                            Base Price:
-                            RM @Model.BasePrice.ToString("F2")
-                        </p>
-
-                        <hr />
-
-
-                        <h5>Cake Options</h5>
-
-                        <!-- Keep selected options for form submission -->
-                        <input asp-for="SizeId" type="hidden" />
-                        <input asp-for="FlavourId" type="hidden" />
-                        <input asp-for="TierId" type="hidden" />
-
-                        <div class="mb-3">
-                            <label class="form-label">Cake Size</label>
-                            <input type="text"
-                                   class="form-control"
-                                   value="@ViewBag.SizeName"
-                                   readonly />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Cake Flavour</label>
-                            <input type="text"
-                                   class="form-control"
-                                   value="@ViewBag.FlavourName"
-                                   readonly />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Cake Tier</label>
-                            <input type="text"
-                                   class="form-control"
-                                   value="@ViewBag.TierName"
-                                   readonly />
-                        </div>
-
-
-
-                        <hr />
 
                         <h5>Order Information</h5>
 
@@ -165,33 +105,17 @@
                                   class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="MessageOnCakes"
-                                   class="form-label">
-                                Message on Cake
-                            </label>
-
-                            <textarea asp-for="MessageOnCakes"
-                                      class="form-control"
-                                      rows="3"
-                                      placeholder="e.g. Happy Birthday!">
-                            </textarea>
-
-                            <span asp-validation-for="MessageOnCakes"
-                                  class="text-danger"></span>
-                        </div>
-
                         <div class="d-flex gap-2">
                             <button type="submit"
                                     class="btn order-now-btn">
-                                Place Order
+                                Proceed to Payment
                             </button>
 
                             <a asp-controller="CustomerCake"
                                asp-action="Index"
                                class="btn btn-outline-secondary rounded-pill"
                                style="padding: 11px 24px;">
-                                Cancel
+                                Back to Cart
                             </a>
                         </div>
 
@@ -207,44 +131,48 @@
                     <h5>Order Summary</h5>
                     <hr />
 
-                    <p>@Model.CakeName</p>
+                    @foreach (var item in Model.Cart.Items)
+                    {
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between gap-3">
+                                <strong>@item.CakeName</strong>
+
+                                <strong class="cake-price text-nowrap">
+                                    RM @item.Subtotal.ToString("N2")
+                                </strong>
+                            </div>
+
+                            <div class="text-muted small mt-2">
+                                <div>Size: @item.SizeName</div>
+                                <div>Flavour: @item.FlavourName</div>
+                                <div>Tier: @item.TierName</div>
+                                <div>
+                                    Quantity: @item.Quantity ×
+                                    RM @item.UnitPrice.ToString("N2")
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(item.MessageOnCakes))
+                            {
+                                <p class="small mt-2 mb-0">
+                                    Message: @item.MessageOnCakes
+                                </p>
+                            }
+                        </div>
+
+                        <hr />
+                    }
 
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Base Price</span>
-                        <span class="cake-price">
-                            RM @Model.BasePrice.ToString("F2")
-                        </span>
+                        <span>Total quantity</span>
+                        <strong>@Model.Cart.TotalQuantity</strong>
                     </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Size - @ViewBag.SizeName</span>
-                        <span class="cake-price">
-                            +RM @Convert.ToDecimal(ViewBag.SizePrice ?? 0m).ToString("F2")
-                        </span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Flavour - @ViewBag.FlavourName</span>
-                        <span class="cake-price">
-                            +RM @Convert.ToDecimal(ViewBag.FlavourPrice ?? 0m).ToString("F2")
-                        </span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Tier - @ViewBag.TierName</span>
-                        <span class="cake-price">
-                            +RM @Convert.ToDecimal(ViewBag.TierPrice ?? 0m).ToString("F2")
-                        </span>
-                    </div>
-
-
-                    <hr />
 
                     <div class="d-flex justify-content-between">
                         <strong>Total Price</strong>
 
-                        <strong id="totalPrice" class="cake-price">
-                            RM @Convert.ToDecimal(ViewBag.TotalPrice ?? Model.BasePrice).ToString("F2")
+                        <strong class="cake-price">
+                            RM @Model.Cart.TotalPrice.ToString("N2")
                         </strong>
                     </div>
 
@@ -261,19 +189,15 @@
     <script>
 
         function toggleDelivery() {
-            const method = document.getElementById(
-                "collectionMethod").value;
+            const method = document.getElementById("collectionMethod").value;
 
-            const section = document.getElementById(
-                "deliverySection");
+            const section = document.getElementById("deliverySection");
 
-            const address = document.getElementById(
-                "DeliveryAddress");
+            const address = document.getElementById("DeliveryAddress");
 
             const isDelivery = method === "Delivery";
 
-            section.style.display =
-                isDelivery ? "block" : "none";
+            section.style.display = isDelivery ? "block" : "none";
 
             address.required = isDelivery;
         }

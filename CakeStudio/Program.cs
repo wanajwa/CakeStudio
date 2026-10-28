@@ -16,6 +16,8 @@ builder.Services.AddScoped<ICakeSizeService, CakeSizeService>();
 builder.Services.AddScoped<ICakeFlavourService, CakeFlavourService>();
 builder.Services.AddScoped<ICakeTierService, CakeTierService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

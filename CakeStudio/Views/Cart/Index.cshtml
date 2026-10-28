@@ -1,0 +1,194 @@
+﻿@model CakeStudio.ViewModels.CartViewModel
+
+@{
+    ViewData["Title"] = "My Cart";
+}
+
+<div class="container mt-4 mb-5">
+
+    <h2 class="mb-4">My Cart</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (!Model.Items.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-cart fs-1 text-muted"></i>
+
+                <h4 class="mt-3">Your cart is empty</h4>
+
+                <p class="text-muted">
+                    Browse our cakes and add your favourites.
+                </p>
+
+                <a asp-controller="CustomerCake"
+                   asp-action="Index"
+                   class="btn order-now-btn">
+                    Browse Cakes
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+
+            <!-- Cart items -->
+            <div class="col-lg-8">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="card border-0 shadow-sm rounded-4 mb-3">
+                        <div class="card-body p-4">
+
+                            <div class="d-flex justify-content-between
+                                                align-items-start gap-3">
+                                <div>
+                                    <h5 class="fw-bold">
+                                        @item.CakeName
+                                    </h5>
+
+                                    <p class="text-muted mb-1">
+                                        Size: @item.SizeName
+                                    </p>
+
+                                    <p class="text-muted mb-1">
+                                        Flavour: @item.FlavourName
+                                    </p>
+
+                                    <p class="text-muted mb-2">
+                                        Tier: @item.TierName
+                                    </p>
+
+                                    @if (!string.IsNullOrWhiteSpace(
+                                                                item.MessageOnCakes))
+                                    {
+                                        <p class="mb-2">
+                                            Message: @item.MessageOnCakes
+                                        </p>
+                                    }
+
+                                    <span class="cake-price fw-semibold">
+                                        RM @item.UnitPrice.ToString("N2")
+                                        each
+                                    </span>
+                                </div>
+
+                                <form asp-controller="Cart"
+                                      asp-action="Remove"
+                                      method="post">
+
+                                    <input type="hidden"
+                                           name="cartItemId"
+                                           value="@item.CartItemId" />
+
+                                    <button type="submit"
+                                            class="btn btn-delete-icon"
+                                            aria-label="Remove @item.CakeName">
+                                        <i class="bi bi-trash"
+                                           aria-hidden="true"></i>
+                                    </button>
+                                </form>
+                            </div>
+
+                            <hr />
+
+                            <div class="d-flex justify-content-between
+                                                align-items-center flex-wrap gap-3">
+
+                                <form asp-controller="Cart"
+                                      asp-action="UpdateQuantity"
+                                      method="post"
+                                      class="d-flex align-items-center
+                                                     flex-wrap gap-2">
+
+                                    <input type="hidden"
+                                           name="cartItemId"
+                                           value="@item.CartItemId" />
+
+                                    <label for="quantity-@item.CartItemId"
+                                           class="mb-0">
+                                        Quantity
+                                    </label>
+
+                                    <input type="number"
+                                           id="quantity-@item.CartItemId"
+                                           name="quantity"
+                                           value="@item.Quantity"
+                                           min="1"
+                                           max="20"
+                                           step="1"
+                                           required
+                                           class="form-control"
+                                           style="width: 85px;" />
+
+                                    <button type="submit"
+                                            class="btn btn-outline-secondary
+                                                           rounded-pill">
+                                        Update
+                                    </button>
+                                </form>
+
+                                <strong class="cake-price">
+                                    RM @item.Subtotal.ToString("N2")
+                                </strong>
+                            </div>
+
+                        </div>
+                    </div>
+                }
+
+                <a asp-controller="CustomerCake"
+                   asp-action="Index"
+                   class="order-back-btn mt-2">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Continue Shopping
+                </a>
+            </div>
+
+            <!-- Summary -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold">Cart Summary</h5>
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Total quantity</span>
+                            <strong>@Model.TotalQuantity</strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <strong>Total Price</strong>
+
+                            <strong class="cake-price">
+                                RM @Model.TotalPrice.ToString("N2")
+                            </strong>
+                        </div>
+
+                        <p class="text-muted small mt-3 mb-0">
+                            Prices and availability will be checked
+                            again at checkout.
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }
+</div>

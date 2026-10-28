@@ -253,14 +253,10 @@ namespace CakeStudio.Services
         }
         public int Create(int customerId, OrderViewModel model, string paymentMethod)
         {
-            if (!model.CakeId.HasValue)
-                throw new ArgumentException(Resource.CakeRequired);
-
-            if (!model.SizeId.HasValue ||
-                !model.FlavourId.HasValue ||
-                !model.TierId.HasValue)
+            if (model.Cart == null || !model.Cart.Items.Any())
             {
-                throw new ArgumentException(Resource.CakeOptionsRequired);
+                throw new ArgumentException(
+                    "Your cart is empty. Please add a cake first.");
             }
 
 

@@ -35,6 +35,7 @@ namespace CakeStudio.ViewModels
         public string CakeName { get; set; } = string.Empty;
 
         public decimal BasePrice { get; set; }
+        public CartViewModel Cart { get; set; } = new CartViewModel();
 
         public int OrderId { get; set; }
     }

@@ -31,5 +31,6 @@ namespace CakeStudio.ViewModels
         public TimeSpan? RequiredTime { get; set; }
 
         public string CollectionMethod { get; set; } = string.Empty;
+        public CartViewModel Cart { get; set; } = new CartViewModel();
     }
 }
