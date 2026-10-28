@@ -93,6 +93,17 @@ namespace CakeStudio.Services
                     return serviceResponse;
                 }
 
+                // Check if phone number already exists
+                int phoneCount = session.QueryOver<User>()
+                    .Where(x => x.PhoneNumber == user.PhoneNumber)
+                    .RowCount();
+
+                if (phoneCount > 0)
+                {
+                    serviceResponse.Message = Resource.PhoneNumberAlreadyRegistered;
+                    return serviceResponse;
+                }
+
                 // Hash the password
                 user.PasswordHash = _passwordHasher.HashPassword(user, password);
 

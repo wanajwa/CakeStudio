@@ -315,4 +315,7 @@
   <data name="CakeFlavourRequired" xml:space="preserve">
     <value>A cake flavour is required</value>
   </data>
+  <data name="PhoneNumberAlreadyRegistered" xml:space="preserve">
+    <value> This phone number is already registered.</value>
+  </data>
 </root>

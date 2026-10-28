@@ -592,6 +592,15 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to  This phone number is already registered..
+        /// </summary>
+        public static string PhoneNumberAlreadyRegistered {
+            get {
+                return ResourceManager.GetString("PhoneNumberAlreadyRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred during registration.
         /// </summary>
         public static string RegistrationFailed {
