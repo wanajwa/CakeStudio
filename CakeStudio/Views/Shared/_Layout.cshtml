@@ -89,6 +89,14 @@
                             <i class="bi bi-bag-check me-3"></i>
                             My Orders
                         </a>
+
+                        <!-- My Profile -->
+                        <a class="nav-link sidebar-link @(currentController == "Account" ? "active" : "")"
+                           asp-controller="Account"
+                           asp-action="Profile">
+                            <i class="bi bi-person me-3"></i>
+                            My Profile
+                        </a>
                     }
 
                 
@@ -182,6 +190,12 @@
                                asp-action="MyOrders">
                                 <i class="bi bi-bag-check me-3"></i>
                                 My Orders
+                            </a>
+                            <a class="nav-link sidebar-link"
+                               asp-controller="Account"
+                               asp-action="Profile">
+                                <i class="bi bi-person me-3"></i>
+                                My Profile
                             </a>
 
                         }

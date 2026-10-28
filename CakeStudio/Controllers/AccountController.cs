@@ -1,6 +1,7 @@
 ﻿using CakeStudio.Models;
 using CakeStudio.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -141,6 +142,70 @@ namespace CakeStudio.Controllers
             TempData["SuccessMessage"] = response.Message;
 
             return RedirectToAction("Login");
+        }
+
+        [Authorize(Roles = "Customer")]
+        [HttpGet]
+        public IActionResult Profile()
+        {
+            var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(value, out int customerId))
+                return Challenge();
+
+            var response = _userService.GetCustomerProfile(customerId);
+            if (!response.Status || response.Data is not CustomerProfileViewModel model)
+            {
+                TempData["ErrorMessage"] = response.Message;
+                return RedirectToAction("Index", "CustomerCake");
+
+            }
+            return View(model);
+        }
+
+        [Authorize(Roles = "Customer")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(CustomerProfileViewModel model)
+        {
+            var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(value, out int customerId))
+                return Challenge();
+
+            var profileResponse = _userService.GetCustomerProfile(customerId);
+            if (!profileResponse.Status || profileResponse.Data is not CustomerProfileViewModel profile)
+            {
+                TempData["ErrorMessage"] = profileResponse.Message;
+                return RedirectToAction("Index", "CustomerCake");
+            }
+
+            model.Email = profile.Email;
+            ModelState.Remove(nameof(model.Email));
+
+            if(!ModelState.IsValid)
+                return View(model);
+            var response = _userService.UpdateCustomerProfile(customerId,model);
+
+            if (!response.Status)
+            {
+                ModelState.AddModelError("",response.Message);
+                return View(model);
+            }
+
+            var authentication = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var identity = new ClaimsIdentity((ClaimsIdentity)User.Identity!);
+            var nameClaim = identity.FindFirst(ClaimTypes.Name);
+
+            if (nameClaim != null) 
+                identity.RemoveClaim(nameClaim);
+            identity.AddClaim(new Claim(ClaimTypes.Name, model.Name.Trim()));
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,new ClaimsPrincipal(identity), authentication.Properties);
+
+            TempData["SuccessMessage"] = response.Message;
+
+            return RedirectToAction(nameof(Profile));
+
         }
 
 

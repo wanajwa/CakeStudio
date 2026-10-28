@@ -1,0 +1,185 @@
+﻿@model CakeStudio.ViewModels.CustomerProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+
+    var initials = string.Concat(
+        Model.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Take(2)
+            .Select(word => word[0]))
+        .ToUpperInvariant();
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/profile.css"
+          asp-append-version="true" />
+}
+
+<div class="profile-page">
+
+    <div class="profile-banner">
+        <div class="profile-heading">
+            <div class="profile-avatar" aria-hidden="true">
+                @initials
+            </div>
+
+            <div class="profile-identity">
+                <h2>@Model.Name</h2>
+                <p>@Model.Email</p>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success" role="status">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="row g-4">
+
+        <!-- Profile form -->
+        <div class="col-lg-8">
+            <div class="profile-details-card">
+
+                <h4>Personal details</h4>
+                <p class="text-muted mb-4">
+                    Keep your contact information up to date.
+                </p>
+
+                <form asp-controller="Account"
+                      asp-action="Profile"
+                      method="post">
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3"></div>
+
+                    <div class="mb-4">
+                        <label asp-for="Name" class="form-label">
+                            Full name
+                        </label>
+
+                        <div class="profile-field">
+                            <i class="bi bi-person"
+                               aria-hidden="true"></i>
+
+                            <input asp-for="Name"
+                                   class="form-control"
+                                   autocomplete="name" />
+                        </div>
+
+                        <span asp-validation-for="Name"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Email"
+                               class="form-label"></label>
+
+                        <div class="profile-field">
+                            <i class="bi bi-envelope"
+                               aria-hidden="true"></i>
+
+                            <input asp-for="Email"
+                                   class="form-control"
+                                   readonly />
+
+                            <i class="bi bi-lock profile-lock"
+                               aria-hidden="true"></i>
+                        </div>
+
+                        <div class="form-text">
+                            Your login email cannot be changed here.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber"
+                               class="form-label">
+                            Phone number
+                        </label>
+
+                        <div class="profile-field">
+                            <i class="bi bi-telephone"
+                               aria-hidden="true"></i>
+
+                            <input asp-for="PhoneNumber"
+                                   type="tel"
+                                   class="form-control"
+                                   autocomplete="tel" />
+                        </div>
+
+                        <span asp-validation-for="PhoneNumber"
+                              class="text-danger"></span>
+                    </div>
+
+                    <hr class="profile-divider" />
+
+                    <h4>Delivery address</h4>
+                    <p class="text-muted mb-4">
+                        Optionally save an address to your profile.
+                    </p>
+
+                    <div class="mb-4">
+                        <label asp-for="Address" class="form-label">
+                            Address
+                        </label>
+
+                        <div class="profile-field">
+                            <i class="bi bi-geo-alt"
+                               aria-hidden="true"></i>
+
+                            <textarea asp-for="Address"
+                                      class="form-control"
+                                      rows="3"
+                                      autocomplete="street-address"></textarea>
+                        </div>
+
+                        <span asp-validation-for="Address"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end flex-wrap gap-2">
+                        <a asp-controller="CustomerCake"
+                           asp-action="Index"
+                           class="btn profile-back">
+                            Back
+                        </a>
+
+                        <button type="submit"
+                                class="btn profile-save">
+                            Save changes
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- Orders shortcut -->
+        <div class="col-lg-4">
+            <div class="profile-orders-card">
+                <h5>Craving something?</h5>
+
+                <p class="mt-2 mb-4">
+                    Check your orders and see how your cakes are coming along.
+                </p>
+
+                <a asp-controller="Order"
+                   asp-action="MyOrders"
+                   class="btn profile-orders-link">
+                    <i class="bi bi-bag-check me-2"
+                       aria-hidden="true"></i>
+                    View my orders
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

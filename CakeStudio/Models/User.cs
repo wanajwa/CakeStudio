@@ -19,9 +19,10 @@ namespace CakeStudio.Models
         [StringLength(255)]
         public virtual string PasswordHash { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Phone number is required.")]
         [Phone(ErrorMessage = "Invalid phone number.")]
         [StringLength(20)]
-        public virtual string? PhoneNumber { get; set; }
+        public virtual string PhoneNumber { get; set; } = string.Empty;
 
         [StringLength(500)]
         public virtual string? Address { get; set; }
