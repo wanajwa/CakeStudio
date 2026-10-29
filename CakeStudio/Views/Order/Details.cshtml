@@ -178,39 +178,56 @@
                     Order Items
                 </h5>
 
-                <div class="order-item-name">
-                    @Model.CakeName
-                </div>
+                @foreach (var item in Model.OrderItems)
+                {
+                    <div class="mb-4">
+                        <div class="order-item-name">
+                            @(item.Cake?.CakeName ?? "Unknown Cake")
+                        </div>
 
-                <div class="order-item-options">
+                        <div class="order-item-options">
+                            <div>
+                                <span>Flavour</span>
+                                <strong>@(item.Flavour?.FlavourName ?? "-")</strong>
+                            </div>
 
-                    <div>
-                        <span>Flavour</span>
-                        <strong>@Model.FlavourName</strong>
-                    </div>
+                            <div>
+                                <span>Size</span>
+                                <strong>@(item.Size?.SizeName ?? "-")</strong>
+                            </div>
 
-                    <div>
-                        <span>Size</span>
-                        <strong>@Model.SizeName</strong>
-                    </div>
+                            <div>
+                                <span>Tier</span>
+                                <strong>@(item.Tier?.TierName ?? "-")</strong>
+                            </div>
 
-                    <div>
-                        <span>Tier</span>
-                        <strong>@Model.TierName</strong>
-                    </div>
-                    </div>
+                            <div>
+                                <span>Quantity</span>
+                                <strong>@item.Quantity</strong>
+                            </div>
+                        </div>
 
-                    <div class="order-cake-message">
-                        <span>Cake Message</span>
-                        <p class="mb-0">
-                            @(string.IsNullOrWhiteSpace(Model.Order.MessageOnCakes)
-                                                        ? "-"
-                                                        : Model.Order.MessageOnCakes)
+                        <div class="d-flex justify-content-between flex-wrap gap-2 mt-3">
+                            <span>
+                                Unit price: RM @item.UnitPrice.ToString("N2")
+                            </span>
+
+                            <strong class="cake-price">
+                                Subtotal: RM @((item.UnitPrice * item.Quantity).ToString("N2"))
+                            </strong>
+                        </div>
+
+                        <div class="order-cake-message">
+                            <span>Cake Message</span>
+
+                            <p class="mb-0">
+                                @(string.IsNullOrWhiteSpace(item.MessageOnCakes)
+                                                            ? "-"
+                                                            : item.MessageOnCakes)
                         </p>
                     </div>
-
-                
-
+                </div>
+                                }
             </div>
 
             <!-- Total Price Section -->

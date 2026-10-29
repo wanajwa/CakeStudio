@@ -25,6 +25,18 @@ namespace CakeStudio.Services
             .Fetch(SelectMode.Fetch, o => o.Cake)
             .OrderBy(o => o.CreatedAt).Desc
             .List();
+
+            // Load each order's cake items before closing the session
+            foreach (var order in orders)
+            {
+                var items = session.QueryOver<OrderItem>()
+                    .Where(item => item.OrderId == order.OrderId)
+                    .Fetch(SelectMode.Fetch, item => item.Cake)
+                    .OrderBy(item => item.OrderItemId).Asc
+                    .List();
+
+                order.OrderItems = new List<OrderItem>(items);
+            }
             return new List<Order>(orders);
         }
         public List<Payment> GetAllPayments()
@@ -141,15 +153,11 @@ namespace CakeStudio.Services
                     break;
 
                 case "nearest":
-                    query.Where(o =>
-                        o.OrderStatus == OrderStatus.Pending ||
-                        o.OrderStatus == OrderStatus.Preparing ||
-                        o.OrderStatus == OrderStatus.Ready);
+                    query.Where(o => o.OrderStatus == OrderStatus.Pending || o.OrderStatus == OrderStatus.Preparing || o.OrderStatus == OrderStatus.Ready);
                     break;
             }
 
-            if (sort == "" || sort == "newest" ||
-                sort == "completed" || sort == "rejected")
+            if (sort == "" || sort == "newest" || sort == "completed" || sort == "rejected")
             {
                 query = query
                     .OrderBy(o => o.CreatedAt).Desc
@@ -199,10 +207,7 @@ namespace CakeStudio.Services
         }
         public decimal CalculateTotalPrice(OrderViewModel model)
         {
-            if (!model.CakeId.HasValue ||
-                !model.SizeId.HasValue ||
-                !model.FlavourId.HasValue ||
-                !model.TierId.HasValue)
+            if (!model.CakeId.HasValue || !model.SizeId.HasValue || !model.FlavourId.HasValue || !model.TierId.HasValue)
             {
                 throw new ArgumentException(Resource.CakeOptionsRequired);
             }
@@ -255,13 +260,11 @@ namespace CakeStudio.Services
         {
             if (model.Cart == null || !model.Cart.Items.Any())
             {
-                throw new ArgumentException(
-                    "Your cart is empty. Please add a cake first.");
+                throw new ArgumentException("Your cart is empty. Please add a cake first.");
             }
 
 
-            if (!model.RequiredDate.HasValue ||
-                !model.RequiredTime.HasValue)
+            if (!model.RequiredDate.HasValue || !model.RequiredTime.HasValue)
             {
                 throw new ArgumentException(Resource.InvalidRequiredDateTime);
             }
@@ -296,78 +299,80 @@ namespace CakeStudio.Services
                 // Validate customer
                 var customer = session.Get<User>(customerId);
 
-                if (customer == null ||
-                    customer.GetRoleName() != "Customer")
+                if (customer == null || customer.GetRoleName() != "Customer")
                 {
                     throw new ArgumentException(Resource.InvalidCustomerAccount);
                 }
 
-                // Validate selected cake
-                var cake = session.Get<Cake>(model.CakeId.Value);
+                // >>cart 
+                decimal totalPrice = 0m;
+                var orderItems = new List<OrderItem>();
 
-                if (cake == null || !cake.IsAvailable)
-                    throw new ArgumentException(Resource.CakeUnavailable);
-
-                decimal totalPrice = cake.BasePrice;
-
-                // Validate and calculate size
-                if (model.SizeId.HasValue)
+                foreach (var item in model.Cart.Items)
                 {
-                    var size = session.Get<CakeSize>(
-                        model.SizeId.Value);
+                    if (item.Quantity < 1 || item.Quantity > 20)
+                        throw new ArgumentException("Quantity must be between 1 and 20.");
+
+                    if (item.MessageOnCakes?.Length > 500)
+                        throw new ArgumentException("Cake message must not exceed 500 characters.");
+
+                    // Load this item's cake and options
+                    var cake = session.Get<Cake>(item.CakeId);
+                    var size = session.Get<CakeSize>(item.SizeId);
+                    var flavour = session.Get<CakeFlavour>(item.FlavourId);
+                    var tier = session.Get<CakeTier>(item.TierId);
+
+                    if (cake == null || !cake.IsAvailable)
+                        throw new ArgumentException(Resource.CakeUnavailable);
 
                     if (size == null || !size.IsAvailable)
                         throw new ArgumentException(Resource.SizeUnavailable);
 
-
-                    bool isDefaultSize = size.SizeName.Trim()
-                        .Equals("6 inch", StringComparison.OrdinalIgnoreCase);
-
-                    if (!isDefaultSize)
-                    {
-                        totalPrice += size.AdditionalPrice;
-                    }
-
-                }
-
-                // Validate and calculate flavour
-                if (model.FlavourId.HasValue)
-                {
-                    var flavour = session.Get<CakeFlavour>(
-                        model.FlavourId.Value);
-
                     if (flavour == null || !flavour.IsAvailable)
                         throw new ArgumentException(Resource.FlavourUnavailable);
-
-
-                    bool isDefaultFlavour =
-                        flavour.FlavourId == cake.Flavour.FlavourId;
-
-                    if (!isDefaultFlavour)
-                    {
-                        totalPrice += flavour.AdditionalPrice;
-                    }
-
-                }
-
-                // Validate and calculate tier
-                if (model.TierId.HasValue)
-                {
-                    var tier = session.Get<CakeTier>(
-                        model.TierId.Value);
 
                     if (tier == null || !tier.IsAvailable)
                         throw new ArgumentException(Resource.TierUnavailable);
 
+                    decimal unitPrice = cake.BasePrice;
 
+                    // Default size is included
+                    bool isDefaultSize = size.SizeName.Trim()
+                        .Equals("6 inch", StringComparison.OrdinalIgnoreCase);
+
+                    if (!isDefaultSize)
+                        unitPrice += size.AdditionalPrice;
+
+                    // Original flavour is included
+                    if (flavour.FlavourId != cake.Flavour.FlavourId)
+                        unitPrice += flavour.AdditionalPrice;
+
+                    // One tier is included
                     bool isDefaultTier = tier.TierName.Trim()
                         .Equals("1", StringComparison.OrdinalIgnoreCase);
 
                     if (!isDefaultTier)
-                    {
-                        totalPrice += tier.AdditionalPrice;
-                    }
+                        unitPrice += tier.AdditionalPrice;
 
+                    if (unitPrice <= 0 || unitPrice > 100000)
+                        throw new ArgumentException(Resource.InvalidOrderPrice);
+
+                    // Require another review if the price has changed
+                    if (unitPrice != item.UnitPrice)
+                        throw new ArgumentException("A cake price has changed. Please review the payment summary again.");
+
+                    totalPrice += unitPrice * item.Quantity;
+
+                    orderItems.Add(new OrderItem
+                    {
+                        CakeId = item.CakeId,
+                        SizeId = item.SizeId,
+                        FlavourId = item.FlavourId,
+                        TierId = item.TierId,
+                        Quantity = item.Quantity,
+                        UnitPrice = unitPrice,
+                        MessageOnCakes = item.MessageOnCakes?.Trim()
+                    });
                 }
 
                 if (totalPrice <= 0 || totalPrice > 100000)
@@ -398,22 +403,14 @@ namespace CakeStudio.Services
                 var order = new Order
                 {
                     CustId = customerId,
-                    CakeId = model.CakeId,
-                    FlavourId = model.FlavourId,
-                    SizeId = model.SizeId,
-                    TierId = model.TierId,
                     BakerId = baker.UserId,
 
                     RequiredDate = requiredDateTime,
-
                     CollectionMethod = method,
 
                     DeliveryAddress = method == "Delivery"
                         ? model.DeliveryAddress?.Trim()
                         : null,
-
-                    MessageOnCakes =
-                        model.MessageOnCakes?.Trim(),
 
                     TotalPrice = totalPrice,
                     OrderStatus = OrderStatus.Pending,
@@ -422,6 +419,14 @@ namespace CakeStudio.Services
                 };
 
                 session.Save(order);
+
+                // Save each cake item under the new order
+                foreach (var item in orderItems)
+                {
+                    item.OrderId = order.OrderId;
+
+                    session.Save(item);
+                }
 
                 var payment = new Payment
                 {
@@ -491,6 +496,16 @@ namespace CakeStudio.Services
             if (order == null)
                 return null;
 
+            // Load all cake items and their selected options
+            var orderItems = session.QueryOver<OrderItem>()
+                .Where(item => item.OrderId == id)
+                .Fetch(SelectMode.Fetch, item => item.Cake)
+                .Fetch(SelectMode.Fetch, item => item.Size)
+                .Fetch(SelectMode.Fetch, item => item.Flavour)
+                .Fetch(SelectMode.Fetch, item => item.Tier)
+                .OrderBy(item => item.OrderItemId).Asc
+                .List();
+
             var payment = session.QueryOver<Payment>()
                 .Where(p => p.Order.OrderId == id)
                 .SingleOrDefault();
@@ -498,6 +513,7 @@ namespace CakeStudio.Services
             return new OrderDetailsViewModel
             {
                 Order = order,
+                OrderItems = new List<OrderItem>(orderItems),
                 CakeName = order.Cake?.CakeName ?? "Unknown Cake",
                 FlavourName = order.Flavour?.FlavourName ?? "-",
                 SizeName = order.Size?.SizeName ?? "-",
@@ -509,7 +525,6 @@ namespace CakeStudio.Services
                 Payment = payment
             };
         }
-
         public void UpdateCustomerOrder(int orderId, int customerId, OrderViewModel model)
         {
             using var session = _nhibernateHelper.OpenSession();
@@ -555,9 +570,9 @@ namespace CakeStudio.Services
                 throw new ArgumentException(Resource.DeliveryAddressRequired);
             }
 
-            if (model.DeliveryAddress?.Length > 500 || model.MessageOnCakes?.Length > 500)
+            if (model.DeliveryAddress?.Length > 500 )
             {
-                throw new ArgumentException("Address and cake message must not exceed 500 characters.");
+                throw new ArgumentException("Delivery Address must not exceed 500 characters.");
             }
 
             // Update only the editable order information
@@ -566,9 +581,43 @@ namespace CakeStudio.Services
             order.DeliveryAddress = method == "Delivery"
                 ? model.DeliveryAddress?.Trim()
                 : null;
-            order.MessageOnCakes = model.MessageOnCakes?.Trim();
             order.UpdatedAt = DateTime.Now;
             order.UpdatedId = customerId;
+
+
+            // Load the items belonging to this order
+            var savedItems = session.QueryOver<OrderItem>()
+                .Where(item => item.OrderId == orderId)
+                .List();
+
+            if (model.OrderItems == null || model.OrderItems.Count != savedItems.Count)
+            {
+                throw new ArgumentException("Invalid order items.");
+            }
+
+            var checkedIds = new HashSet<int>();
+
+            foreach (var submittedItem in model.OrderItems)
+            {
+                var savedItem = savedItems.SingleOrDefault(item => item.OrderItemId == submittedItem.OrderItemId);
+
+                // Reject items from other orders and duplicate item IDs
+                if (savedItem == null || !checkedIds.Add(submittedItem.OrderItemId))
+                {
+                    throw new ArgumentException("Invalid order item.");
+                }
+
+                if (submittedItem.MessageOnCakes?.Length > 500)
+                {
+                    throw new ArgumentException("Cake message must not exceed 500 characters.");
+                }
+
+                // Update only the message
+                savedItem.MessageOnCakes =
+                submittedItem.MessageOnCakes?.Trim();
+
+                session.Update(savedItem);
+            }
 
             session.Update(order);
             transaction.Commit();
@@ -583,8 +632,7 @@ namespace CakeStudio.Services
             {
                 var baker = session.Get<User>(bakerId);
 
-                if (baker == null ||
-                    baker.GetRoleName() != "Baker")
+                if (baker == null || baker.GetRoleName() != "Baker")
                 {
                     throw new UnauthorizedAccessException(Resource.InvalidBakerAccount);
                 }
@@ -664,14 +712,12 @@ namespace CakeStudio.Services
 
                     if (payment == null)
                     {
-                        throw new InvalidOperationException(
-                            "Payment record not found for this order.");
+                        throw new InvalidOperationException("Payment record not found for this order.");
                     }
 
                     if (payment.PaymentStatus != PaymentStatus.Paid)
                     {
-                        throw new InvalidOperationException(
-                            "Only paid payments can be refunded.");
+                        throw new InvalidOperationException("Only paid payments can be refunded.");
                     }
 
                     payment.PaymentStatus = PaymentStatus.Refunded;

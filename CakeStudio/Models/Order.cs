@@ -5,8 +5,6 @@ namespace CakeStudio.Models
     public class Order
     {
         public virtual int OrderId { get; set; }
-
-        [Required]
         public virtual int? CustId { get; set; }
         [Required(ErrorMessage = "Please select a cake.")]
         public virtual int? CakeId { get; set; }

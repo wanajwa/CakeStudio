@@ -145,6 +145,23 @@ namespace CakeStudio.Controllers
                 .ToList();
         }
 
+        private void RestoreOrderItemNames(OrderViewModel model)
+        {
+            var details = _orderService.GetOrderDetails(model.OrderId);
+
+            if (details == null)
+                return;
+
+            foreach (var item in model.OrderItems)
+            {
+                var savedItem = details.OrderItems
+                    .FirstOrDefault(x => x.OrderItemId == item.OrderItemId);
+
+                // Restore display information; keep the submitted message
+                item.Cake = savedItem?.Cake;
+            }
+        }
+
         // Display checkout for all cart items
         [Authorize(Roles = "Customer")]
         [HttpGet]
@@ -473,6 +490,10 @@ namespace CakeStudio.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
 
+            var details = _orderService.GetOrderDetails(id);
+            if (details == null)
+                return NotFound();
+
             var model = new OrderViewModel
             {
                 OrderId = order.OrderId,
@@ -481,7 +502,7 @@ namespace CakeStudio.Controllers
                 RequiredTime = order.RequiredDate?.TimeOfDay,
                 CollectionMethod = order.CollectionMethod,
                 DeliveryAddress = order.DeliveryAddress,
-                MessageOnCakes = order.MessageOnCakes
+                OrderItems = details.OrderItems
             };
 
             return View(model);
@@ -518,7 +539,10 @@ namespace CakeStudio.Controllers
             ModelState.Remove(nameof(model.CakeId));
 
             if (!ModelState.IsValid)
+            { 
+                RestoreOrderItemNames(model);
                 return View(model);
+            }
 
             try
             {
@@ -547,6 +571,7 @@ namespace CakeStudio.Controllers
                 ModelState.AddModelError("", "Unable to update your order. Please try again.");
             }
 
+            RestoreOrderItemNames(model);
             return View(model);
         }
 
@@ -755,17 +780,14 @@ namespace CakeStudio.Controllers
                     DateTime.Today.Month,
                     1);
 
-                if (expiry.Year < currentMonth.Year ||
-                    (expiry.Year == currentMonth.Year &&
-                     expiry.Month < currentMonth.Month))
+                if (expiry.Year < currentMonth.Year || (expiry.Year == currentMonth.Year && expiry.Month < currentMonth.Month))
                 {
                     ModelState.AddModelError(nameof(model.ExpiryDate),"Card has expired. Please enter a valid expiry date.");
                 }
             }
 
             // Validate security code format (3 digits)
-            if (!System.Text.RegularExpressions.Regex.IsMatch(
-                securityCode, @"^\d{3}$"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(securityCode, @"^\d{3}$"))
             {
                 ModelState.AddModelError(nameof(model.SecurityCode),"Security code must contain 3 digits.");
             }
@@ -793,8 +815,9 @@ namespace CakeStudio.Controllers
 
             try
             {
-                int orderId = _orderService.Create(customerId.Value,order,PaymentMethod.Card
-                );
+                int orderId = _orderService.Create(customerId.Value,order,PaymentMethod.Card);
+
+                _cartService.ClearCart();
 
                 HttpContext.Session.Remove($"PendingOrder_{customerId.Value}");
 

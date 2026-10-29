@@ -118,13 +118,18 @@ namespace CakeStudio.Controllers
 
             // Top 5 most ordered cakes
             var popularCakes = orders
-                .Where(o => o.OrderStatus != "Rejected" &&
-                            o.Cake != null)
-                .GroupBy(o => o.Cake!.CakeName)
+                .Where(o => o.OrderStatus != OrderStatus.Rejected)
+                .SelectMany(o => o.OrderItems)
+                .Where(item => item.Cake != null)
+                .GroupBy(item => new
+                {
+                    item.CakeId,
+                    item.Cake!.CakeName
+                })
                 .Select(g => new
                 {
-                    CakeName = g.Key,
-                    Count = g.Count()
+                    CakeName = g.Key.CakeName,
+                    Count = g.Sum(item => item.Quantity)
                 })
                 .OrderByDescending(x => x.Count)
                 .Take(5)

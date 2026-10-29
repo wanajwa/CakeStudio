@@ -18,16 +18,16 @@ namespace CakeStudio.Mappings
             Map(x => x.CustId)
                 .Not.Nullable();
             References(x => x.Customer)
-            .Column("CustId")
-            .ReadOnly();
+                .Column("CustId")
+                .ReadOnly();
 
             //  cake selection
             Map(x => x.CakeId)
-                .Not.Nullable();
+                .Nullable();
             References(x => x.Cake)
-            .Column("CakeId")
-            .ReadOnly();
-            // Optional custom cake selections
+                .Column("CakeId")
+                .Nullable()
+                .ReadOnly();
 
             Map(x => x.FlavourId)
                 .Nullable();
@@ -53,8 +53,6 @@ namespace CakeStudio.Mappings
                 .Nullable()
                 .ReadOnly();
 
-
-            // Baker may be assigned later
             Map(x => x.BakerId)
                 .Nullable();
 

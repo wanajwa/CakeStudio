@@ -87,21 +87,25 @@
                                   class="text-danger"></span>
                         </div>
 
-                        <div class="mb-4">
-                            <label asp-for="MessageOnCakes"
-                                   class="form-label">
-                                Message on Cake
-                            </label>
+                        @for (int i =0; i < Model.OrderItems.Count; i++)
+                        {
+                            <div class=" mb-4">
+                                <input asp-for ="OrderItems[i].OrderItemId" type="hidden" />
+                                <label asp-for = "OrderItems[i].MessageOnCakes" class="form-label">
+                                    Message for
+                                    @(Model.OrderItems[i].Cake?.CakeName ?? "Cake") - Item @(i + 1)
+                                </label>
+                                <textarea asp-for="OrderItems[i].MessageOnCakes"
+                                          class="form-control"
+                                          rows="2"
+                                          maxlength="500"
+                                          placeholder="e.g. Happy Birthday!">
+                                </textarea>
 
-                            <textarea asp-for="MessageOnCakes"
-                                      class="form-control"
-                                      rows="3"
-                                      placeholder="e.g. Happy Birthday!"></textarea>
+                                <span asp-validation-for="OrderItems[i].MessageOnCakes" class="text-danger"></span>
 
-                            <span asp-validation-for="MessageOnCakes"
-                                  class="text-danger"></span>
-                        </div>
-
+                            </div>
+                        }
                         <div class="d-flex flex-wrap gap-2">
                             <button type="submit"
                                     class="btn order-now-btn">

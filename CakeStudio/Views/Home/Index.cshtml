@@ -166,7 +166,15 @@
                                            asp-action="Details"
                                            asp-route-id="@order.OrderId"
                                            class="dashboard-cake-link">
-                                            @order.Cake?.CakeName
+
+                                            @foreach (var item in order.OrderItems)
+                                            {
+                                                <div>
+                                                    @(item.Cake?.CakeName ?? "Unknown Cake")
+                                                    × @item.Quantity
+                                                </div>
+                                            }
+
                                         </a>
                                     </td>
 
@@ -253,7 +261,7 @@
             data: {
                 labels: cakeLabels,
                 datasets: [{
-                    label: 'Orders',
+                    label: 'Cakes ordered',
                     data: cakeCounts,
                     backgroundColor: '#b9b2ee',
                     borderRadius: 8

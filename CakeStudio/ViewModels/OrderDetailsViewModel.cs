@@ -7,7 +7,7 @@ namespace CakeStudio.ViewModels
     {
         //hold result from service tadi
         public Order Order { get; set; } = null!;
-
+        public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public string CakeName { get; set; } = "";
         public string FlavourName { get; set; } = "";
         public string SizeName { get; set; } = "";
