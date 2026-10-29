@@ -1,16 +1,40 @@
 ﻿@model CakeStudio.ViewModels.RegisterViewModel
 @{
 	ViewData["Title"] = "Customer Registration";
+	ViewData["FullWidthPage"] = true;
 
 }
 
-<div class="row justify-content-center mt-5">
-		<div class="col-md-7 col-lg-6">
+@section Styles {
+	<link rel="stylesheet"
+		  href="~/css/auth.css"
+		  asp-append-version="true" />
+}
 
-			<div class="card shadow-sm">
-				<div class="card-body p-4">
-					
-					<h2 class="text-center mb-4">Create Account</h2>
+<div class="login-page auth-registration">
+
+	<div class="login-image-panel">
+		<div class="login-brand">CakeStudio</div>
+
+		<div class="login-intro">
+			<h1>A little sweetness,<br />starts here.</h1>
+			<p>
+				Create an account to explore our signature
+				cakes and manage your orders.
+			</p>
+		</div>
+
+		<p class="login-caption">
+			Baked with care, delivered with a smile.
+		</p>
+	</div>
+
+	<div class="login-form-panel">
+		<div class="login-form-content">
+			<h2>Create account</h2>
+			<p class="login-subtitle">
+				Join CakeStudio and find your favourite cakes.
+			</p>
 					<form asp-controller="Account"
 					asp-action="Register"
 					method="post">
@@ -54,14 +78,14 @@
 							<input asp-for="ConfirmPassword" type="password" class="form-control" />
 							<span asp-validation-for="ConfirmPassword" class="text-danger"></span>
 						</div>
-						<button type="submit" class="btn order-now-btn w-100">Register</button>
+						<button type="submit" class="btn login-submit w-100">Register</button>
 			</form>
 			<div class="text-center mt-3">
-				Already have an account? <a asp-controller="Account" asp-action="Login">Login here</a>
+				Already have an account? <a asp-controller="Account" asp-action="Login" class="login-register">Login here</a>
 			</div>
 
 			</div>
-			</div>
+			
 		</div>
 </div>
 

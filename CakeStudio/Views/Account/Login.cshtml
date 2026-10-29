@@ -3,14 +3,40 @@
 
 @{
     ViewData["Title"] = "Login";
+    ViewData["FullWidthPage"] = true;
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/auth.css"
+          asp-append-version="true" />
+}
 
-                <h3 class="text-center mb-4">Welcome to CakeStudio</h3>
+<div class="login-page">
+
+    <div class="login-image-panel">
+        <div class="login-brand">CakeStudio</div>
+
+        <div class="login-intro">
+            <h1>Freshly baked,<br />made for you.</h1>
+            <p>
+                Explore our signature cakes and keep track
+                of your orders in one place.
+            </p>
+        </div>
+
+        <p class="login-caption">
+            Baked with care, delivered with a smile.
+        </p>
+    </div>
+
+    <div class="login-form-panel">
+        <div class="login-form-content">
+            <h2>Welcome back</h2>
+            <p class="login-subtitle">
+                Log in to explore cakes and view your orders.
+            </p>
+
                 @if (TempData["SuccessMessage"] != null)
                 {
                     <div class="alert alert-success alert-dismissible fade show"
@@ -35,29 +61,33 @@
 
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label"></label>
-
+                        <div class="login-input">
+                        <i class="bi bi-envelope" aria-hidden="true"></i>
                         <input asp-for="Email"
                                class="form-control"
-                               placeholder="Enter your email" />
-
+                               placeholder="Enter your email" 
+                               autocomplete="username"/>
+                        </div>
                         <span asp-validation-for="Email"
                               class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="Password" class="form-label"></label>
-
+                        <div class="login-input">
+                        <i class="bi bi-lock" aria-hidden="true"></i>
                         <input asp-for="Password"
                                class="form-control"
                                type="password"
-                               placeholder="Enter your password" />
-
+                               placeholder="Enter your password" 
+                               autocomplete="current-password" />
+                        </div>
                         <span asp-validation-for="Password"
                               class="text-danger"></span>
                     </div>
 
                     <button type="submit"
-                            class="btn order-now-btn w-100">
+                            class="btn login-submit w-100">
                         Login
                     </button>
 
@@ -70,14 +100,14 @@
                     <span class="text-muted">Don't have an account?</span>
 
                     <a asp-controller="Account"
-                       asp-action="Register">
+                       asp-action="Register"
+                        class="login-register">
                         Register here
                     </a>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
