@@ -81,16 +81,16 @@
     box-shadow: none;
 }
 
-    .dashboard-period-select:focus {
-        border-color: #a9a2e5;
-        box-shadow: none;
-    }
+.dashboard-period-select:focus {
+    border-color: #a9a2e5;
+    box-shadow: none;
+}
 
 @media (max-width: 576px) {
-    .dashboard-chart-header {
-        align-items: flex-start;
-        flex-direction: column;
-    }
+.dashboard-chart-header {
+    align-items: flex-start;
+    flex-direction: column;
+}
 }
 
 /* Dashboard Links */
@@ -101,11 +101,11 @@
     font-size: 14px;
 }
 
-    .dashboard-view-all:hover,
-    .dashboard-cake-link:hover {
-        color: #5e57b5;
-        text-decoration: underline;
-    }
+.dashboard-view-all:hover,
+.dashboard-cake-link:hover {
+    color: #5e57b5;
+    text-decoration: underline;
+}
 
 /* Upcoming Orders Table */
 .dashboard-table {
@@ -113,22 +113,22 @@
     margin-bottom: 0;
 }
 
-    .dashboard-table thead th {
-        background: #f8f9fc;
-        color: #666;
-        font-weight: 600;
-        padding: 14px;
-        border-bottom: 1px solid #edf0f4;
-    }
+.dashboard-table thead th {
+    background: #f8f9fc;
+    color: #666;
+    font-weight: 600;
+    padding: 14px;
+    border-bottom: 1px solid #edf0f4;
+}
 
-    .dashboard-table tbody td {
-        padding: 14px;
-        border-bottom: 1px solid #f1f2f5;
-    }
+.dashboard-table tbody td {
+    padding: 14px;
+    border-bottom: 1px solid #f1f2f5;
+}
 
-    .dashboard-table tbody tr:last-child td {
-        border-bottom: none;
-    }
+.dashboard-table tbody tr:last-child td {
+    border-bottom: none;
+}
 
 /* Status Badges */
 .dashboard-status {
@@ -139,27 +139,39 @@
     font-weight: 500;
 }
 
-    .dashboard-status[data-status="Pending"] {
-        background: #fff3dc;
-        color: #a66a12;
-    }
+.dashboard-status[data-status="Pending"] {
+    background: #fff3dc;
+    color: #a66a12;
+}
 
-    .dashboard-status[data-status="Preparing"] {
-        background: #e8efff;
-        color: #5277bd;
-    }
+.dashboard-status[data-status="Preparing"] {
+    background: #e8efff;
+    color: #5277bd;
+}
 
-    .dashboard-status[data-status="Ready"] {
-        background: #e8f7f4;
-        color: #278b79;
-    }
+.dashboard-status[data-status="Ready"] {
+    background: #e8f7f4;
+    color: #278b79;
+}
 
-    .dashboard-status[data-status="Completed"] {
-        background: #e4f5eb;
-        color: #25875b;
-    }
+.dashboard-status[data-status="Completed"] {
+    background: #e4f5eb;
+    color: #25875b;
+}
 
-    .dashboard-status[data-status="Rejected"] {
-        background: #fde9eb;
-        color: #c66a76;
+.dashboard-status[data-status="Rejected"] {
+    background: #fde9eb;
+    color: #c66a76;
     }
+.dashboard-table .order-row {
+    cursor: pointer;
+}
+
+.dashboard-table .order-row:hover > td {
+    background-color: #f4f0ff;
+}
+
+.dashboard-table .order-row:focus-visible {
+    outline: 2px solid #7455b5;
+    outline-offset: -2px;
+}

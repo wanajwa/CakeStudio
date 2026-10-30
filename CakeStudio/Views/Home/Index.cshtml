@@ -156,26 +156,22 @@
 
                             foreach (var order in Model.UpcomingOrders)
                             {
-                                <tr>
+                                <tr class="order-row"
+                                    data-url="@Url.Action("Details", "Order", new { id = order.OrderId })"
+                                    tabindex="0"
+                                    aria-label="View order @no details">
                                     <td>@no</td>
 
                                     <td>@order.Customer?.Name</td>
 
                                     <td>
-                                        <a asp-controller="Order"
-                                           asp-action="Details"
-                                           asp-route-id="@order.OrderId"
-                                           class="dashboard-cake-link">
-
-                                            @foreach (var item in order.OrderItems)
-                                            {
-                                                <div>
-                                                    @(item.Cake?.CakeName ?? "Unknown Cake")
-                                                    × @item.Quantity
-                                                </div>
-                                            }
-
-                                        </a>
+                                        @foreach (var item in order.OrderItems)
+                                        {
+                                            <div>
+                                                @(item.Cake?.CakeName ?? "Unknown Cake")
+                                                × @item.Quantity
+                                            </div>
+                                        }
                                     </td>
 
                                     <td>
@@ -281,6 +277,18 @@
                     legend: { display: false }
                 }
             }
+        });
+
+        document.querySelectorAll(".dashboard-table .order-row").forEach(function (row) {
+            row.addEventListener("click", function () {
+                window.location.href = row.dataset.url;
+            });
+
+            row.addEventListener("keydown", function (e) {
+                if (e.target === row && e.key === "Enter") {
+                    window.location.href = row.dataset.url;
+                }
+            });
         });
     </script>
 }
