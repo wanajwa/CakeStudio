@@ -8,8 +8,7 @@ namespace CakeStudio.Services
 
         void AddItem(CartItemViewModel model);
 
-        void UpdateQuantity(string cartItemId, int quantity);
-
+        void UpdateItems(List<CartItemViewModel> items);
         void RemoveItem(string cartItemId);
 
         void ClearCart();

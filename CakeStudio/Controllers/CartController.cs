@@ -52,31 +52,29 @@ namespace CakeStudio.Controllers
             }
         }
 
-        // Change quantity
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateQuantity(
-            string cartItemId, int quantity)
+        public IActionResult Checkout(List<CartItemViewModel> items)
         {
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "Please enter a valid quantity.";
-
+                TempData["ErrorMessage"] = "Please check your cart information.";
                 return RedirectToAction(nameof(Index));
             }
 
             try
             {
-                _cartService.UpdateQuantity(cartItemId, quantity);
+                _cartService.UpdateItems(items);
 
-                TempData["SuccessMessage"] = "Cart updated.";
+                return RedirectToAction("Checkout", "Order");
             }
             catch (ArgumentException ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-            }
 
-            return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // Remove one cart entry

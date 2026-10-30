@@ -109,18 +109,45 @@ namespace CakeStudio.Services
             SaveCart(cart);
         }
 
-        public void UpdateQuantity(string cartItemId, int quantity)
+        public void UpdateItems(List<CartItemViewModel> items)
         {
-            ValidateQuantity(quantity);
-
             var cart = GetCart();
 
-            var item = cart.Items.Find(x => x.CartItemId == cartItemId);
+            if (items == null || items.Count != cart.Items.Count)
+                throw new ArgumentException("Your cart has changed. Please review it.");
 
-            if (item == null)
-                throw new ArgumentException("Cart item not found.");
+            var checkedIds = new HashSet<string>();
 
-            item.Quantity = quantity;
+            // Validate every item before changing the cart
+            foreach (var submittedItem in items)
+            {
+                var savedItem = cart.Items.FirstOrDefault(x => x.CartItemId == submittedItem.CartItemId);
+
+                if (savedItem == null || !checkedIds.Add(submittedItem.CartItemId))
+                {
+                    throw new ArgumentException("Invalid cart item.");
+                }
+
+                if (submittedItem.Quantity < 1 || submittedItem.Quantity > 20)
+                    throw new ArgumentException("Quantity must be between 1 and 20.");
+
+                if (submittedItem.MessageOnCakes?.Length > 500)
+                {
+                    throw new ArgumentException("Cake message must not exceed 500 characters.");
+                }
+            }
+
+            // Update only quantities and messages
+            foreach (var submittedItem in items)
+            {
+                var savedItem = cart.Items.First(x => x.CartItemId == submittedItem.CartItemId);
+
+                savedItem.Quantity = submittedItem.Quantity;
+
+                savedItem.MessageOnCakes = string.IsNullOrWhiteSpace(submittedItem.MessageOnCakes)
+                        ? null
+                        : submittedItem.MessageOnCakes.Trim();
+            }
 
             SaveCart(cart);
         }
