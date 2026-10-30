@@ -303,9 +303,13 @@
                                 </td>
 
                                 <td>
-                                    <span class="cake-name">
-                                        @order.Cake?.CakeName
-                                    </span>
+                                    @foreach (var item in order.OrderItems)
+                                    {
+                                        <div class="cake-name">
+                                            @(item.Cake?.CakeName ?? "Unknown Cake")
+                                            × @item.Quantity
+                                        </div>
+                                    }
                                 </td>
 
                                 <td>

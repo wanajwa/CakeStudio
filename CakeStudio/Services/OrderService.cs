@@ -55,18 +55,6 @@ namespace CakeStudio.Services
             return session.Get<Order>(id);
         }
 
-        public List<Order> GetOrdersByCustomer(int customerId)
-        {
-            using var session = _nhibernateHelper.OpenSession();
-
-            var orders = session.QueryOver<Order>()
-                .Where(o => o.CustId == customerId)
-                .OrderBy(o => o.CreatedAt).Desc
-                .List();
-
-            return new List<Order>(orders);
-        }
-
         public OrderListViewModel GetPagedOrders(int page = 1, int pageSize = 5, string sort = "")
         {
             using var session = _nhibernateHelper.OpenSession();
@@ -514,10 +502,6 @@ namespace CakeStudio.Services
             {
                 Order = order,
                 OrderItems = new List<OrderItem>(orderItems),
-                CakeName = order.Cake?.CakeName ?? "Unknown Cake",
-                FlavourName = order.Flavour?.FlavourName ?? "-",
-                SizeName = order.Size?.SizeName ?? "-",
-                TierName = order.Tier?.TierName ?? "-",
                 CustomerName = order.Customer?.Name ?? "-",
                 CustomerEmail = order.Customer?.Email ?? "-",
                 CustomerPhone = order.Customer?.PhoneNumber,

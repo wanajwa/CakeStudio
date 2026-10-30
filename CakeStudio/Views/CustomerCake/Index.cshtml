@@ -280,30 +280,5 @@
             }
 
         });
-
-
-        function proceedToOrder(cakeId) {
-
-        const panel = document.getElementById("cakeDetailsPanel");
-
-        const sizeId = panel.querySelector("#cakeSize")?.value;
-        const flavourId = panel.querySelector("#cakeFlavour")?.value;
-        const tierId = panel.querySelector("#cakeTier")?.value;
-
-        if (!sizeId || !flavourId || !tierId) {
-            alert("Please select cake size, flavour and tier.");
-            return;
-        }
-
-        const params = new URLSearchParams({
-            cakeId: cakeId,
-            sizeId: sizeId,
-            flavourId: flavourId,
-            tierId: tierId
-        });
-
-        window.location.href = "/Order/Create?" + params.toString();
-    }
-
     </script>
 }             

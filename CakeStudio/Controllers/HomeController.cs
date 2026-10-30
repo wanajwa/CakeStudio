@@ -10,13 +10,11 @@ namespace CakeStudio.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly ICakeService _cakeService;
         private readonly IOrderService _orderService;
 
-        public HomeController(ILogger<HomeController> logger, ICakeService cakeService, IOrderService orderService)
+        public HomeController(ICakeService cakeService, IOrderService orderService)
         {
-            _logger = logger;
             _cakeService = cakeService;
             _orderService = orderService;
         }

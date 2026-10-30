@@ -466,6 +466,7 @@ namespace CakeStudio.Controllers
             try
             {
                 var model = BuildPaymentViewModel(order);
+                HttpContext.Session.SetString($"PendingOrder_{customerId.Value}",JsonSerializer.Serialize(order));
                 return View(model);
             }
             catch (ArgumentException ex)

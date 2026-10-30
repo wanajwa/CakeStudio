@@ -27,13 +27,6 @@ namespace CakeStudio.ViewModels
         [StringLength(500)]
         public string? DeliveryAddress { get; set; }
 
-        [StringLength(500)]
-        public string? MessageOnCakes { get; set; }
-
-        // Display-only information
-        public string CakeName { get; set; } = string.Empty;
-
-        public decimal BasePrice { get; set; }
         public CartViewModel Cart { get; set; } = new CartViewModel();
 
         public int OrderId { get; set; }

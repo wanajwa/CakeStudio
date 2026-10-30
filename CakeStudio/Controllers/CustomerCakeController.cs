@@ -61,43 +61,6 @@ namespace CakeStudio.Controllers
             );
         }
 
-        // Display cake details and available options
-        [HttpGet]
-        public IActionResult Details(int id)
-        {
-            // Retrieve selected cake
-            var cake = _cakeService.GetById(id);
-
-            if (cake == null || !cake.IsAvailable)
-            {
-                return NotFound();
-            }
-
-            // Retrieve only available options
-            var sizes = _cakeSizeService.GetAll()
-                .Where(x => x.IsAvailable)
-                .ToList();
-
-            var flavours = _cakeFlavourService.GetAll()
-                .Where(x => x.IsAvailable)
-                .ToList();
-
-            var tiers = _cakeTierService.GetAll()
-                .Where(x => x.IsAvailable)
-                .ToList();
-
-            // Combine cake and options into one ViewModel
-            var viewModel = new CustomerCakeDetailsViewModel
-            {
-                Cake = cake,
-                CakeSizes = sizes,
-                CakeFlavours = flavours,
-                CakeTiers = tiers
-            };
-
-            return View(viewModel);
-        }
-
         // Return cake details as a Partial View
         [HttpGet]
         public IActionResult DetailsPanel(int id)
