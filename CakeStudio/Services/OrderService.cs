@@ -274,7 +274,7 @@ namespace CakeStudio.Services
             }
 
             using var session = _nhibernateHelper.OpenSession();
-            using var transaction = session.BeginTransaction();
+            using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
             try
             {
@@ -381,6 +381,37 @@ namespace CakeStudio.Services
                 {
                     throw new InvalidOperationException("Baker account not found.");
                 }
+
+                // ni nak cek limit baker 
+
+                DateTime startDate = requiredDateTime.Date;
+                DateTime endDate = startDate.AddDays(1);
+
+                Order existingOrder = null!;
+
+                int bookedQuantity = session.QueryOver<OrderItem>()
+                    .JoinAlias(item => item.Order, () => existingOrder)
+                    .Where(() => existingOrder.RequiredDate >= startDate)
+                    .And(() => existingOrder.RequiredDate < endDate)
+                    .And(() => existingOrder.OrderStatus != OrderStatus.Rejected)
+                    .SelectList(list => list.SelectSum(item => item.Quantity))
+                    .SingleOrDefault<int?>() ?? 0;
+
+                int requestedQuantity = orderItems.Sum(item => item.Quantity);
+
+                // Calculate remaining capacity, with a minimum of zero.
+                int remaining = Math.Max(0, BakingCapacity.DailyLimit - bookedQuantity);
+
+                // Stop the order if its quantity exceeds the remaining capacity.
+                if (requestedQuantity > remaining)
+                {
+                    string message = remaining == 0
+                        ? "This date is fully booked. Please choose another date."
+                        : $"Only {remaining} more {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
+
+                    throw new ArgumentException(message);
+                }
+
                 // Create Order entity
                 var order = new Order
                 {
@@ -432,6 +463,31 @@ namespace CakeStudio.Services
 
                 throw;
             }
+        }
+
+        public int GetBookedCakeQuantity(DateTime requiredDate,int? excludeOrderId = null)
+        {
+            using var session = _nhibernateHelper.OpenSession();
+
+            DateTime startDate = requiredDate.Date;
+            DateTime endDate = startDate.AddDays(1);
+
+            Order order = null!;
+
+            var query = session.QueryOver<OrderItem>()
+                .JoinAlias(item => item.Order, () => order)
+                .Where(() => order.RequiredDate >= startDate)
+                .And(() => order.RequiredDate < endDate)
+                .And(() => order.OrderStatus != OrderStatus.Rejected);
+
+            if (excludeOrderId.HasValue)
+            {
+                query.Where(() => order.OrderId != excludeOrderId.Value);
+            }
+
+            return query
+                .SelectList(list => list.SelectSum(item => item.Quantity))
+                .SingleOrDefault<int?>() ?? 0;
         }
 
         public OrderDetailsViewModel? GetOrderDetails(int id)
@@ -506,7 +562,7 @@ namespace CakeStudio.Services
         public void UpdateCustomerOrder(int orderId, int customerId, OrderViewModel model)
         {
             using var session = _nhibernateHelper.OpenSession();
-            using var transaction = session.BeginTransaction();
+            using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
             // Lock the order while checking and updating it
             var order = session.Get<Order>(orderId, LockMode.Upgrade);
@@ -553,6 +609,44 @@ namespace CakeStudio.Services
                 throw new ArgumentException("Delivery Address must not exceed 500 characters.");
             }
 
+            // Load the order's saved cake quantities.
+            var savedItems = session.QueryOver<OrderItem>()
+                .Where(item => item.OrderId == orderId)
+                .List();
+
+            // Check capacity only when moving to another day.
+            if (order.RequiredDate?.Date != requiredDateTime.Date)
+            {
+                DateTime startDate = requiredDateTime.Date;
+                DateTime endDate = startDate.AddDays(1);
+
+                Order existingOrder = null!;
+
+                // Count other orders on the new date.
+                int bookedQuantity = session.QueryOver<OrderItem>()
+                    .JoinAlias(item => item.Order, () => existingOrder)
+                    .Where(() => existingOrder.RequiredDate >= startDate)
+                    .And(() => existingOrder.RequiredDate < endDate)
+                    .And(() => existingOrder.OrderStatus != OrderStatus.Rejected)
+                    .And(() => existingOrder.OrderId != orderId)
+                    .SelectList(list => list.SelectSum(item => item.Quantity))
+                    .SingleOrDefault<int?>() ?? 0;
+
+                int orderQuantity = savedItems.Sum(item => item.Quantity);
+
+                int remaining = Math.Max(
+                    0, BakingCapacity.DailyLimit - bookedQuantity);
+
+                if (orderQuantity > remaining)
+                {
+                    string message = remaining == 0
+                        ? "This date is fully booked. Please choose another date."
+                        : $"Only {remaining} more {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
+
+                    throw new ArgumentException(message);
+                }
+            }
+
             // Update only the editable order information
             order.RequiredDate = requiredDateTime;
             order.CollectionMethod = method;
@@ -562,11 +656,6 @@ namespace CakeStudio.Services
             order.UpdatedAt = DateTime.Now;
             order.UpdatedId = customerId;
 
-
-            // Load the items belonging to this order
-            var savedItems = session.QueryOver<OrderItem>()
-                .Where(item => item.OrderId == orderId)
-                .List();
 
             if (model.OrderItems == null || model.OrderItems.Count != savedItems.Count)
             {

@@ -152,6 +152,25 @@ namespace CakeStudio.Controllers
                 ModelState.AddModelError("", ex.Message);
             }
 
+            if (model.RequiredDate.HasValue)
+            {
+                int bookedQuantity = _orderService.GetBookedCakeQuantity(model.RequiredDate.Value);
+
+                int requestedQuantity = model.Cart.Items.Sum(item => item.Quantity);
+
+                int remaining = Math.Max(0, BakingCapacity.DailyLimit - bookedQuantity);
+
+                if (requestedQuantity > remaining)
+                {
+                    string message = remaining == 0
+                        ? "This date is fully booked. Please choose another date."
+                        : $"Only {remaining} more {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
+
+                    ModelState.AddModelError("", message);
+                }
+            }
+
+
             if (!ModelState.IsValid)
                 return View("Create", model);
 
