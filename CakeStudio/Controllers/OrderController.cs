@@ -1,14 +1,15 @@
 ﻿
+using CakeStudio.Constant;
 using CakeStudio.Models;
+using CakeStudio.Resources;
 using CakeStudio.Services;
 using CakeStudio.Services.Interfaces;
 using CakeStudio.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
-using CakeStudio.Resources;
 using System.Text.Json;
-using CakeStudio.Constant;
 
 namespace CakeStudio.Controllers
 {
@@ -332,9 +333,17 @@ namespace CakeStudio.Controllers
         // Baker: All orders
         [Authorize(Roles = "Baker")]
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(int page = 1, string sort = "")
         {
-            var orders = _orderService.GetAll();
+            var validChoices = new[]
+            {
+                "", "nearest", "pending", "preparing", "ready", "completed", "rejected", "newest"
+            };
+
+            if (Array.IndexOf(validChoices, sort) < 0)
+                return NotFound();
+
+            var orders = _orderService.GetPagedOrders(page, 5, sort);
 
             return View(orders);
         }

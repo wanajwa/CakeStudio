@@ -1,91 +1,21 @@
 ﻿@using CakeStudio.Constant
-@model List<CakeStudio.Models.Order>
+@model CakeStudio.ViewModels.OrderListViewModel
 
 @{
     ViewData["Title"] = "Manage Orders";
 
-    var sourceOrders = Model ?? new List<CakeStudio.Models.Order>();
+    var totalOrders = Model.TotalOrders;
+    var preparingOrders = Model.PreparingOrders;
+    var readyOrders = Model.ReadyOrders;
+    var completedOrders = Model.CompletedOrders;
 
-    // Summary cards always count all orders.
-    var totalOrders = sourceOrders.Count;
-    var preparingOrders = sourceOrders.Count(
-        o => o.OrderStatus == OrderStatus.Preparing);
-    var readyOrders = sourceOrders.Count(
-        o => o.OrderStatus == OrderStatus.Ready);
-    var completedOrders = sourceOrders.Count(
-        o => o.OrderStatus == OrderStatus.Completed);
+    string sort = Model.Sort;
 
-    string sort = Context.Request.Query["sort"].ToString();
+    int pageSize = Model.PageSize;
+    int currentPage = Model.CurrentPage;
+    int totalPages = Model.TotalPages;
 
-    var validChoices = new[]
-    {
-        "", "nearest", "pending", "preparing", "ready", "completed", "rejected", "newest"
-    };
-
-    if (!validChoices.Contains(sort))
-    {
-        sort = "";
-    }
-
-    // Choose which orders to display.
-    var filteredOrders = sort switch
-    {
-        "pending" => sourceOrders.Where(
-            o => o.OrderStatus == OrderStatus.Pending),
-
-        "preparing" => sourceOrders.Where(
-            o => o.OrderStatus == OrderStatus.Preparing),
-
-        "ready" => sourceOrders.Where(
-            o => o.OrderStatus == OrderStatus.Ready),
-
-        "completed" => sourceOrders.Where(
-            o => o.OrderStatus == OrderStatus.Completed),
-
-        "rejected" => sourceOrders.Where(
-            o => o.OrderStatus == OrderStatus.Rejected),
-
-        "nearest" => sourceOrders.Where(
-            o => o.OrderStatus == OrderStatus.Pending ||
-                 o.OrderStatus == OrderStatus.Preparing ||
-                 o.OrderStatus == OrderStatus.Ready),
-
-        // Default and "newest": include all orders.
-        _ => sourceOrders.AsEnumerable()
-    };
-
-
-    var sortedOrders =
-        sort == "" || sort == "completed" || sort == "rejected" || sort == "newest"
-        ? filteredOrders.OrderByDescending(o => o.CreatedAt)
-        : filteredOrders.OrderBy(o => o.RequiredDate ?? DateTime.MaxValue);
-
-    var orders = sortedOrders
-        .ThenBy(o => o.OrderId)
-        .ToList();
-
-    int pageSize = 5;
-
-    int currentPage;
-
-    if (int.TryParse(Context.Request.Query["page"].ToString(), out int page))
-    {
-        currentPage = page;
-    }
-    else
-    {
-        currentPage = 1;
-    }
-
-    // Pagination counts the displayed orders.
-    int totalPages = Math.Max( 1,(int)Math.Ceiling(orders.Count / (double)pageSize));
-
-    currentPage = Math.Clamp(currentPage, 1, totalPages);
-
-    var pagedOrders = orders
-        .Skip((currentPage - 1) * pageSize)
-        .Take(pageSize)
-        .ToList();
+    var pagedOrders = Model.Orders;
 }
 
 <div class="container-fluid manage-orders-page mt-4 mb-5">
@@ -226,7 +156,7 @@
             </form>
         </div>
 
-        @if (!orders.Any())
+        @if (!pagedOrders.Any())
         {
             <div class="orders-empty">
                 <i class="bi bi-inbox"></i>
@@ -471,9 +401,7 @@
         {
             row.addEventListener("click", function (e) 
             {
-                const control = e.target.closest(
-                    "a, button, input, select, textarea, form"
-                );
+                const control = e.target.closest("a, button, input, select, textarea, form");
 
                 if (!control) 
                 {

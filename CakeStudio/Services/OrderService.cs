@@ -55,47 +55,12 @@ namespace CakeStudio.Services
             return session.Get<Order>(id);
         }
 
-        public OrderListViewModel GetPagedOrders(int page = 1, int pageSize = 5, string sort = "")
+        public OrderListViewModel GetPagedOrders(int page, int pageSize, string sort = "")
         {
             using var session = _nhibernateHelper.OpenSession();
 
-            pageSize = Math.Clamp(pageSize, 1, 100);
-
-            var validChoices = new[]
-            {
-              "", "nearest", "pending", "preparing","ready", "completed", "rejected", "newest"
-            };
-
-            if (Array.IndexOf(validChoices, sort) < 0)
-            {
-                sort = "";
-            }
-
-            var model = GetOrderSummary(session);
-            var query = BuildOrderListQuery(session, sort);
-
-            model.FilteredOrderCount = query.Clone().RowCount();
-            model.TotalPages = Math.Max(1, (int)Math.Ceiling(model.FilteredOrderCount / (double)pageSize));
-
-            model.CurrentPage = Math.Clamp(page, 1, model.TotalPages);
-            model.PageSize = pageSize;
-            model.Sort = sort;
-
-            var orders = query
-                .Fetch(SelectMode.Fetch, o => o.Customer)
-                .Fetch(SelectMode.Fetch, o => o.Cake)
-                .Skip((model.CurrentPage - 1) * pageSize)
-                .Take(pageSize)
-                .List();
-
-            model.Orders = new List<Order>(orders);
-
-            return model;
-        }
-
-        private OrderListViewModel GetOrderSummary(NHibernate.ISession session)
-        {
-            return new OrderListViewModel
+            // Summary cards count all orders
+            var model = new OrderListViewModel
             {
                 TotalOrders = session.QueryOver<Order>()
                     .RowCount(),
@@ -112,10 +77,8 @@ namespace CakeStudio.Services
                     .Where(o => o.OrderStatus == OrderStatus.Completed)
                     .RowCount()
             };
-        }
 
-        private IQueryOver<Order, Order> BuildOrderListQuery(NHibernate.ISession session, string sort)
-        {
+            // Filter and sort the orders
             var query = session.QueryOver<Order>();
 
             switch (sort)
@@ -145,6 +108,7 @@ namespace CakeStudio.Services
                     break;
             }
 
+            //sort match order
             if (sort == "" || sort == "newest" || sort == "completed" || sort == "rejected")
             {
                 query = query
@@ -158,13 +122,43 @@ namespace CakeStudio.Services
                     .ThenBy(o => o.OrderId).Asc;
             }
 
-            return query;
+            //Calculate how many pages
+            model.FilteredOrderCount = query.Clone().RowCount();
+            model.TotalPages = Math.Max(1, (int)Math.Ceiling(model.FilteredOrderCount / (double)pageSize));
+
+            model.CurrentPage = Math.Clamp(page, 1, model.TotalPages);
+            model.PageSize = pageSize;
+            model.Sort = sort;
+
+
+            //Retrieve only the orders for the requested
+            var orders = query
+                .Fetch(SelectMode.Fetch, o => o.Customer)
+                .Fetch(SelectMode.Fetch, o => o.Cake)
+                .Skip((model.CurrentPage - 1) * pageSize) //nak gi page 2 so ignore the first 5 order on page 1
+                .Take(pageSize) // get 6-10 order 
+                .List();
+
+            //Load each order’s cake items so the view can display names and quantities
+            foreach (var order in orders)
+            {
+                var items = session.QueryOver<OrderItem>()
+                    .Where(item => item.OrderId == order.OrderId)
+                    .Fetch(SelectMode.Fetch, item => item.Cake)
+                    .OrderBy(item => item.OrderItemId).Asc
+                    .List();
+
+                order.OrderItems = new List<OrderItem>(items);
+            }
+
+            model.Orders = new List<Order>(orders);
+
+            return model;
         }
+
         public OrderListViewModel GetPagedOrdersByCustomer(int customerId, int page, int pageSize)
         {
             using var session = _nhibernateHelper.OpenSession();
-
-            pageSize = Math.Clamp(pageSize, 1, 100);
 
             var query = session.QueryOver<Order>()
                 .Where(o => o.CustId == customerId);
