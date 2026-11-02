@@ -703,6 +703,23 @@ namespace CakeStudio.Services
 
                     session.Update(payment);
                 }
+
+                string statusLabel = status == OrderStatus.Ready
+                    ? "Ready for Pickup"
+                    : status;
+
+                var notification = new Notification
+                {
+                    UserId = order.CustId
+                           ?? throw new InvalidOperationException("This order has no customer assigned."),
+                    OrderId = order.OrderId,
+                    Message = $"Your order is now {statusLabel}.",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                };
+
+                session.Save(notification);
+
                 transaction.Commit();
             }
             catch

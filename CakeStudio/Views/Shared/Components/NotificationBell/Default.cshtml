@@ -1,0 +1,71 @@
+﻿@model CakeStudio.ViewModels.NotificationViewModel
+
+<div class="dropdown">
+    <button type="button"
+            class="btn position-relative"
+            id="notificationBell"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            aria-label="Notifications, @Model.UnreadCount unread">
+
+        <i class="bi bi-bell fs-5" aria-hidden="true"></i>
+
+        @if (Model.UnreadCount > 0)
+        {
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                @(Model.UnreadCount > 99 ? "99+" : Model.UnreadCount.ToString())
+            </span>
+        }
+    </button>
+
+    <ul class="dropdown-menu dropdown-menu-end shadow"
+        aria-labelledby="notificationBell"
+        style="width: 340px; max-width: 90vw;">
+
+        <li>
+            <h6 class="dropdown-header">Notifications</h6>
+        </li>
+
+        @if (!Model.Notifications.Any())
+        {
+            <li class="px-3 py-3 text-muted">
+                No notifications yet.
+            </li>
+        }
+        else
+        {
+            @foreach (var notification in Model.Notifications)
+            {
+                <li>
+                    <form asp-controller="Notification"
+                          asp-action="Open"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="notificationId"
+                               value="@notification.NotificationId" />
+
+                        <button type="submit"
+                                class="dropdown-item text-wrap py-3 @(notification.IsRead ? "" : "fw-semibold")">
+
+                            <div>@notification.Message</div>
+
+                            <small class="text-muted fw-normal">
+                                @notification.CreatedAt.ToString("dd MMM yyyy, h:mm tt")
+                            </small>
+
+                            @if (!notification.IsRead)
+                            {
+                                <span class="badge rounded-pill bg-primary ms-1">
+                                    New
+                                </span>
+                            }
+                        </button>
+                    </form>
+                </li>
+            }
+        }
+    </ul>
+</div>

@@ -18,6 +18,7 @@ builder.Services.AddScoped<ICakeTierService, CakeTierService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
