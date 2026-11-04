@@ -118,11 +118,9 @@ namespace CakeStudio.Controllers
             }
 
             // Delivery requires an address
-            if (model.CollectionMethod == "Delivery" &&
-                string.IsNullOrWhiteSpace(model.DeliveryAddress))
+            if (model.CollectionMethod == "Delivery" && string.IsNullOrWhiteSpace(model.DeliveryAddress))
             {
-                ModelState.AddModelError(
-                    nameof(model.DeliveryAddress),
+                ModelState.AddModelError(nameof(model.DeliveryAddress),
                     Resource.DeliveryAddressRequired);
             }
 
@@ -371,7 +369,7 @@ namespace CakeStudio.Controllers
         [Authorize(Roles = "Baker")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateStatus(int orderId, string status)
+        public IActionResult UpdateStatus(int orderId, string status, string? rejectionReason)
         {
             int? bakerId = GetCurrentUserId();
 
@@ -380,8 +378,7 @@ namespace CakeStudio.Controllers
 
             try
             {
-                _orderService.UpdateStatus(
-                    orderId, status, bakerId.Value);
+                _orderService.UpdateStatus(orderId, status, bakerId.Value, rejectionReason);
 
                 TempData["SuccessMessage"] =
                     Resource.OrderStatusUpdatedSuccess;
@@ -407,6 +404,7 @@ namespace CakeStudio.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        //	Payment Summary
         private PaymentViewModel BuildPaymentViewModel(OrderViewModel order)
         {
             if (!order.Cart.Items.Any())

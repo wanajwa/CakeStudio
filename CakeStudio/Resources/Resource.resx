@@ -318,4 +318,13 @@
   <data name="PhoneNumberAlreadyRegistered" xml:space="preserve">
     <value> This phone number is already registered.</value>
   </data>
+  <data name="RejectionReasonRequired" xml:space="preserve">
+    <value> Please enter a reason for rejecting this order.</value>
+  </data>
+  <data name="RejectionReasonTooLong" xml:space="preserve">
+    <value> Rejection reason must not exceed 500 characters.</value>
+  </data>
+  <data name="OrderRejectedNotification" xml:space="preserve">
+    <value> Your order has been rejected. View order details for the reason.</value>
+  </data>
 </root>

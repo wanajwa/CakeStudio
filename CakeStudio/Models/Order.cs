@@ -16,6 +16,7 @@ namespace CakeStudio.Models
         public virtual int? TierId { get; set; }
 
         public virtual int? BakerId { get; set; }
+        public virtual string? RejectionReason { get; set; }
 
         [Required(ErrorMessage = "Required date is required.")]
         [DataType(DataType.Date)]

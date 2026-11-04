@@ -9,8 +9,7 @@ namespace CakeStudio.ViewComponents
     {
         private readonly INotificationService _notificationService;
 
-        public NotificationBellViewComponent(
-            INotificationService notificationService)
+        public NotificationBellViewComponent(INotificationService notificationService)
         {
             _notificationService = notificationService;
         }

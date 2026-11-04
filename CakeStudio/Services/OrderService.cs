@@ -689,7 +689,7 @@ namespace CakeStudio.Services
             session.Update(order);
             transaction.Commit();
         }
-        public void UpdateStatus(int orderId,string status,int bakerId)
+        public void UpdateStatus(int orderId,string status,int bakerId, string? rejectionReason = null)
         {
 
             using var session = _nhibernateHelper.OpenSession();
@@ -745,8 +745,7 @@ namespace CakeStudio.Services
                 };
 
                 // Validate current status
-                if (!allowedTransitions.TryGetValue(
-                    order.OrderStatus, out var allowedStatuses))
+                if (!allowedTransitions.TryGetValue(order.OrderStatus, out var allowedStatuses))
                 {
                     throw new InvalidOperationException(Resource.UnknownOrderStatus);
                 }
@@ -764,6 +763,23 @@ namespace CakeStudio.Services
                      );
                 }
 
+                if (status == OrderStatus.Rejected)
+                {
+                    rejectionReason = rejectionReason?.Trim();
+
+                    if (string.IsNullOrWhiteSpace(rejectionReason))
+                    {
+                        throw new ArgumentException(Resource.RejectionReasonRequired);
+                    }
+
+                    if (rejectionReason.Length > 500)
+                    {
+                        throw new ArgumentException(Resource.RejectionReasonTooLong);
+                    }
+
+                    order.RejectionReason = rejectionReason;
+                }
+
                 order.OrderStatus = status;
                 order.BakerId = bakerId;
                 order.UpdatedAt = DateTime.Now;
@@ -771,6 +787,8 @@ namespace CakeStudio.Services
 
                 session.Update(order);
 
+                //if rejected
+                
                 if (status == OrderStatus.Rejected)
                 {
                     var payment = session.QueryOver<Payment>()
@@ -793,6 +811,7 @@ namespace CakeStudio.Services
                     session.Update(payment);
                 }
 
+                // status change notification , yang lain ikut je
                 string statusLabel = status == OrderStatus.Ready
                     ? "Ready for Pickup"
                     : status;
@@ -802,7 +821,9 @@ namespace CakeStudio.Services
                     UserId = order.CustId
                            ?? throw new InvalidOperationException("This order has no customer assigned."),
                     OrderId = order.OrderId,
-                    Message = $"Your order is now {statusLabel}.",
+                    Message = status == OrderStatus.Rejected 
+                    ? Resource.OrderRejectedNotification
+                    : $"Your order is now {statusLabel}.",
                     IsRead = false,
                     CreatedAt = DateTime.Now
                 };

@@ -56,6 +56,10 @@ namespace CakeStudio.Mappings
             Map(x => x.BakerId)
                 .Nullable();
 
+            Map(x => x.RejectionReason)
+                .Length(500)
+                .Nullable();
+
             // Required date
             Map(x => x.RequiredDate)
                 .Not.Nullable();

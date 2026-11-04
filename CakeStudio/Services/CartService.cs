@@ -175,8 +175,7 @@ namespace CakeStudio.Services
         {
             if (quantity < 1 || quantity > 20)
             {
-                throw new ArgumentException(
-                    "Quantity must be between 1 and 20.");
+                throw new ArgumentException("Quantity must be between 1 and 20.");
             }
         }
     }

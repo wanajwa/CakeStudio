@@ -2,8 +2,7 @@
 {
     public class CartItemViewModel
     {
-        public string CartItemId { get; set; }
-            = Guid.NewGuid().ToString();
+        public string CartItemId { get; set; } = Guid.NewGuid().ToString();
 
         public int CakeId { get; set; }
 

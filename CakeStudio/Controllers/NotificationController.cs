@@ -20,19 +20,16 @@ namespace CakeStudio.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Open(int notificationId)
         {
-            string? value =
-                User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? value = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (!int.TryParse(value, out int customerId))
                 return Challenge();
 
             try
             {
-                int orderId = _notificationService.MarkAsRead(
-                    notificationId, customerId);
+                int orderId = _notificationService.MarkAsRead(notificationId, customerId);
 
-                return RedirectToAction(
-                    "Details", "Order", new { id = orderId });
+                return RedirectToAction("Details", "Order", new { id = orderId });
             }
             catch (ArgumentException)
             {

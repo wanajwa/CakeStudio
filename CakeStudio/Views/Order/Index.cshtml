@@ -282,13 +282,26 @@
                                                             <input type="hidden"
                                                                    name="status"
                                                                    value="@status" />
+                                                            @if (status == OrderStatus.Rejected)
+                                                            {
+                                                                <button type="button"
+                                                                        class="dropdown-item"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#rejectOrderModal"
+                                                                        data-order-id="@order.OrderId">
+                                                                    Reject order
+                                                                </button>
+                                                            }
+                                                            else
+                                                            {
 
-                                                            <button type="submit"
-                                                                    class="dropdown-item">
-                                                                @(status == OrderStatus.Ready
-                                                                       ? "Ready for Pickup"
-                                                                       : status)
-                                                            </button>
+                                                                <button type="submit"
+                                                                        class="dropdown-item">
+                                                                    @(status == OrderStatus.Ready
+                                                                           ? "Ready for Pickup"
+                                                                           : status)
+                                                                </button>
+                                                            }
                                                      </form>
                                              </li>
                                         }
@@ -389,6 +402,72 @@
                 }
             </div>
 
+            <div class="modal fade"
+                 id="rejectOrderModal"
+                 tabindex="-1"
+                 aria-labelledby="rejectOrderTitle"
+                 aria-hidden="true">
+
+                <div class="modal-dialog">
+                    <form asp-controller="Order"
+                          asp-action="UpdateStatus"
+                          method="post"
+                          class="modal-content">
+
+                        @Html.AntiForgeryToken()
+
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="rejectOrderTitle">
+                                Reject Order
+                            </h5>
+
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <input type="hidden"
+                                   name="orderId"
+                                   id="rejectOrderId" />
+
+                            <input type="hidden"
+                                   name="status"
+                                   value="@OrderStatus.Rejected" />
+
+                            <label for="rejectionReason" class="form-label">
+                                Reason for rejection
+                            </label>
+
+                            <textarea id="rejectionReason"
+                                  name="rejectionReason"
+                                  class="form-control"
+                                  rows="4"
+                                  maxlength="500"
+                                  required></textarea>
+
+                            <small class="text-muted">
+                                The customer will see this reason.
+                                Maximum 500 characters.
+                            </small>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    data-bs-dismiss="modal">
+                                Cancel
+                            </button>
+
+                            <button type="submit" class="btn btn-danger">
+                                Reject Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             
         }
 
@@ -397,6 +476,16 @@
 
 @section Scripts {
     <script>
+        const rejectModal = document.getElementById("rejectOrderModal");
+
+        if (rejectModal) {
+            rejectModal.addEventListener("show.bs.modal", function (e) {
+                document.getElementById("rejectOrderId").value =
+                    e.relatedTarget.dataset.orderId;
+
+                document.getElementById("rejectionReason").value = "";
+            });
+        }
         document.querySelectorAll(".order-row").forEach(function (row) 
         {
             row.addEventListener("click", function (e) 

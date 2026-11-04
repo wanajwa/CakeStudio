@@ -574,6 +574,15 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to  Your order has been rejected. View order details for the reason..
+        /// </summary>
+        public static string OrderRejectedNotification {
+            get {
+                return ResourceManager.GetString("OrderRejectedNotification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Order status updated successfully..
         /// </summary>
         public static string OrderStatusUpdatedSuccess {
@@ -606,6 +615,24 @@ namespace CakeStudio.Resources {
         public static string RegistrationFailed {
             get {
                 return ResourceManager.GetString("RegistrationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Please enter a reason for rejecting this order..
+        /// </summary>
+        public static string RejectionReasonRequired {
+            get {
+                return ResourceManager.GetString("RejectionReasonRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Rejection reason must not exceed 500 characters..
+        /// </summary>
+        public static string RejectionReasonTooLong {
+            get {
+                return ResourceManager.GetString("RejectionReasonTooLong", resourceCulture);
             }
         }
         
