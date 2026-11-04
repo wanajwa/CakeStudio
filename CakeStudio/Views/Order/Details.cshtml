@@ -173,7 +173,7 @@
             @if (Model.Order.OrderStatus == OrderStatus.Rejected &&
                         !string.IsNullOrWhiteSpace(Model.Order.RejectionReason))
             {
-                <div class="alert alert-warning">
+                <div class="alert alert-danger">
                     <strong>Reason for rejection</strong>
 
                     <p class="mb-0" style="white-space: pre-wrap">@Model.Order.RejectionReason</p>

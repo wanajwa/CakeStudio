@@ -35,6 +35,7 @@
                     <tr>
                         <th>No.</th>
                         <th>Order Date</th>
+                        <th>Cake</th>
                         <th>Required Date</th>
                         <th>Total Price</th>
                         <th>Status</th>
@@ -54,6 +55,14 @@
                                 onkeydown="if (event.key === 'Enter') { window.location.href = this.dataset.url; }">
                             <td>@((currentPage - 1) * pageSize + i + 1)</td>
                             <td>@order.CreatedAt.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    @foreach (var item in order.OrderItems)
+                                    {
+                                        <div class="cake-name">
+                                            @(item.Cake?.CakeName ?? "Unknown Cake") × @item.Quantity
+                                        </div>
+                                    }
+                                </td>
                             <td>
                                 @(order.RequiredDate?.ToString("dd MMM yyyy, hh:mm tt") ?? "-")
                             </td>

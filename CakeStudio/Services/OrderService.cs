@@ -177,6 +177,18 @@ namespace CakeStudio.Services
                 .Take(pageSize)
                 .List();
 
+            // Load each order's cakes before closing the session.
+            foreach (var order in orders)
+            {
+                var items = session.QueryOver<OrderItem>()
+                    .Where(item => item.OrderId == order.OrderId)
+                    .Fetch(SelectMode.Fetch, item => item.Cake)
+                    .OrderBy(item => item.OrderItemId).Asc
+                    .List();
+
+                order.OrderItems = new List<OrderItem>(items);
+            }
+
             return new OrderListViewModel
             {
                 Orders = new List<Order>(orders),
