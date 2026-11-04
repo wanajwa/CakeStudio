@@ -12,6 +12,7 @@
 
         public virtual bool IsRead { get; set; }
 
+        public virtual DateTime? ReadAt { get; set; }
         public virtual DateTime CreatedAt { get; set; }
     }
 }

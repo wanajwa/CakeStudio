@@ -52,9 +52,13 @@ namespace CakeStudio.Services
                 throw new ArgumentException("Notification not found.");
             }
 
-            notification.IsRead = true;
+            if (!notification.IsRead)
+            {
+                notification.IsRead = true;
+                notification.ReadAt = DateTime.Now;
+                session.Update(notification);
+            }
 
-            session.Update(notification);
             transaction.Commit();
             return notification.OrderId;
         }

@@ -25,6 +25,9 @@ namespace CakeStudio.Mappings
             Map(x => x.IsRead)
                 .Not.Nullable();
 
+            Map(x => x.ReadAt)
+                .Nullable();
+
             Map(x => x.CreatedAt)
                 .Not.Nullable();
         }
