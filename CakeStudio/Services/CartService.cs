@@ -4,7 +4,7 @@ using CakeStudio.ViewModels;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Text.Json;
-
+using CakeStudio.Resources;
 namespace CakeStudio.Services
 {
     public class CartService : ICartService
@@ -20,7 +20,7 @@ namespace CakeStudio.Services
             _orderService = orderService;
         }
 
-        private HttpContext CurrentContext =>_httpContextAccessor.HttpContext?? throw new InvalidOperationException("HTTP context is unavailable.");
+        private HttpContext CurrentContext =>_httpContextAccessor.HttpContext?? throw new InvalidOperationException(Resource.HttpContextUnavailable);
 
         // Separate the cart for each logged-in customer
         private string CartKey
@@ -61,7 +61,7 @@ namespace CakeStudio.Services
 
             if (model.MessageOnCakes?.Length > 500)
             {
-                throw new ArgumentException("Cake message must not exceed 500 characters.");
+                throw new ArgumentException(Resource.CakeMessageTooLong);
             }
 
             // Calculate the price using database values
@@ -83,7 +83,7 @@ namespace CakeStudio.Services
 
             if (cake == null || size == null || flavour == null || tier == null)
             {
-                throw new ArgumentException("The selected cake or options could not be found.");
+                throw new ArgumentException(Resource.CartOptionsNotFound);
             }
 
             var cart = GetCart();
@@ -114,7 +114,7 @@ namespace CakeStudio.Services
             var cart = GetCart();
 
             if (items == null || items.Count != cart.Items.Count)
-                throw new ArgumentException("Your cart has changed. Please review it.");
+                throw new ArgumentException(Resource.CartChanged);
 
             var checkedIds = new HashSet<string>();
 
@@ -125,15 +125,14 @@ namespace CakeStudio.Services
 
                 if (savedItem == null || !checkedIds.Add(submittedItem.CartItemId))
                 {
-                    throw new ArgumentException("Invalid cart item.");
+                    throw new ArgumentException(Resource.InvalidCartItem);
                 }
 
                 if (submittedItem.Quantity < 1 || submittedItem.Quantity > 20)
-                    throw new ArgumentException("Quantity must be between 1 and 20.");
-
+                    throw new ArgumentException(Resource.InvalidCakeQuantity);
                 if (submittedItem.MessageOnCakes?.Length > 500)
                 {
-                    throw new ArgumentException("Cake message must not exceed 500 characters.");
+                    throw new ArgumentException(Resource.CakeMessageTooLong);
                 }
             }
 
@@ -159,7 +158,7 @@ namespace CakeStudio.Services
             var item = cart.Items.Find(x => x.CartItemId == cartItemId);
 
             if (item == null)
-                throw new ArgumentException("Cart item not found.");
+                throw new ArgumentException(Resource.CartItemNotFound);
 
             cart.Items.Remove(item);
 
@@ -175,7 +174,7 @@ namespace CakeStudio.Services
         {
             if (quantity < 1 || quantity > 20)
             {
-                throw new ArgumentException("Quantity must be between 1 and 20.");
+                throw new ArgumentException(Resource.InvalidCakeQuantity);
             }
         }
     }

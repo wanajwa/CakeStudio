@@ -242,7 +242,7 @@ namespace CakeStudio.Services
         {
             if (model.Cart == null || !model.Cart.Items.Any())
             {
-                throw new ArgumentException("Your cart is empty. Please add a cake first.");
+                throw new ArgumentException(Resource.CartEmpty);
             }
 
 
@@ -292,10 +292,10 @@ namespace CakeStudio.Services
                 foreach (var item in model.Cart.Items)
                 {
                     if (item.Quantity < 1 || item.Quantity > 20)
-                        throw new ArgumentException("Quantity must be between 1 and 20.");
+                        throw new ArgumentException(Resource.InvalidCakeQuantity);
 
                     if (item.MessageOnCakes?.Length > 500)
-                        throw new ArgumentException("Cake message must not exceed 500 characters.");
+                        throw new ArgumentException(Resource.CakeMessageTooLong);
 
                     // Load this item's cake and options
                     var cake = session.Get<Cake>(item.CakeId);
@@ -340,7 +340,7 @@ namespace CakeStudio.Services
 
                     // Require another review if the price has changed
                     if (unitPrice != item.UnitPrice)
-                        throw new ArgumentException("A cake price has changed. Please review the payment summary again.");
+                        throw new ArgumentException(Resource.CakePriceChanged);
 
                     totalPrice += unitPrice * item.Quantity;
 
@@ -366,7 +366,7 @@ namespace CakeStudio.Services
                     throw new ArgumentException(Resource.InvalidOrderPrice);
 
                 if (paymentMethod != PaymentMethod.Card)
-                    throw new ArgumentException("Invalid payment method.");
+                    throw new ArgumentException(Resource.InvalidPaymentMethod);
 
                 // Retrieve the Baker account
                 User? baker = null;
@@ -384,7 +384,7 @@ namespace CakeStudio.Services
 
                 if (baker == null)
                 {
-                    throw new InvalidOperationException("Baker account not found.");
+                    throw new InvalidOperationException(Resource.BakerAccountNotFound);
                 }
 
                 // ni nak cek limit baker 
@@ -411,7 +411,7 @@ namespace CakeStudio.Services
                 if (requestedQuantity > remaining)
                 {
                     string message = remaining == 0
-                        ? "This date is fully booked. Please choose another date."
+                        ? Resource.DateFullyBooked
                         : $"Only {remaining} more {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
 
                     throw new ArgumentException(message);
@@ -579,11 +579,11 @@ namespace CakeStudio.Services
 
             // Customer can only edit their own order
             if (order.CustId != customerId)
-                throw new UnauthorizedAccessException("You cannot edit this order.");
+                throw new UnauthorizedAccessException(Resource.OrderEditForbidden);
 
             // Editing is allowed only before preparation starts
             if (order.OrderStatus != OrderStatus.Pending)
-                throw new InvalidOperationException("Only pending orders can be edited.");
+                throw new InvalidOperationException(Resource.OrderEditNotAllowed);
 
             if (!model.RequiredDate.HasValue || !model.RequiredTime.HasValue)
             {
@@ -613,7 +613,7 @@ namespace CakeStudio.Services
 
             if (model.DeliveryAddress?.Length > 500 )
             {
-                throw new ArgumentException("Delivery Address must not exceed 500 characters.");
+                throw new ArgumentException(Resource.DeliveryAddressTooLong);
             }
 
             if (method != order.CollectionMethod)
@@ -652,7 +652,7 @@ namespace CakeStudio.Services
                 if (orderQuantity > remaining)
                 {
                     string message = remaining == 0
-                        ? "This date is fully booked. Please choose another date."
+                        ? Resource.DateFullyBooked
                         : $"Only {remaining} more {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
 
                     throw new ArgumentException(message);
@@ -671,7 +671,7 @@ namespace CakeStudio.Services
 
             if (model.OrderItems == null || model.OrderItems.Count != savedItems.Count)
             {
-                throw new ArgumentException("Invalid order items.");
+                throw new ArgumentException(Resource.InvalidOrderItems);
             }
 
             var checkedIds = new HashSet<int>();
@@ -683,12 +683,12 @@ namespace CakeStudio.Services
                 // Reject items from other orders and duplicate item IDs
                 if (savedItem == null || !checkedIds.Add(submittedItem.OrderItemId))
                 {
-                    throw new ArgumentException("Invalid order item.");
+                    throw new ArgumentException(Resource.InvalidOrderItems);
                 }
 
                 if (submittedItem.MessageOnCakes?.Length > 500)
                 {
-                    throw new ArgumentException("Cake message must not exceed 500 characters.");
+                    throw new ArgumentException(Resource.CakeMessageTooLong);
                 }
 
                 // Update only the message
@@ -809,12 +809,12 @@ namespace CakeStudio.Services
 
                     if (payment == null)
                     {
-                        throw new InvalidOperationException("Payment record not found for this order.");
+                        throw new InvalidOperationException(Resource.PaymentNotFound);
                     }
 
                     if (payment.PaymentStatus != PaymentStatus.Paid)
                     {
-                        throw new InvalidOperationException("Only paid payments can be refunded.");
+                        throw new InvalidOperationException(Resource.PaymentRefundNotAllowed);
                     }
 
                     payment.PaymentStatus = PaymentStatus.Refunded;
@@ -831,7 +831,7 @@ namespace CakeStudio.Services
                 var notification = new Notification
                 {
                     UserId = order.CustId
-                           ?? throw new InvalidOperationException("This order has no customer assigned."),
+                           ?? throw new InvalidOperationException(Resource.OrderCustomerMissing),
                     OrderId = order.OrderId,
                     Message = status == OrderStatus.Rejected 
                     ? Resource.OrderRejectedNotification

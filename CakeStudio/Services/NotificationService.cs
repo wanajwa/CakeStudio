@@ -1,7 +1,7 @@
 ﻿using CakeStudio.Data;
 using CakeStudio.Models;
 using CakeStudio.Services.Interfaces;
-
+using CakeStudio.Resources;
 namespace CakeStudio.Services
 {
     public class NotificationService : INotificationService
@@ -49,7 +49,7 @@ namespace CakeStudio.Services
 
             if (notification == null)
             {
-                throw new ArgumentException("Notification not found.");
+                throw new ArgumentException(Resource.NotificationNotFound);
             }
 
             if (!notification.IsRead)

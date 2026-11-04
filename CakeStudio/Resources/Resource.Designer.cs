@@ -79,6 +79,15 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Baker account not found.
+        /// </summary>
+        public static string BakerAccountNotFound {
+            get {
+                return ResourceManager.GetString("BakerAccountNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cake created successfully!.
         /// </summary>
         public static string CakeCreatedSuccess {
@@ -160,11 +169,29 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cake message must not exceed 500 characters..
+        /// </summary>
+        public static string CakeMessageTooLong {
+            get {
+                return ResourceManager.GetString("CakeMessageTooLong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please select cake size, flavour and tier.
         /// </summary>
         public static string CakeOptionsRequired {
             get {
                 return ResourceManager.GetString("CakeOptionsRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  A cake price has changed. Please review the payment summary again..
+        /// </summary>
+        public static string CakePriceChanged {
+            get {
+                return ResourceManager.GetString("CakePriceChanged", resourceCulture);
             }
         }
         
@@ -304,11 +331,110 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Collection method cannot be changed after payment..
+        ///   Looks up a localized string similar to Card has expired. Please enter a valid expiry date..
+        /// </summary>
+        public static string CardExpired {
+            get {
+                return ResourceManager.GetString("CardExpired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your cart has changed. Please review it..
+        /// </summary>
+        public static string CartChanged {
+            get {
+                return ResourceManager.GetString("CartChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your cart is empty. Please add a cake first..
+        /// </summary>
+        public static string CartEmpty {
+            get {
+                return ResourceManager.GetString("CartEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cake added to cart..
+        /// </summary>
+        public static string CartItemAddedSuccess {
+            get {
+                return ResourceManager.GetString("CartItemAddedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cart item not found..
+        /// </summary>
+        public static string CartItemNotFound {
+            get {
+                return ResourceManager.GetString("CartItemNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item removed from cart..
+        /// </summary>
+        public static string CartItemRemovedSuccess {
+            get {
+                return ResourceManager.GetString("CartItemRemovedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The selected cake or options could not be found..
+        /// </summary>
+        public static string CartOptionsNotFound {
+            get {
+                return ResourceManager.GetString("CartOptionsNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Collection method cannot be changed after payment..
         /// </summary>
         public static string CollectionMethodChangeNotAllowed {
             get {
                 return ResourceManager.GetString("CollectionMethodChangeNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please log in as a customer..
+        /// </summary>
+        public static string CustomerLoginRequired {
+            get {
+                return ResourceManager.GetString("CustomerLoginRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Unable to load customer profile..
+        /// </summary>
+        public static string CustomerProfileLoadFailed {
+            get {
+                return ResourceManager.GetString("CustomerProfileLoadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Profile Updated Successfully.
+        /// </summary>
+        public static string CustomerProfileUpdatedSuccess {
+            get {
+                return ResourceManager.GetString("CustomerProfileUpdatedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to update customer profile.
+        /// </summary>
+        public static string CustomerProfileUpdateFailed {
+            get {
+                return ResourceManager.GetString("CustomerProfileUpdateFailed", resourceCulture);
             }
         }
         
@@ -322,11 +448,29 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This date is fully booked. Please choose another date..
+        /// </summary>
+        public static string DateFullyBooked {
+            get {
+                return ResourceManager.GetString("DateFullyBooked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delivery address is required.
         /// </summary>
         public static string DeliveryAddressRequired {
             get {
                 return ResourceManager.GetString("DeliveryAddressRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Delivery address must not exceed 500 characters..
+        /// </summary>
+        public static string DeliveryAddressTooLong {
+            get {
+                return ResourceManager.GetString("DeliveryAddressTooLong", resourceCulture);
             }
         }
         
@@ -385,6 +529,15 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to HTTP context is unavailable..
+        /// </summary>
+        public static string HttpContextUnavailable {
+            get {
+                return ResourceManager.GetString("HttpContextUnavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The uploaded image file cannot be empty..
         /// </summary>
         public static string ImageEmpty {
@@ -439,6 +592,15 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Quantity must be between 1 and 20..
+        /// </summary>
+        public static string InvalidCakeQuantity {
+            get {
+                return ResourceManager.GetString("InvalidCakeQuantity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid cake size information. Please check the fields..
         /// </summary>
         public static string InvalidCakeSize {
@@ -462,6 +624,51 @@ namespace CakeStudio.Resources {
         public static string InvalidCakeTier {
             get {
                 return ResourceManager.GetString("InvalidCakeTier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter a valid expiry date (MM/YY)..
+        /// </summary>
+        public static string InvalidCardExpiryDate {
+            get {
+                return ResourceManager.GetString("InvalidCardExpiryDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Card number must contain 16 digits..
+        /// </summary>
+        public static string InvalidCardNumber {
+            get {
+                return ResourceManager.GetString("InvalidCardNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please check your cart information..
+        /// </summary>
+        public static string InvalidCartInformation {
+            get {
+                return ResourceManager.GetString("InvalidCartInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid cart item..
+        /// </summary>
+        public static string InvalidCartItem {
+            get {
+                return ResourceManager.GetString("InvalidCartItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter valid cake options and quantity..
+        /// </summary>
+        public static string InvalidCartOptions {
+            get {
+                return ResourceManager.GetString("InvalidCartOptions", resourceCulture);
             }
         }
         
@@ -511,6 +718,15 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to  Invalid order items..
+        /// </summary>
+        public static string InvalidOrderItems {
+            get {
+                return ResourceManager.GetString("InvalidOrderItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Calculated order price is invalid.
         /// </summary>
         public static string InvalidOrderPrice {
@@ -525,6 +741,15 @@ namespace CakeStudio.Resources {
         public static string InvalidOrderStatusTransition {
             get {
                 return ResourceManager.GetString("InvalidOrderStatusTransition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Payment Method.
+        /// </summary>
+        public static string InvalidPaymentMethod {
+            get {
+                return ResourceManager.GetString("InvalidPaymentMethod", resourceCulture);
             }
         }
         
@@ -547,11 +772,65 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Security code must contain 3 digits..
+        /// </summary>
+        public static string InvalidSecurityCode {
+            get {
+                return ResourceManager.GetString("InvalidSecurityCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred during login..
         /// </summary>
         public static string LoginFailed {
             get {
                 return ResourceManager.GetString("LoginFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name is Required..
+        /// </summary>
+        public static string NameRequired {
+            get {
+                return ResourceManager.GetString("NameRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Notification Not Found.
+        /// </summary>
+        public static string NotificationNotFound {
+            get {
+                return ResourceManager.GetString("NotificationNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  This order has no customer assigned..
+        /// </summary>
+        public static string OrderCustomerMissing {
+            get {
+                return ResourceManager.GetString("OrderCustomerMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  You cannot edit this order..
+        /// </summary>
+        public static string OrderEditForbidden {
+            get {
+                return ResourceManager.GetString("OrderEditForbidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only pending orders can be edited..
+        /// </summary>
+        public static string OrderEditNotAllowed {
+            get {
+                return ResourceManager.GetString("OrderEditNotAllowed", resourceCulture);
             }
         }
         
@@ -583,7 +862,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Your order has been rejected. View order details for the reason..
+        ///   Looks up a localized string similar to Your order has been rejected. View order details for the reason..
         /// </summary>
         public static string OrderRejectedNotification {
             get {
@@ -610,7 +889,52 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  This phone number is already registered..
+        ///   Looks up a localized string similar to Order updated successfully..
+        /// </summary>
+        public static string OrderUpdatedSuccess {
+            get {
+                return ResourceManager.GetString("OrderUpdatedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to update your order. Please try again..
+        /// </summary>
+        public static string OrderUpdateFailed {
+            get {
+                return ResourceManager.GetString("OrderUpdateFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Payment could not be completed. Please try again..
+        /// </summary>
+        public static string PaymentFailed {
+            get {
+                return ResourceManager.GetString("PaymentFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Payment record not found for this order..
+        /// </summary>
+        public static string PaymentNotFound {
+            get {
+                return ResourceManager.GetString("PaymentNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only paid payments can be refunded..
+        /// </summary>
+        public static string PaymentRefundNotAllowed {
+            get {
+                return ResourceManager.GetString("PaymentRefundNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This phone number is already registered..
         /// </summary>
         public static string PhoneNumberAlreadyRegistered {
             get {
@@ -628,7 +952,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Please enter a reason for rejecting this order..
+        ///   Looks up a localized string similar to Please enter a reason for rejecting this order..
         /// </summary>
         public static string RejectionReasonRequired {
             get {
@@ -637,7 +961,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Rejection reason must not exceed 500 characters..
+        ///   Looks up a localized string similar to Rejection reason must not exceed 500 characters..
         /// </summary>
         public static string RejectionReasonTooLong {
             get {

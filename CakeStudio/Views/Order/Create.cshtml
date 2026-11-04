@@ -1,13 +1,18 @@
 ﻿@model CakeStudio.ViewModels.OrderViewModel
 @using CakeStudio.Models
+@using CakeStudio.Constant
 @using System.Globalization
 
 @{
     ViewData["Title"] = "Checkout";
+    decimal deliveryFee = Model.CollectionMethod == "Delivery"
+    ? DeliveryRate.FixedFee
+    : 0m;
 }
 
 <div class="container mt-4 mb-5">
-
+    <div class="mb-3">
+    </div>
     <h2 class="mb-4">Checkout</h2>
 
     <div class="row g-4">
@@ -111,12 +116,7 @@
                                 Proceed to Payment
                             </button>
 
-                            <a asp-controller="CustomerCake"
-                               asp-action="Index"
-                               class="btn btn-outline-secondary rounded-pill"
-                               style="padding: 11px 24px;">
-                                Back to Cart
-                            </a>
+                    
                         </div>
 
                     </form>
@@ -168,11 +168,24 @@
                         <strong>@Model.Cart.TotalQuantity</strong>
                     </div>
 
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Cake Subtotal</span>
+                        <span>RM @Model.Cart.TotalPrice.ToString("F2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Delivery Fee</span>
+                        <span id="checkoutDeliveryFee">
+                            RM @deliveryFee.ToString("F2")
+                        </span>
+                    </div>
+
+                    <hr />
+
                     <div class="d-flex justify-content-between">
                         <strong>Total Price</strong>
-
-                        <strong class="cake-price">
-                            RM @Model.Cart.TotalPrice.ToString("N2")
+                        <strong class="cake-price" id="checkoutTotal">
+                            RM @((Model.Cart.TotalPrice + deliveryFee).ToString("F2"))
                         </strong>
                     </div>
 
@@ -200,10 +213,21 @@
             section.style.display = isDelivery ? "block" : "none";
 
             address.required = isDelivery;
-        }
 
-        document.getElementById("collectionMethod")
-            .addEventListener("change", toggleDelivery);
+            const subtotal =
+            @Model.Cart.TotalPrice.ToString(CultureInfo.InvariantCulture);
+
+            const deliveryFee = isDelivery
+                ? @DeliveryRate.FixedFee.ToString(CultureInfo.InvariantCulture)
+                : 0;
+
+            document.getElementById("checkoutDeliveryFee").textContent = "RM " + deliveryFee.toFixed(2);
+
+            document.getElementById("checkoutTotal").textContent = "RM " + (subtotal + deliveryFee).toFixed(2);
+            }
+
+            document.getElementById("collectionMethod")
+                .addEventListener("change", toggleDelivery);
         toggleDelivery();
     </script>
 }

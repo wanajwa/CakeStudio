@@ -65,15 +65,30 @@ namespace CakeStudio.Controllers
 
             if (!cart.Items.Any())
             {
-                TempData["ErrorMessage"] = "Your cart is empty. Please add a cake first.";
+                TempData["ErrorMessage"] = Resource.CartEmpty;
 
                 return RedirectToAction("Index", "Cart");
             }
 
-            var model = new OrderViewModel
+            var model = new OrderViewModel();
+
+            var pendingOrderJson = HttpContext.Session.GetString($"PendingOrder_{customerId.Value}");
+
+            if (!string.IsNullOrEmpty(pendingOrderJson))
             {
-                Cart = cart
-            };
+                var pendingOrder =
+                    JsonSerializer.Deserialize<OrderViewModel>(pendingOrderJson);
+
+                if (pendingOrder != null)
+                {
+                    model.RequiredDate = pendingOrder.RequiredDate;
+                    model.RequiredTime = pendingOrder.RequiredTime;
+                    model.CollectionMethod = pendingOrder.CollectionMethod;
+                    model.DeliveryAddress = pendingOrder.DeliveryAddress;
+                }
+            }
+
+            model.Cart = cart;
 
             return View("Create", model);
         }
@@ -93,7 +108,7 @@ namespace CakeStudio.Controllers
 
             if (!model.Cart.Items.Any())
             {
-                TempData["ErrorMessage"] = "Your cart is empty.";
+                TempData["ErrorMessage"] = Resource.CartEmpty;
                 return RedirectToAction("Index", "Cart");
             }
 
@@ -130,8 +145,7 @@ namespace CakeStudio.Controllers
                 {
                     if (item.Quantity < 1 || item.Quantity > 20)
                     {
-                        throw new ArgumentException(
-                            "Quantity must be between 1 and 20.");
+                        throw new ArgumentException(Resource.InvalidCakeQuantity);
                     }
 
                     // Validate availability and calculate database price
@@ -161,7 +175,7 @@ namespace CakeStudio.Controllers
                 if (requestedQuantity > remaining)
                 {
                     string message = remaining == 0
-                        ? "This date is fully booked. Please choose another date."
+                        ? Resource.DateFullyBooked
                         : $"Only {remaining} more {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
 
                     ModelState.AddModelError("", message);
@@ -226,7 +240,7 @@ namespace CakeStudio.Controllers
 
             if (order.OrderStatus != OrderStatus.Pending)
             {
-                TempData["ErrorMessage"] = "Only pending orders can be edited.";
+                TempData["ErrorMessage"] = Resource.OrderEditNotAllowed;
 
                 return RedirectToAction(nameof(Details), new { id });
             }
@@ -269,7 +283,7 @@ namespace CakeStudio.Controllers
 
             if (order.OrderStatus != OrderStatus.Pending)
             {
-                TempData["ErrorMessage"] = "Only pending orders can be edited.";
+                TempData["ErrorMessage"] = Resource.OrderEditNotAllowed;
 
                 return RedirectToAction(nameof(Details), new { id = order.OrderId });
             }
@@ -287,7 +301,7 @@ namespace CakeStudio.Controllers
             {
                 _orderService.UpdateCustomerOrder(model.OrderId, customerId.Value, model);
 
-                TempData["SuccessMessage"] = "Order updated successfully.";
+                TempData["SuccessMessage"] = Resource.OrderUpdatedSuccess;
 
                 return RedirectToAction(nameof(Details), new { id = model.OrderId });
             }
@@ -307,7 +321,7 @@ namespace CakeStudio.Controllers
             {
                 System.Diagnostics.Debug.WriteLine(ex.ToString());
 
-                ModelState.AddModelError("", "Unable to update your order. Please try again.");
+                ModelState.AddModelError("", Resource.OrderUpdateFailed);
             }
 
             RestoreOrderItemNames(model);
@@ -406,13 +420,13 @@ namespace CakeStudio.Controllers
         private PaymentViewModel BuildPaymentViewModel(OrderViewModel order)
         {
             if (!order.Cart.Items.Any())
-                throw new ArgumentException("Your checkout cart is empty.");
+                throw new ArgumentException(Resource.CartEmpty);
 
             foreach (var item in order.Cart.Items)
             {
                 if (item.Quantity < 1 || item.Quantity > 20)
                 {
-                    throw new ArgumentException("Quantity must be between 1 and 20.");
+                    throw new ArgumentException(Resource.InvalidCakeQuantity);
                 }
 
                 // Recheck availability and calculate the current price
@@ -538,8 +552,7 @@ namespace CakeStudio.Controllers
             if (!System.Text.RegularExpressions.Regex.IsMatch(cardNumber, @"^\d{16}$"))
             {
                 ModelState.AddModelError(
-                    nameof(model.CardNumber),
-                    "Card number must contain 16 digits.");
+                    nameof(model.CardNumber), Resource.InvalidCardNumber);
             }
 
             // Validate expiry date format and expiration
@@ -550,7 +563,7 @@ namespace CakeStudio.Controllers
                 System.Globalization.DateTimeStyles.None,
                 out DateTime expiry))
             {
-                ModelState.AddModelError(nameof(model.ExpiryDate),"Enter a valid expiry date (MM/YY).");
+                ModelState.AddModelError(nameof(model.ExpiryDate), Resource.InvalidCardExpiryDate);
             }
             else
             {
@@ -559,14 +572,14 @@ namespace CakeStudio.Controllers
 
                 if (expiry.Year < currentMonth.Year || (expiry.Year == currentMonth.Year && expiry.Month < currentMonth.Month))
                 {
-                    ModelState.AddModelError(nameof(model.ExpiryDate),"Card has expired. Please enter a valid expiry date.");
+                    ModelState.AddModelError(nameof(model.ExpiryDate),Resource.CardExpired);
                 }
             }
 
             // Validate security code format (3 digits)
             if (!System.Text.RegularExpressions.Regex.IsMatch(securityCode, @"^\d{3}$"))
             {
-                ModelState.AddModelError(nameof(model.SecurityCode),"Security code must contain 3 digits.");
+                ModelState.AddModelError(nameof(model.SecurityCode),Resource.InvalidSecurityCode);
             }
 
             if (!ModelState.IsValid)
@@ -593,7 +606,7 @@ namespace CakeStudio.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                ModelState.AddModelError(string.Empty,"Payment could not be completed. Please try again.");
+                ModelState.AddModelError(string.Empty,Resource.PaymentFailed);
             }
 
           

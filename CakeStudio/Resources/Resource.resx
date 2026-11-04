@@ -126,9 +126,6 @@
   <data name="CakeRequired" xml:space="preserve">
     <value>Please select a cake</value>
   </data>
-  <data name="CakeUnavailable" xml:space="preserve">
-    <value>Selected cake is unavailable</value>
-  </data>
   <data name="CakeUpdatedSuccess" xml:space="preserve">
     <value>Cake updated successfully!</value>
   </data>
@@ -316,18 +313,129 @@
     <value>A cake flavour is required</value>
   </data>
   <data name="PhoneNumberAlreadyRegistered" xml:space="preserve">
-    <value> This phone number is already registered.</value>
+    <value>This phone number is already registered.</value>
   </data>
   <data name="RejectionReasonRequired" xml:space="preserve">
-    <value> Please enter a reason for rejecting this order.</value>
+    <value>Please enter a reason for rejecting this order.</value>
   </data>
   <data name="RejectionReasonTooLong" xml:space="preserve">
-    <value> Rejection reason must not exceed 500 characters.</value>
+    <value>Rejection reason must not exceed 500 characters.</value>
   </data>
   <data name="OrderRejectedNotification" xml:space="preserve">
-    <value> Your order has been rejected. View order details for the reason.</value>
+    <value>Your order has been rejected. View order details for the reason.</value>
   </data>
   <data name="CollectionMethodChangeNotAllowed" xml:space="preserve">
-    <value> Collection method cannot be changed after payment.</value>
+    <value>Collection method cannot be changed after payment.</value>
+  </data>
+  <data name="InvalidCartOptions" xml:space="preserve">
+    <value>Please enter valid cake options and quantity.</value>
+  </data>
+  <data name="CartItemAddedSuccess" xml:space="preserve">
+    <value>Cake added to cart.</value>
+  </data>
+  <data name="InvalidCartInformation" xml:space="preserve">
+    <value>Please check your cart information.</value>
+  </data>
+  <data name="CartItemRemovedSuccess" xml:space="preserve">
+    <value>Item removed from cart.</value>
+  </data>
+  <data name="HttpContextUnavailable" xml:space="preserve">
+    <value>HTTP context is unavailable.</value>
+  </data>
+  <data name="CustomerLoginRequired" xml:space="preserve">
+    <value>Please log in as a customer.</value>
+  </data>
+  <data name="CakeMessageTooLong" xml:space="preserve">
+    <value>Cake message must not exceed 500 characters.</value>
+  </data>
+  <data name="CartOptionsNotFound" xml:space="preserve">
+    <value>The selected cake or options could not be found.</value>
+  </data>
+  <data name="CartChanged" xml:space="preserve">
+    <value>Your cart has changed. Please review it.</value>
+  </data>
+  <data name="InvalidCartItem" xml:space="preserve">
+    <value>Invalid cart item.</value>
+  </data>
+  <data name="InvalidCakeQuantity" xml:space="preserve">
+    <value>Quantity must be between 1 and 20.</value>
+  </data>
+  <data name="CartItemNotFound" xml:space="preserve">
+    <value>Cart item not found.</value>
+  </data>
+  <data name="CartEmpty" xml:space="preserve">
+    <value>Your cart is empty. Please add a cake first.</value>
+  </data>
+  <data name="OrderEditNotAllowed" xml:space="preserve">
+    <value>Only pending orders can be edited.</value>
+  </data>
+  <data name="OrderUpdatedSuccess" xml:space="preserve">
+    <value>Order updated successfully.</value>
+  </data>
+  <data name="OrderUpdateFailed" xml:space="preserve">
+    <value>Unable to update your order. Please try again.</value>
+  </data>
+  <data name="InvalidCardNumber" xml:space="preserve">
+    <value>Card number must contain 16 digits.</value>
+  </data>
+  <data name="InvalidCardExpiryDate" xml:space="preserve">
+    <value>Enter a valid expiry date (MM/YY).</value>
+  </data>
+  <data name="CardExpired" xml:space="preserve">
+    <value>Card has expired. Please enter a valid expiry date.</value>
+  </data>
+  <data name="CakeUnavailable" xml:space="preserve">
+    <value>Selected cake is unavailable</value>
+  </data>
+  <data name="InvalidSecurityCode" xml:space="preserve">
+    <value>Security code must contain 3 digits.</value>
+  </data>
+  <data name="PaymentFailed" xml:space="preserve">
+    <value>Payment could not be completed. Please try again.</value>
+  </data>
+  <data name="DateFullyBooked" xml:space="preserve">
+    <value>This date is fully booked. Please choose another date.</value>
+  </data>
+  <data name="CakePriceChanged" xml:space="preserve">
+    <value> A cake price has changed. Please review the payment summary again.</value>
+  </data>
+  <data name="InvalidPaymentMethod" xml:space="preserve">
+    <value>Invalid Payment Method</value>
+  </data>
+  <data name="BakerAccountNotFound" xml:space="preserve">
+    <value>Baker account not found</value>
+  </data>
+  <data name="OrderEditForbidden" xml:space="preserve">
+    <value> You cannot edit this order.</value>
+  </data>
+  <data name="DeliveryAddressTooLong" xml:space="preserve">
+    <value> Delivery address must not exceed 500 characters.</value>
+  </data>
+  <data name="InvalidOrderItems" xml:space="preserve">
+    <value> Invalid order items.</value>
+  </data>
+  <data name="PaymentRefundNotAllowed" xml:space="preserve">
+    <value>Only paid payments can be refunded.</value>
+  </data>
+  <data name="PaymentNotFound" xml:space="preserve">
+    <value> Payment record not found for this order.</value>
+  </data>
+  <data name="OrderCustomerMissing" xml:space="preserve">
+    <value> This order has no customer assigned.</value>
+  </data>
+  <data name="CustomerProfileLoadFailed" xml:space="preserve">
+    <value> Unable to load customer profile.</value>
+  </data>
+  <data name="CustomerProfileUpdatedSuccess" xml:space="preserve">
+    <value>Profile Updated Successfully</value>
+  </data>
+  <data name="CustomerProfileUpdateFailed" xml:space="preserve">
+    <value>Unable to update customer profile</value>
+  </data>
+  <data name="NotificationNotFound" xml:space="preserve">
+    <value>Notification Not Found</value>
+  </data>
+  <data name="NameRequired" xml:space="preserve">
+    <value>Name is Required.</value>
   </data>
 </root>

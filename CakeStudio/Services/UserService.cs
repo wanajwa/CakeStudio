@@ -169,7 +169,7 @@ namespace CakeStudio.Services
             {
                 System.Diagnostics.Debug.WriteLine(ex.ToString());
 
-                serviceResponse.Message = "Unable to load customer profile.";
+                serviceResponse.Message = Resource.CustomerProfileLoadFailed;
             }
 
             return serviceResponse;
@@ -226,13 +226,13 @@ namespace CakeStudio.Services
                 transaction.Commit();
 
                 serviceResponse.Status = true;
-                serviceResponse.Message = "Profile updated successfully.";
+                serviceResponse.Message = Resource.CustomerProfileUpdatedSuccess;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.ToString());
 
-                serviceResponse.Message = "Unable to update customer profile.";
+                serviceResponse.Message = Resource.CustomerProfileUpdateFailed;
             }
 
             return serviceResponse;

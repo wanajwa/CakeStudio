@@ -14,7 +14,32 @@
 </head>
 <body>
     @{
-        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentController =
+        ViewContext.RouteData.Values["controller"]?.ToString();
+
+        var currentAction =
+        ViewContext.RouteData.Values["action"]?.ToString();
+
+        string? backUrl = null;
+        string backLabel = "";
+
+        if (currentController == "Order" && currentAction == "Payment")
+        {
+            backUrl = Url.Action("Checkout", "Order");
+            backLabel = "Back to Checkout";
+        }
+        else if (currentController == "Order" &&
+        currentAction == "Checkout")
+        {
+            backUrl = Url.Action("Index", "Cart");
+            backLabel = "Back to Cart";
+        }
+        else if (currentController == "Cart" &&
+        currentAction == "Index")
+        {
+            backUrl = Url.Action("Index", "CustomerCake");
+            backLabel = "Back to Cakes";
+        }
     }
     <div class="d-flex min-vh-100">
 
@@ -223,9 +248,22 @@
                         User.IsInRole("Customer"))
             {
                 <div class="d-flex justify-content-between align-items-center bg-white border-bottom px-4 py-3">
-                    <h4 class="fw-bold mb-0">
-                        Hi, @User.Identity.Name!
-                    </h4>
+                    <div class="d-flex align-items-center gap-3">
+                        @if (backUrl != null)
+                        {
+                            <a href="@backUrl"
+                               class="btn btn-outline-secondary rounded-circle d-inline-flex align-items-center  flex-shrink-0"
+                               style="width:42px; height:42px;"
+                               title="@backLabel"
+                               aria-label="@backLabel">
+                                <i class="bi bi-arrow-left text-dark" aria-hidden="true"></i>
+                            </a>
+                        }
+
+                        <h4 class="fw-bold mb-0">
+                            Hi, @User.Identity.Name!
+                        </h4>
+                    </div>
 
                     @await Component.InvokeAsync("NotificationBell")
                 </div>

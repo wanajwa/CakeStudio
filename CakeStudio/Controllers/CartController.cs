@@ -2,6 +2,7 @@
 using CakeStudio.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CakeStudio.Resources;
 
 namespace CakeStudio.Controllers
 {
@@ -31,7 +32,7 @@ namespace CakeStudio.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "Please enter valid cake options and quantity.";
+                TempData["ErrorMessage"] = Resource.InvalidCartOptions;
 
                 return RedirectToAction("Index", "CustomerCake");
             }
@@ -40,7 +41,7 @@ namespace CakeStudio.Controllers
             {
                 _cartService.AddItem(model);
 
-                TempData["SuccessMessage"] = "Cake added to cart.";
+                TempData["SuccessMessage"] = Resource.CartItemAddedSuccess;
 
                 return RedirectToAction(nameof(Index));
             }
@@ -59,7 +60,7 @@ namespace CakeStudio.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "Please check your cart information.";
+                TempData["ErrorMessage"] = Resource.InvalidCartOptions;
                 return RedirectToAction(nameof(Index));
             }
 
@@ -86,7 +87,7 @@ namespace CakeStudio.Controllers
             {
                 _cartService.RemoveItem(cartItemId);
 
-                TempData["SuccessMessage"] = "Item removed from cart.";
+                TempData["SuccessMessage"] = Resource.CartItemRemovedSuccess;
             }
             catch (ArgumentException ex)
             {
