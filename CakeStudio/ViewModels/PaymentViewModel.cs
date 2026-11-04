@@ -4,6 +4,7 @@ namespace CakeStudio.ViewModels
     public class PaymentViewModel
     {
         public decimal Amount {  get; set; }
+        public decimal DeliveryFee { get; set; }
         public string PaymentMethod { get; set; } = "Card";
 
         [Required(ErrorMessage = "Card number is required.")]

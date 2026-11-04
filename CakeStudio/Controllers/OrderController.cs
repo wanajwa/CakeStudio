@@ -238,7 +238,6 @@ namespace CakeStudio.Controllers
             var model = new OrderViewModel
             {
                 OrderId = order.OrderId,
-                CakeId = order.CakeId,
                 RequiredDate = order.RequiredDate?.Date,
                 RequiredTime = order.RequiredDate?.TimeOfDay,
                 CollectionMethod = order.CollectionMethod,
@@ -275,8 +274,7 @@ namespace CakeStudio.Controllers
                 return RedirectToAction(nameof(Details), new { id = order.OrderId });
             }
 
-            // Restore the required CakeId from the database
-            model.CakeId = order.CakeId;
+         
             ModelState.Remove(nameof(model.CakeId));
 
             if (!ModelState.IsValid)
@@ -428,7 +426,11 @@ namespace CakeStudio.Controllers
                     });
             }
 
-            decimal totalPrice = order.Cart.TotalPrice;
+            decimal deliveryFee = order.CollectionMethod == "Delivery"
+                ? DeliveryRate.FixedFee
+                : 0m;
+
+            decimal totalPrice = order.Cart.TotalPrice + deliveryFee;
 
             if (totalPrice <= 0 || totalPrice > 100000)
                 throw new ArgumentException(Resource.InvalidOrderPrice);
@@ -437,6 +439,7 @@ namespace CakeStudio.Controllers
             {
                 Cart = order.Cart,
                 Amount = totalPrice,
+                DeliveryFee = deliveryFee,
                 PaymentMethod = PaymentMethod.Card,
                 RequiredDate = order.RequiredDate,
                 RequiredTime = order.RequiredTime,
@@ -452,6 +455,7 @@ namespace CakeStudio.Controllers
 
                 model.Cart = summary.Cart;
                 model.Amount = summary.Amount;
+                model.DeliveryFee = summary.DeliveryFee;
                 model.PaymentMethod = summary.PaymentMethod;
                 model.RequiredDate = summary.RequiredDate;
                 model.RequiredTime = summary.RequiredTime;

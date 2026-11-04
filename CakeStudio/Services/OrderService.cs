@@ -22,7 +22,6 @@ namespace CakeStudio.Services
 
             var orders = session.QueryOver<Order>()
             .Fetch(SelectMode.Fetch, o => o.Customer)
-            .Fetch(SelectMode.Fetch, o => o.Cake)
             .OrderBy(o => o.CreatedAt).Desc
             .List();
 
@@ -134,7 +133,7 @@ namespace CakeStudio.Services
             //Retrieve only the orders for the requested
             var orders = query
                 .Fetch(SelectMode.Fetch, o => o.Customer)
-                .Fetch(SelectMode.Fetch, o => o.Cake)
+                 
                 .Skip((model.CurrentPage - 1) * pageSize) //nak gi page 2 so ignore the first 5 order on page 1
                 .Take(pageSize) // get 6-10 order 
                 .List();
@@ -170,7 +169,7 @@ namespace CakeStudio.Services
             int currentPage = Math.Clamp(page, 1, totalPages);
 
             var orders = query
-                .Fetch(SelectMode.Fetch, o => o.Cake)
+                 
                 .OrderBy(o => o.CreatedAt).Desc
                 .ThenBy(o => o.OrderId).Asc
                 .Skip((currentPage - 1) * pageSize)
@@ -267,8 +266,7 @@ namespace CakeStudio.Services
             if (method != "Pickup" && method != "Delivery")
                 throw new ArgumentException(Resource.InvalidCollectionMethod);
 
-            if (method == "Delivery" &&
-                string.IsNullOrWhiteSpace(model.DeliveryAddress))
+            if (method == "Delivery" && string.IsNullOrWhiteSpace(model.DeliveryAddress))
             {
                 throw new ArgumentException(Resource.DeliveryAddressRequired);
             }
@@ -357,6 +355,12 @@ namespace CakeStudio.Services
                     });
                 }
 
+                decimal deliveryFee = method == "Delivery"
+                    ? DeliveryRate.FixedFee
+                    : 0m;
+
+                totalPrice += deliveryFee;
+
                 if (totalPrice <= 0 || totalPrice > 100000)
                     throw new ArgumentException(Resource.InvalidOrderPrice);
 
@@ -424,7 +428,7 @@ namespace CakeStudio.Services
                     DeliveryAddress = method == "Delivery"
                         ? model.DeliveryAddress?.Trim()
                         : null,
-
+                    DeliveryFee = deliveryFee,
                     TotalPrice = totalPrice,
                     OrderStatus = OrderStatus.Pending,
                     CreatedAt = DateTime.Now,
@@ -494,54 +498,56 @@ namespace CakeStudio.Services
         {
             using var session = _nhibernateHelper.OpenSession();
 
-            Order o = null!;                                                                      //null , compiler tak warn
+            Order o = null!;
+            User u = null!;
+
+            OrderItem oi = null!;
             Cake c = null!;
             CakeSize s = null!;
             CakeFlavour f = null!;
             CakeTier t = null!;
-            User u = null!;
 
+            // Load the order and customer.
             var order = session.QueryOver<Order>(() => o)
-            // SELECT o. *
-            // FROM Order o
+                // LEFT JOIN [User] u ON o.CustId = u.UserId
+                .Left.JoinAlias(
+                    () => o.Customer,
+                    () => u)
 
-            //LEFT JOIN Cake c
-            //ON o.CakeId = c.CakeId
-            .Left.JoinAlias(
-                () => o.Cake,
-                () => c)
+                .Fetch(SelectMode.Fetch, x => x.Customer)
 
-            .Left.JoinAlias(
-                () => o.Size,
-                () => s)
-
-            .Left.JoinAlias(
-                () => o.Flavour,
-                () => f)
-
-            .Left.JoinAlias(
-                () => o.Tier,
-                () => t)
-            .Left.JoinAlias(
-                () => o.Customer,
-                () => u)
-
-            //WHERE o.OrderId = id;
-            .Where(() => o.OrderId == id)
-
-            .SingleOrDefault();
+                .Where(() => o.OrderId == id)
+                .SingleOrDefault();
 
             if (order == null)
                 return null;
 
-            // Load all cake items and their selected options
-            var orderItems = session.QueryOver<OrderItem>()
-                .Where(item => item.OrderId == id)
-                .Fetch(SelectMode.Fetch, item => item.Cake)
-                .Fetch(SelectMode.Fetch, item => item.Size)
-                .Fetch(SelectMode.Fetch, item => item.Flavour)
-                .Fetch(SelectMode.Fetch, item => item.Tier)
-                .OrderBy(item => item.OrderItemId).Asc
+            // Load each order item and its cake/options.
+            var orderItems = session.QueryOver<OrderItem>(() => oi)
+                // LEFT JOIN Cake c ON oi.CakeId = c.CakeId
+                .Left.JoinAlias(
+                    () => oi.Cake,
+                    () => c)
+
+                .Left.JoinAlias(
+                    () => oi.Size,
+                    () => s)
+
+                .Left.JoinAlias(
+                    () => oi.Flavour,
+                    () => f)
+
+                .Left.JoinAlias(
+                    () => oi.Tier,
+                    () => t)
+
+                .Fetch(SelectMode.Fetch, x => x.Cake)
+                .Fetch(SelectMode.Fetch, x => x.Size)
+                .Fetch(SelectMode.Fetch, x => x.Flavour)
+                .Fetch(SelectMode.Fetch, x => x.Tier)
+
+                .Where(() => oi.OrderId == id)
+                .OrderBy(() => oi.OrderItemId).Asc
                 .List();
 
             var payment = session.QueryOver<Payment>()
@@ -607,6 +613,11 @@ namespace CakeStudio.Services
             if (model.DeliveryAddress?.Length > 500 )
             {
                 throw new ArgumentException("Delivery Address must not exceed 500 characters.");
+            }
+
+            if (method != order.CollectionMethod)
+            {
+                throw new InvalidOperationException(Resource.CollectionMethodChangeNotAllowed);
             }
 
             // Load the order's saved cake quantities.

@@ -327,4 +327,7 @@
   <data name="OrderRejectedNotification" xml:space="preserve">
     <value> Your order has been rejected. View order details for the reason.</value>
   </data>
+  <data name="CollectionMethodChangeNotAllowed" xml:space="preserve">
+    <value> Collection method cannot be changed after payment.</value>
+  </data>
 </root>

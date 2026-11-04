@@ -304,6 +304,15 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to  Collection method cannot be changed after payment..
+        /// </summary>
+        public static string CollectionMethodChangeNotAllowed {
+            get {
+                return ResourceManager.GetString("CollectionMethodChangeNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Customer registered successfully.
         /// </summary>
         public static string CustomerRegisteredSuccess {

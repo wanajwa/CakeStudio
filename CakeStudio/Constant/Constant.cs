@@ -27,5 +27,11 @@
     }
 
 
-    
+    public static class DeliveryRate
+    {
+        public const decimal FixedFee = 10m;
+    }
+
+
+
 }

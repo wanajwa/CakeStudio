@@ -147,9 +147,23 @@
 
                     <hr />
 
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Cake Subtotal</span>
+                        <span>RM @Model.Cart.TotalPrice.ToString("F2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Delivery Fee</span>
+                        <span>RM @Model.DeliveryFee.ToString("F2")</span>
+                    </div>
+
+                    <hr />
+
                     <div class="d-flex justify-content-between fw-bold mb-3">
                         <span>Total Price</span>
-                        <span class="cake-price">RM @Model.Amount.ToString("F2")</span>
+                        <span class="cake-price">
+                            RM @Model.Amount.ToString("F2")
+                        </span>
                     </div>
 
                     <hr />

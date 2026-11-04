@@ -21,38 +21,6 @@ namespace CakeStudio.Mappings
                 .Column("CustId")
                 .ReadOnly();
 
-            //  cake selection
-            Map(x => x.CakeId)
-                .Nullable();
-            References(x => x.Cake)
-                .Column("CakeId")
-                .Nullable()
-                .ReadOnly();
-
-            Map(x => x.FlavourId)
-                .Nullable();
-
-            References(x => x.Flavour)
-                .Column("FlavourId")
-                .Nullable()
-                .ReadOnly();
-
-            Map(x => x.SizeId)
-                .Nullable();
-
-            References(x => x.Size)
-                .Column("SizeId")
-                .Nullable()
-                .ReadOnly();
-
-            Map(x => x.TierId)
-                .Nullable();
-
-            References(x => x.Tier)
-                .Column("TierId")
-                .Nullable()
-                .ReadOnly();
-
             Map(x => x.BakerId)
                 .Nullable();
 
@@ -74,12 +42,12 @@ namespace CakeStudio.Mappings
                 .Length(500)
                 .Nullable();
 
-            // Message on cake (optional)
-            Map(x => x.MessageOnCakes)
-                .Length(500)
-                .Nullable();
-
             Map(x => x.TotalPrice)
+                .Precision(18)
+                .Scale(2)
+                .Not.Nullable();
+
+            Map(x => x.DeliveryFee)
                 .Precision(18)
                 .Scale(2)
                 .Not.Nullable();
