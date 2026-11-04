@@ -43,6 +43,7 @@ namespace CakeStudio.Services
             using var session = _nhibernateHelper.OpenSession();
 
             var payment = session.QueryOver<Payment>()
+                .Fetch(SelectMode.Fetch, p => p.Order)
                 .OrderBy(p => p.PaidAt).Desc
                 .List();
             return new List<Payment>(payment);

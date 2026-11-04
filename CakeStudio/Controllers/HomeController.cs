@@ -53,7 +53,7 @@ namespace CakeStudio.Controllers
                 Values = dailyDates
                     .Select(d => paidPayments
                         .Where(p => p.PaidAt.HasValue && p.PaidAt.Value.Date == d)
-                        .Sum(p => p.Amount))
+                        .Sum(p => p.Amount - p.Order.DeliveryFee))
                     .ToList()
             };
 
@@ -75,7 +75,7 @@ namespace CakeStudio.Controllers
                 Values = weekStarts
                     .Select(start => paidPayments
                         .Where(p => p.PaidAt.HasValue && p.PaidAt.Value >= start && p.PaidAt.Value < start.AddDays(7))
-                        .Sum(p => p.Amount))
+                        .Sum(p => p.Amount - p.Order.DeliveryFee))
                     .ToList()
             };
 
@@ -93,7 +93,7 @@ namespace CakeStudio.Controllers
                     .Select(m => paidPayments
                         .Where(p => p.PaidAt.HasValue && p.PaidAt.Value.Year == today.Year &&
                                     p.PaidAt.Value.Month == m)
-                        .Sum(p => p.Amount))
+                        .Sum(p => p.Amount - p.Order.DeliveryFee))
                     .ToList()
             };
 
@@ -109,7 +109,7 @@ namespace CakeStudio.Controllers
                 Values = years
                     .Select(y => paidPayments
                         .Where(p => p.PaidAt.HasValue && p.PaidAt.Value.Year == y)
-                        .Sum(p => p.Amount))
+                        .Sum(p => p.Amount - p.Order.DeliveryFee))
                     .ToList()
             };
 
@@ -151,7 +151,7 @@ namespace CakeStudio.Controllers
 
                 PendingOrders = orders.Count(o => o.OrderStatus == "Pending"),
 
-                TotalSales = paidPayments.Sum(p => p.Amount),
+                TotalSales = paidPayments.Sum(p => p.Amount - p.Order.DeliveryFee),
 
                 SalesByPeriod = salesByPeriod,
 
