@@ -22,15 +22,7 @@
 
     <div class="order-details-footer">
 
-        @if (User.IsInRole("Customer"))
-        {
-            <a asp-action="MyOrders"
-               class="order-back-btn">
-                <i class="bi bi-arrow-left me-2"></i>
-                Back to My Orders
-            </a>
-        }
-        else if (User.IsInRole("Baker"))
+        @if (User.IsInRole("Baker"))
         {
             <a asp-action="Index"
                class="order-back-btn">

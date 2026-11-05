@@ -28,17 +28,28 @@
             backUrl = Url.Action("Checkout", "Order");
             backLabel = "Back to Checkout";
         }
-        else if (currentController == "Order" &&
-        currentAction == "Checkout")
+        else if (currentController == "Order" && currentAction == "Checkout")
         {
             backUrl = Url.Action("Index", "Cart");
             backLabel = "Back to Cart";
         }
-        else if (currentController == "Cart" &&
-        currentAction == "Index")
+        else if (currentController == "Cart" && currentAction == "Index")
         {
             backUrl = Url.Action("Index", "CustomerCake");
             backLabel = "Back to Cakes";
+        }
+        else if (currentController == "Order" && currentAction == "Details")
+        {
+            if (User.IsInRole("Customer"))
+            {
+                backUrl = Url.Action("MyOrders", "Order");
+                backLabel = "Back to My Orders";
+            }
+            else if (User.IsInRole("Baker"))
+            {
+                backUrl = Url.Action("Index", "Order");
+                backLabel = "Back to Orders";
+            }
         }
     }
     <div class="d-flex min-vh-100">
@@ -244,8 +255,7 @@
             </div>
         }
         <main role="main" class="main-content flex-grow-1">
-            @if (User.Identity?.IsAuthenticated == true &&
-                        User.IsInRole("Customer"))
+            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
             {
                 <div class="d-flex justify-content-between align-items-center bg-white border-bottom px-4 py-3">
                     <div class="d-flex align-items-center gap-3">
