@@ -5,7 +5,6 @@ using CakeStudio.Models;
 using CakeStudio.Services;
 using CakeStudio.ViewModels;
 using CakeStudio.Resources;
-
 namespace CakeStudio.Controllers
 {
     [Authorize(Roles = "Baker")]
@@ -14,11 +13,13 @@ namespace CakeStudio.Controllers
         private readonly ICakeSizeService _cakeSizeService;
         private readonly ICakeFlavourService _cakeFlavourService;
         private readonly ICakeTierService _cakeTierService;
-        public CakeOptionsController(ICakeSizeService cakeSizeService, ICakeFlavourService cakeFlavourService, ICakeTierService cakeTierService)
+        private readonly ILogger<CakeOptionsController> _logger;
+        public CakeOptionsController(ICakeSizeService cakeSizeService, ICakeFlavourService cakeFlavourService, ICakeTierService cakeTierService, ILogger<CakeOptionsController> logger)
         {
             _cakeSizeService = cakeSizeService;
             _cakeFlavourService = cakeFlavourService;
             _cakeTierService = cakeTierService;
+            _logger = logger;
         }
 
         // READ: Display Cake Sizes, Cake Flavours, and Cake Tiers  
@@ -73,8 +74,9 @@ namespace CakeStudio.Controllers
             {
                 TempData["ErrorMessage"] = Resource.DuplicateCakeSize;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, Resource.CakeSizeAddFailed);
                 TempData["ErrorMessage"] = Resource.CakeSizeAddFailed;
             }
 
@@ -128,8 +130,9 @@ namespace CakeStudio.Controllers
             {
                 TempData["ErrorMessage"] = Resource.DuplicateCakeSize;
             }
-            catch (Exception)
+            catch (Exception ex) 
             {
+                _logger.LogError(ex, Resource.CakeSizeUpdateFailed);
                 TempData["ErrorMessage"] = Resource.CakeSizeUpdateFailed;
             }
 
@@ -154,8 +157,9 @@ namespace CakeStudio.Controllers
 
                 TempData["SuccessMessage"] = Resource.CakeSizeDeletedSuccess;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, Resource.CakeSizeDeleteFailed);
                 TempData["ErrorMessage"] = Resource.CakeSizeDeleteFailed;
             }
 
@@ -191,8 +195,9 @@ namespace CakeStudio.Controllers
             {
                 TempData["ErrorMessage"] = Resource.DuplicateCakeFlavour;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, Resource.CakeFlavourAddFailed);
                 TempData["ErrorMessage"] = Resource.CakeFlavourAddFailed;
             }
 
@@ -229,8 +234,9 @@ namespace CakeStudio.Controllers
             {
                 TempData["ErrorMessage"] = Resource.DuplicateCakeFlavour;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, Resource.CakeFlavourUpdateFailed);
                 TempData["ErrorMessage"] = Resource.CakeFlavourUpdateFailed;
             }
 
@@ -255,8 +261,9 @@ namespace CakeStudio.Controllers
 
                 TempData["SuccessMessage"] = Resource.CakeFlavourDeletedSuccess;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, Resource.CakeFlavourDeleteFailed);
                 TempData["ErrorMessage"] = Resource.CakeFlavourDeleteFailed;
             }
 
@@ -290,8 +297,9 @@ namespace CakeStudio.Controllers
             {
                 TempData["ErrorMessage"] = Resource.DuplicateCakeTier;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, Resource.CakeTierAddFailed);
                 TempData["ErrorMessage"] = Resource.CakeTierAddFailed;
             }
             return RedirectToAction(nameof(Index), new { tab = "tiers" });
@@ -322,8 +330,9 @@ namespace CakeStudio.Controllers
             {
                 TempData["ErrorMessage"] = Resource.DuplicateCakeTier;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, Resource.CakeTierUpdateFailed);
                 TempData["ErrorMessage"] = Resource.CakeTierUpdateFailed;
             }
             return RedirectToAction(nameof(Index), new { tab = "tiers" });
@@ -345,8 +354,9 @@ namespace CakeStudio.Controllers
                 _cakeTierService.Delete(id);
                 TempData["SuccessMessage"] = Resource.CakeTierDeletedSuccess;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, Resource.CakeTierDeleteFailed);
                 TempData["ErrorMessage"] = Resource.CakeTierDeleteFailed;
             }
             return RedirectToAction(nameof(Index), new { tab = "tiers" });

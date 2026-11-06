@@ -32,6 +32,10 @@
         public const decimal FixedFee = 10m;
     }
 
-
+    public static class CollectionMethod
+    {
+        public const string Pickup = "Pickup";
+        public const string Delivery = "Delivery";
+    }
 
 }

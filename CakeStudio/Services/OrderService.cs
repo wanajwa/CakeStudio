@@ -284,10 +284,10 @@ namespace CakeStudio.Services
             string method = model.CollectionMethod?.Trim() ?? "";
 
 
-            if (method != "Pickup" && method != "Delivery")
+            if (method != CollectionMethod.Pickup && method != CollectionMethod.Delivery)
                 throw new ArgumentException(Resource.InvalidCollectionMethod);
 
-            if (method == "Delivery" && string.IsNullOrWhiteSpace(model.DeliveryAddress))
+            if (method == CollectionMethod.Delivery && string.IsNullOrWhiteSpace(model.DeliveryAddress))
             {
                 throw new ArgumentException(Resource.DeliveryAddressRequired);
             }
@@ -355,7 +355,7 @@ namespace CakeStudio.Services
                     });
                 }
 
-                decimal deliveryFee = method == "Delivery"
+                decimal deliveryFee = method == CollectionMethod.Delivery
                     ? DeliveryRate.FixedFee
                     : 0m;
 
@@ -417,7 +417,7 @@ namespace CakeStudio.Services
                     RequiredDate = requiredDateTime,
                     CollectionMethod = method,
 
-                    DeliveryAddress = method == "Delivery"
+                    DeliveryAddress = method == CollectionMethod.Delivery
                         ? model.DeliveryAddress?.Trim()
                         : null,
                     DeliveryFee = deliveryFee,
@@ -594,10 +594,10 @@ namespace CakeStudio.Services
 
             string method = model.CollectionMethod?.Trim() ?? "";
 
-            if (method != "Pickup" && method != "Delivery")
+            if (method != CollectionMethod.Pickup && method != CollectionMethod.Delivery)
                 throw new ArgumentException(Resource.InvalidCollectionMethod);
 
-            if (method == "Delivery" && string.IsNullOrWhiteSpace(model.DeliveryAddress))
+            if (method == CollectionMethod.Delivery && string.IsNullOrWhiteSpace(model.DeliveryAddress))
             {
                 throw new ArgumentException(Resource.DeliveryAddressRequired);
             }
@@ -653,7 +653,7 @@ namespace CakeStudio.Services
             // Update only the editable order information
             order.RequiredDate = requiredDateTime;
             order.CollectionMethod = method;
-            order.DeliveryAddress = method == "Delivery"
+            order.DeliveryAddress = method == CollectionMethod.Delivery
                 ? model.DeliveryAddress?.Trim()
                 : null;
             order.UpdatedAt = DateTime.Now;

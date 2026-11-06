@@ -124,13 +124,13 @@ namespace CakeStudio.Controllers
             }
 
             // Validate collection method
-            if (model.CollectionMethod != "Pickup" && model.CollectionMethod != "Delivery")
+            if (model.CollectionMethod != CollectionMethod.Pickup && model.CollectionMethod != CollectionMethod.Delivery)
             {
                 ModelState.AddModelError(nameof(model.CollectionMethod),Resource.InvalidCollectionMethod);
             }
 
             // Delivery requires an address
-            if (model.CollectionMethod == "Delivery" && string.IsNullOrWhiteSpace(model.DeliveryAddress))
+            if (model.CollectionMethod == CollectionMethod.Delivery && string.IsNullOrWhiteSpace(model.DeliveryAddress))
             {
                 ModelState.AddModelError(nameof(model.DeliveryAddress),
                     Resource.DeliveryAddressRequired);
@@ -189,7 +189,7 @@ namespace CakeStudio.Controllers
                 RequiredDate = model.RequiredDate,
                 RequiredTime = model.RequiredTime,
                 CollectionMethod = model.CollectionMethod,
-                DeliveryAddress = model.CollectionMethod == "Delivery"
+                DeliveryAddress = model.CollectionMethod == CollectionMethod.Delivery
                     ? model.DeliveryAddress?.Trim()
                     : null,
                 Cart = model.Cart
@@ -433,7 +433,7 @@ namespace CakeStudio.Controllers
                     });
             }
 
-            decimal deliveryFee = order.CollectionMethod == "Delivery"
+            decimal deliveryFee = order.CollectionMethod == CollectionMethod.Delivery
                 ? DeliveryRate.FixedFee
                 : 0m;
 

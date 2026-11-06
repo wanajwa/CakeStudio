@@ -70,33 +70,31 @@ namespace CakeStudio.Controllers
             cake.Flavour = flavour;
         }
 
-        private bool ValidateImage(IFormFile? imageFile)
+        private void ValidateImage(IFormFile? imageFile)
         {
             if (imageFile == null)
-                return true; // No image uploaded (optional)
+                return;
 
             if (imageFile.Length == 0)
             {
-                ModelState.AddModelError(
-                    "imageFile",
-                    Resource.ImageEmpty);
+                ModelState.AddModelError(nameof(imageFile),Resource.ImageEmpty);
 
-                return false;
+                return;
             }
             const long maxFileSize = 5 * 1024 * 1024;
 
             if(imageFile.Length > maxFileSize)
             {
-                ModelState.AddModelError("imageFile",Resource.ImageSizeExceeded);
-                return false;
+                ModelState.AddModelError(nameof(imageFile), Resource.ImageSizeExceeded);
+                return;
             }
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
             var extension = Path.GetExtension(imageFile.FileName)
                 .ToLowerInvariant();
             if (!allowedExtensions.Contains(extension))
             {
-                ModelState.AddModelError("imageFile",Resource.InvalidImageExtension);
-                return false;
+                ModelState.AddModelError(nameof(imageFile),Resource.InvalidImageExtension);
+                return;
             }
             var allowedContentTypes = new[]
             {
@@ -107,13 +105,23 @@ namespace CakeStudio.Controllers
             if (!allowedContentTypes.Contains(
                 imageFile.ContentType.ToLowerInvariant()))
             {
-                ModelState.AddModelError("imageFile",Resource.InvalidImageType);
-                return false;
+                ModelState.AddModelError(nameof(imageFile),Resource.InvalidImageType);
+                return;
             }
-            return true;
         }
 
+        private static async Task<Image> BuildImageAsync(IFormFile imageFile)
+        {
+            using var memoryStream = new MemoryStream();
+            await imageFile.CopyToAsync(memoryStream);
 
+            return new Image
+            {
+                FileName = imageFile.FileName,
+                ImageType = imageFile.ContentType,
+                ImageContent = memoryStream.ToArray()
+            };
+        }
         public IActionResult Index()
         {
             var cakes = _cakeService.GetAll();
@@ -145,16 +153,7 @@ namespace CakeStudio.Controllers
 
             if (imageFile != null && imageFile.Length > 0)
             {
-                using var memoryStream = new MemoryStream();
-
-                await imageFile.CopyToAsync(memoryStream);
-
-                cake.Image = new CakeStudio.Models.Image
-                {
-                    FileName = imageFile.FileName,
-                    ImageType = imageFile.ContentType,
-                    ImageContent = memoryStream.ToArray()
-                };
+                cake.Image = await BuildImageAsync(imageFile);
             }
 
             _cakeService.Create(cake);
@@ -195,16 +194,7 @@ namespace CakeStudio.Controllers
 
             if (imageFile != null && imageFile.Length > 0)
             {
-                using var memoryStream = new MemoryStream();
-
-                await imageFile.CopyToAsync(memoryStream);
-
-                cake.Image = new CakeStudio.Models.Image
-                {
-                    FileName = imageFile.FileName,
-                    ImageType = imageFile.ContentType,
-                    ImageContent = memoryStream.ToArray()
-                };
+                cake.Image = await BuildImageAsync(imageFile);
             }
 
             _cakeService.Update(cake);

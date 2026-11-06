@@ -5,7 +5,7 @@
 
 @{
     ViewData["Title"] = "Checkout";
-    decimal deliveryFee = Model.CollectionMethod == "Delivery"
+	decimal deliveryFee = Model.CollectionMethod == CollectionMethod.Delivery
     ? DeliveryRate.FixedFee
     : 0m;
 }
@@ -79,11 +79,11 @@
                                     Select Method
                                 </option>
 
-                                <option value="Pickup">
+                                <option value="@CollectionMethod.Pickup">
                                     Pickup
                                 </option>
 
-                                <option value="Delivery">
+                                <option value="@CollectionMethod.Delivery">
                                     Delivery
                                 </option>
                             </select>
@@ -208,7 +208,7 @@
 
             const address = document.getElementById("DeliveryAddress");
 
-            const isDelivery = method === "Delivery";
+            const isDelivery = method === CollectionMethod.Delivery;
 
             section.style.display = isDelivery ? "block" : "none";
 

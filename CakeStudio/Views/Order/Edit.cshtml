@@ -1,5 +1,5 @@
 ﻿@model CakeStudio.ViewModels.OrderViewModel
-
+@using CakeStudio.Constant
 @{
     ViewData["Title"] = "Edit Order";
 }
@@ -65,8 +65,8 @@
                                     class="form-select"
                                     id="collectionMethod">
                                 <option value="">Select Method</option>
-                                <option value="Pickup">Pickup</option>
-                                <option value="Delivery">Delivery</option>
+                                <option value="@CollectionMethod.Pickup">Pickup</option>
+                                <option value="@CollectionMethod.Delivery">Delivery</option>
                             </select>
 
                             <span asp-validation-for="CollectionMethod"
