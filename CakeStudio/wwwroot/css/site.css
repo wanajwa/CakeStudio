@@ -1010,21 +1010,21 @@ body {
 /* Floating customer cart */
 .floating-cart {
     position: fixed;
-    right: 28px;
-    bottom: 28px;
+    right: 12px;
+    bottom: 12px;
     z-index: 1030;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    width: 64px;
-    height: 64px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
 
     background: #7352a2;
     color: white;
-    font-size: 28px;
+    font-size: 24px;
     text-decoration: none;
 
     box-shadow: 0 6px 20px rgba(75, 45, 110, 0.25);
@@ -1049,8 +1049,8 @@ body {
     align-items: center;
     justify-content: center;
 
-    min-width: 27px;
-    height: 27px;
+    min-width: 23px;
+    height: 23px;
     padding: 0 6px;
 
     background: #dc3545;
@@ -1058,16 +1058,33 @@ body {
     border: 2px solid white;
     border-radius: 20px;
 
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
 }
 
 @media (max-width: 575.98px) {
     .floating-cart {
-        right: 18px;
-        bottom: 18px;
-        width: 56px;
-        height: 56px;
-        font-size: 25px;
+        right: 12px;
+        bottom: 12px;
+        width: 48px;
+        height: 48px;
+        font-size: 22px;
     }
+}
+/* Reduce desktop header spacing to give the cake details panel more room */
+@media (min-width: 992px) {
+    .cake-page-header {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+
+        .cake-page-header h1 {
+            font-size: 2rem;
+            margin-bottom: .5rem;
+        }
+
+        .cake-page-header p {
+            margin-bottom: 0;
+        }
 }
