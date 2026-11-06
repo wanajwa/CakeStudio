@@ -186,6 +186,7 @@ namespace CakeStudio.Controllers
             // Copy only the intended checkout information
             var pendingOrder = new OrderViewModel
             {
+                CheckoutId = Guid.NewGuid().ToString("N"),
                 RequiredDate = model.RequiredDate,
                 RequiredTime = model.RequiredTime,
                 CollectionMethod = model.CollectionMethod,
@@ -444,6 +445,7 @@ namespace CakeStudio.Controllers
 
             return new PaymentViewModel
             {
+                CheckoutId = order.CheckoutId,
                 Cart = order.Cart,
                 Amount = totalPrice,
                 DeliveryFee = deliveryFee,
@@ -459,7 +461,7 @@ namespace CakeStudio.Controllers
             try
             {
                 var summary = BuildPaymentViewModel(order);
-
+                model.CheckoutId = summary.CheckoutId;
                 model.Cart = summary.Cart;
                 model.Amount = summary.Amount;
                 model.DeliveryFee = summary.DeliveryFee;
@@ -533,6 +535,14 @@ namespace CakeStudio.Controllers
 
             if (order == null)
                 return RedirectToAction(nameof(MyOrders));
+
+            if (string.IsNullOrEmpty(order.CheckoutId) || model.CheckoutId != order.CheckoutId)
+            {
+                TempData["ErrorMessage"] =
+                    "Your checkout has changed. Please review it before paying.";
+
+                return RedirectToAction(nameof(Checkout));
+            }
 
             // Validate test card details entered by the customer
             string cardNumber = (model.CardNumber ?? "")

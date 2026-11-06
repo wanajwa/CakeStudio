@@ -79,11 +79,11 @@
                                     Select Method
                                 </option>
 
-                                <option value="@CollectionMethod.Pickup">
+                                <option value="Pickup">
                                     Pickup
                                 </option>
 
-                                <option value="@CollectionMethod.Delivery">
+                                <option value="Delivery">
                                     Delivery
                                 </option>
                             </select>
@@ -208,7 +208,7 @@
 
             const address = document.getElementById("DeliveryAddress");
 
-            const isDelivery = method === CollectionMethod.Delivery;
+            const isDelivery = method === "Delivery";
 
             section.style.display = isDelivery ? "block" : "none";
 

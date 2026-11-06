@@ -27,7 +27,7 @@
                           id="paymentForm">
 
                         @Html.AntiForgeryToken()
-
+                        <input type="hidden" asp-for="CheckoutId" />
                         <div asp-validation-summary="ModelOnly"
                              class="text-danger mb-3">
                          </div>

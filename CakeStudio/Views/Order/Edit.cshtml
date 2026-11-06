@@ -61,13 +61,14 @@
                                 Collection Method
                             </label>
 
-                            <select asp-for="CollectionMethod"
-                                    class="form-select"
-                                    id="collectionMethod">
-                                <option value="">Select Method</option>
-                                <option value="@CollectionMethod.Pickup">Pickup</option>
-                                <option value="@CollectionMethod.Delivery">Delivery</option>
-                            </select>
+                            <input asp-for="CollectionMethod"
+                                   class="form-control"
+                                   id="collectionMethod"
+                                   readonly />
+
+                            <small class="text-muted">
+                                Collection method cannot be changed after payment.
+                            </small>
 
                             <span asp-validation-for="CollectionMethod"
                                   class="text-danger"></span>

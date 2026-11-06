@@ -52,6 +52,11 @@ namespace CakeStudio.Services
         private void SaveCart(CartViewModel cart)
         {
             CurrentContext.Session.SetString(CartKey,JsonSerializer.Serialize(cart));
+
+            var customerId = CurrentContext.User
+                .FindFirstValue(ClaimTypes.NameIdentifier);
+
+            CurrentContext.Session.Remove($"PendingOrder_{customerId}");
         }
 
         public void AddItem(CartItemViewModel model)
@@ -163,6 +168,10 @@ namespace CakeStudio.Services
         public void ClearCart()
         {
             CurrentContext.Session.Remove(CartKey);
+            var customerId = CurrentContext.User
+                .FindFirstValue(ClaimTypes.NameIdentifier);
+
+            CurrentContext.Session.Remove($"PendingOrder_{customerId}");
         }
 
         private static void ValidateQuantity(int quantity)

@@ -21,5 +21,7 @@ namespace CakeStudio.ViewModels
 
         public string CollectionMethod { get; set; } = string.Empty;
         public CartViewModel Cart { get; set; } = new CartViewModel();
+
+        public string? CheckoutId { get; set; }
     }
 }

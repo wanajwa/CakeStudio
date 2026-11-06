@@ -815,9 +815,13 @@ namespace CakeStudio.Services
                 }
 
                 // status change notification , yang lain ikut je
-                string statusLabel = status == OrderStatus.Ready
-                    ? "Ready for Pickup"
-                    : status;
+                string statusLabel = status;
+                if (status == OrderStatus.Ready)
+                {
+                    statusLabel = order.CollectionMethod == CollectionMethod.Delivery
+                        ? "Ready for Delivery"
+                        : "Ready for Pickup";
+                }
 
                 var notification = new Notification
                 {
