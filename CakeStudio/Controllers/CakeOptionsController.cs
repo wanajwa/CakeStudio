@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using CakeStudio.Models;
-using CakeStudio.Services.Interfaces;
+using CakeStudio.Services;
 using CakeStudio.ViewModels;
 using CakeStudio.Resources;
 

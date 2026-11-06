@@ -1,6 +1,5 @@
 ﻿using CakeStudio.Data;
 using CakeStudio.Models;
-using NHibernate.Linq;
 using NHibernate;
 using CakeStudio.Resources;
 namespace CakeStudio.Services

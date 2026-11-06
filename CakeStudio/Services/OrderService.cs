@@ -104,21 +104,21 @@ namespace CakeStudio.Services
                     break;
 
                 case "nearest":
-                    query.Where(o => o.OrderStatus == OrderStatus.Pending || o.OrderStatus == OrderStatus.Preparing || o.OrderStatus == OrderStatus.Ready);
+                    query.Where(o => o.OrderStatus == OrderStatus.Pending || o.OrderStatus == OrderStatus.Preparing);
                     break;
             }
 
             //sort match order
-            if (sort == "" || sort == "newest" || sort == "completed" || sort == "rejected")
+            if (sort == "nearest")
             {
                 query = query
-                    .OrderBy(o => o.CreatedAt).Desc
+                    .OrderBy(o => o.RequiredDate).Asc
                     .ThenBy(o => o.OrderId).Asc;
             }
             else
             {
                 query = query
-                    .OrderBy(o => o.RequiredDate).Asc
+                    .OrderBy(o => o.RequiredDate).Desc
                     .ThenBy(o => o.OrderId).Asc;
             }
 
@@ -225,31 +225,39 @@ namespace CakeStudio.Services
             if (tier == null || !tier.IsAvailable)
                 throw new ArgumentException(Resource.TierUnavailable);
 
-            decimal totalPrice = cake.BasePrice;
-
-            // Default size: 6 inch
-            bool isDefaultSize = size.SizeName.Trim()
-                .Equals("6 inch", StringComparison.OrdinalIgnoreCase);
-
-            if (!isDefaultSize)
-                totalPrice += size.AdditionalPrice;
-
-            // Default flavour: cake's original flavour
-            if (flavour.FlavourId != cake.Flavour.FlavourId)
-                totalPrice += flavour.AdditionalPrice;
-
-            // Default tier: 1
-            bool isDefaultTier = tier.TierName.Trim()
-                .Equals("1", StringComparison.OrdinalIgnoreCase);
-
-            if (!isDefaultTier)
-                totalPrice += tier.AdditionalPrice;
-
-            if (totalPrice <= 0 || totalPrice > 100000)
-                throw new ArgumentException(Resource.InvalidOrderPrice);
-
-            return totalPrice;
+            return CalculateUnitPrice(cake, size, flavour, tier);
+         
         }
+
+        private static decimal CalculateUnitPrice(Cake cake,CakeSize size,CakeFlavour flavour,CakeTier tier)
+        {
+            decimal price = cake.BasePrice;
+
+            if (!size.SizeName.Trim().Equals(
+                "6 inch", StringComparison.OrdinalIgnoreCase))
+            {
+                price += size.AdditionalPrice;
+            }
+
+            if (flavour.FlavourId != cake.Flavour.FlavourId)
+            {
+                price += flavour.AdditionalPrice;
+            }
+
+            if (!tier.TierName.Trim().Equals(
+                "1", StringComparison.OrdinalIgnoreCase))
+            {
+                price += tier.AdditionalPrice;
+            }
+
+            if (price <= 0 || price > 100000)
+            {
+                throw new ArgumentException(Resource.InvalidOrderPrice);
+            }
+
+            return price;
+        }
+
         public int Create(int customerId, OrderViewModel model, string paymentMethod)
         {
             if (model.Cart == null || !model.Cart.Items.Any())
@@ -327,28 +335,7 @@ namespace CakeStudio.Services
                     if (tier == null || !tier.IsAvailable)
                         throw new ArgumentException(Resource.TierUnavailable);
 
-                    decimal unitPrice = cake.BasePrice;
-
-                    // Default size is included
-                    bool isDefaultSize = size.SizeName.Trim()
-                        .Equals("6 inch", StringComparison.OrdinalIgnoreCase);
-
-                    if (!isDefaultSize)
-                        unitPrice += size.AdditionalPrice;
-
-                    // Original flavour is included
-                    if (flavour.FlavourId != cake.Flavour.FlavourId)
-                        unitPrice += flavour.AdditionalPrice;
-
-                    // One tier is included
-                    bool isDefaultTier = tier.TierName.Trim()
-                        .Equals("1", StringComparison.OrdinalIgnoreCase);
-
-                    if (!isDefaultTier)
-                        unitPrice += tier.AdditionalPrice;
-
-                    if (unitPrice <= 0 || unitPrice > 100000)
-                        throw new ArgumentException(Resource.InvalidOrderPrice);
+                    decimal unitPrice = CalculateUnitPrice(cake, size, flavour, tier);
 
                     // Require another review if the price has changed
                     if (unitPrice != item.UnitPrice)
@@ -381,18 +368,10 @@ namespace CakeStudio.Services
                     throw new ArgumentException(Resource.InvalidPaymentMethod);
 
                 // Retrieve the Baker account
-                User? baker = null;
-
-                var users = session.QueryOver<User>().List();
-
-                foreach (var user in users)
-                {
-                    if (user.GetRoleName() == "Baker")
-                    {
-                        baker = user;
-                        break;
-                    }
-                }
+                var baker = session.QueryOver<Baker>()
+                    .OrderBy(b => b.UserId).Asc
+                    .Take(1)
+                    .SingleOrDefault();
 
                 if (baker == null)
                 {

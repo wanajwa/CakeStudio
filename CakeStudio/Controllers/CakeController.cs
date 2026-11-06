@@ -3,7 +3,6 @@ using CakeStudio.Models;
 using CakeStudio.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using CakeStudio.Services.Interfaces;
 using CakeStudio.Resources;
 
 namespace CakeStudio.Controllers

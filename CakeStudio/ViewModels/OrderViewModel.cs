@@ -5,9 +5,7 @@ namespace CakeStudio.ViewModels
 {
     public class OrderViewModel
     {
-        [Required(ErrorMessage = "Please select a cake.")]
         public int? CakeId { get; set; }
-
         public int? FlavourId { get; set; }
         public int? SizeId { get; set; }
         public int? TierId { get; set; }

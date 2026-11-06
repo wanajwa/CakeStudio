@@ -133,12 +133,13 @@ namespace CakeStudio.Controllers
                 .Take(5)
                 .ToList();
 
-            // Upcoming orders - next 5 orders
+            
+            // Upcoming orders - next 5 Pending or Preparing orders
             var upcomingOrders = orders
                 .Where(o => o.RequiredDate.HasValue &&
                             o.RequiredDate.Value >= today &&
-                            o.OrderStatus != "Completed" &&
-                            o.OrderStatus != "Rejected")
+                            (o.OrderStatus == OrderStatus.Pending ||
+                             o.OrderStatus == OrderStatus.Preparing))
                 .OrderBy(o => o.RequiredDate)
                 .Take(5)
                 .ToList();
@@ -149,7 +150,7 @@ namespace CakeStudio.Controllers
 
                 AvailableCakes = cakes.Count(c => c.IsAvailable),
 
-                PendingOrders = orders.Count(o => o.OrderStatus == "Pending"),
+                PendingOrders = orders.Count(o => o.OrderStatus == OrderStatus.Pending),
 
                 TotalSales = paidPayments.Sum(p => p.Amount - p.Order.DeliveryFee),
 
@@ -168,7 +169,6 @@ namespace CakeStudio.Controllers
 
             return View(model);
         }
-
 
         public IActionResult Privacy()
         {

@@ -1,5 +1,5 @@
 ﻿using CakeStudio.Models;
-namespace CakeStudio.Services.Interfaces
+namespace CakeStudio.Services
 {
     public interface ICakeTierService
     {

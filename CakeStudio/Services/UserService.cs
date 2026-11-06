@@ -10,11 +10,12 @@ namespace CakeStudio.Services
     {
         private readonly NHibernateHelper _nhibernateHelper;
         private readonly PasswordHasher<User> _passwordHasher;
-
-        public UserService(NHibernateHelper nhibernateHelper)
+        private readonly ILogger<UserService> _logger;
+        public UserService(NHibernateHelper nhibernateHelper, ILogger<UserService> logger)
         {
             _nhibernateHelper = nhibernateHelper;
             _passwordHasher = new PasswordHasher<User>();
+            _logger = logger;
         }
 
         public Response Login(string email, string password)
@@ -57,7 +58,7 @@ namespace CakeStudio.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.ToString());
+                _logger.LogError(ex, Resource.LoginFailed);
 
                 serviceResponse.Message = Resource.LoginFailed;
             }
@@ -130,7 +131,7 @@ namespace CakeStudio.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.ToString());
+                _logger.LogError(ex, Resource.RegistrationFailed);
 
                 serviceResponse.Message = Resource.RegistrationFailed;
             }
@@ -167,7 +168,7 @@ namespace CakeStudio.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.ToString());
+                _logger.LogError(ex, Resource.CustomerProfileLoadFailed);
 
                 serviceResponse.Message = Resource.CustomerProfileLoadFailed;
             }
@@ -230,7 +231,7 @@ namespace CakeStudio.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.ToString());
+                _logger.LogError(ex, Resource.CustomerProfileUpdateFailed);
 
                 serviceResponse.Message = Resource.CustomerProfileUpdateFailed;
             }

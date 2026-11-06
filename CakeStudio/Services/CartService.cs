@@ -1,10 +1,11 @@
 ﻿using CakeStudio.Data;
 using CakeStudio.Models;
+using CakeStudio.Resources;
 using CakeStudio.ViewModels;
 using Microsoft.AspNetCore.Http;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json;
-using CakeStudio.Resources;
 namespace CakeStudio.Services
 {
     public class CartService : ICartService
@@ -59,10 +60,7 @@ namespace CakeStudio.Services
         {
             ValidateQuantity(model.Quantity);
 
-            if (model.MessageOnCakes?.Length > 500)
-            {
-                throw new ArgumentException(Resource.CakeMessageTooLong);
-            }
+            ValidateCakeMessage(model.MessageOnCakes);
 
             // Calculate the price using database values
             decimal unitPrice = _orderService.CalculateTotalPrice(
@@ -96,7 +94,9 @@ namespace CakeStudio.Services
                 FlavourId = flavour.FlavourId,
                 TierId = tier.TierId,
                 Quantity = model.Quantity,
-                MessageOnCakes = model.MessageOnCakes?.Trim(),
+                MessageOnCakes = string.IsNullOrWhiteSpace(model.MessageOnCakes)
+                    ? null
+                    : model.MessageOnCakes.Trim(),
 
                 CakeName = cake.CakeName,
                 SizeName = size.SizeName,
@@ -128,12 +128,9 @@ namespace CakeStudio.Services
                     throw new ArgumentException(Resource.InvalidCartItem);
                 }
 
-                if (submittedItem.Quantity < 1 || submittedItem.Quantity > 20)
-                    throw new ArgumentException(Resource.InvalidCakeQuantity);
-                if (submittedItem.MessageOnCakes?.Length > 500)
-                {
-                    throw new ArgumentException(Resource.CakeMessageTooLong);
-                }
+                ValidateQuantity(submittedItem.Quantity);
+
+                ValidateCakeMessage(submittedItem.MessageOnCakes);
             }
 
             // Update only quantities and messages
@@ -175,6 +172,13 @@ namespace CakeStudio.Services
             if (quantity < 1 || quantity > 20)
             {
                 throw new ArgumentException(Resource.InvalidCakeQuantity);
+            }
+        }
+        private static void ValidateCakeMessage(string? message)
+        {
+            if (message?.Length > 500)
+            {
+                throw new ArgumentException(Resource.CakeMessageTooLong);
             }
         }
     }

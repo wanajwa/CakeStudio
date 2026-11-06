@@ -1,7 +1,6 @@
 
 using CakeStudio.Data;
 using CakeStudio.Services;
-using CakeStudio.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 var builder = WebApplication.CreateBuilder(args);
 

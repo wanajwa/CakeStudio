@@ -3,11 +3,9 @@ using CakeStudio.Constant;
 using CakeStudio.Models;
 using CakeStudio.Resources;
 using CakeStudio.Services;
-using CakeStudio.Services.Interfaces;
 using CakeStudio.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -18,11 +16,13 @@ namespace CakeStudio.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly ICartService _cartService;
+        private readonly ILogger<OrderController> _logger;
 
-        public OrderController( IOrderService orderService,ICartService cartService)
+        public OrderController( IOrderService orderService,ICartService cartService, ILogger<OrderController> logger)
         {
             _orderService = orderService;
             _cartService = cartService;
+            _logger = logger;
         }
 
         private int? GetCurrentUserId()
@@ -111,9 +111,6 @@ namespace CakeStudio.Controllers
                 TempData["ErrorMessage"] = Resource.CartEmpty;
                 return RedirectToAction("Index", "Cart");
             }
-
-            // Single CakeId is not required for cart checkout
-            ModelState.Remove(nameof(model.CakeId));
 
             // Validate date and time
             if (model.RequiredDate.HasValue && model.RequiredTime.HasValue)
@@ -288,9 +285,6 @@ namespace CakeStudio.Controllers
                 return RedirectToAction(nameof(Details), new { id = order.OrderId });
             }
 
-         
-            ModelState.Remove(nameof(model.CakeId));
-
             if (!ModelState.IsValid)
             { 
                 RestoreOrderItemNames(model);
@@ -319,7 +313,7 @@ namespace CakeStudio.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.ToString());
+                _logger.LogError(ex, Resource.OrderUpdateFailed);
 
                 ModelState.AddModelError("", Resource.OrderUpdateFailed);
             }
@@ -366,7 +360,7 @@ namespace CakeStudio.Controllers
         {
             var validChoices = new[]
             {
-                "", "nearest", "pending", "preparing", "ready", "completed", "rejected", "newest"
+                "", "nearest", "pending", "preparing", "ready", "completed", "rejected"
             };
 
             if (Array.IndexOf(validChoices, sort) < 0)
@@ -392,8 +386,7 @@ namespace CakeStudio.Controllers
             {
                 _orderService.UpdateStatus(orderId, status, bakerId.Value, rejectionReason);
 
-                TempData["SuccessMessage"] =
-                    Resource.OrderStatusUpdatedSuccess;
+                TempData["SuccessMessage"] = Resource.OrderStatusUpdatedSuccess;
             }
             catch (ArgumentException ex)
             {
@@ -407,10 +400,10 @@ namespace CakeStudio.Controllers
             {
                 return Forbid();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                TempData["ErrorMessage"] =
-                    Resource.OrderStatusUpdateFailed;
+                _logger.LogError(ex, Resource.OrderStatusUpdateFailed);
+                TempData["ErrorMessage"] = Resource.OrderStatusUpdateFailed;
             }
 
             return RedirectToAction(nameof(Index));
@@ -541,7 +534,7 @@ namespace CakeStudio.Controllers
             if (order == null)
                 return RedirectToAction(nameof(MyOrders));
 
-            // Validate predefined dummy card details only
+            // Validate test card details entered by the customer
             string cardNumber = (model.CardNumber ?? "")
                 .Replace(" ", "");
 
@@ -605,7 +598,7 @@ namespace CakeStudio.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                _logger.LogError(ex, Resource.PaymentFailed);
                 ModelState.AddModelError(string.Empty,Resource.PaymentFailed);
             }
 
