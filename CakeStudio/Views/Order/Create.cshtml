@@ -143,9 +143,27 @@
                             </div>
 
                             <div class="text-muted small mt-2">
-                                <div>Size: @item.SizeName</div>
-                                <div>Flavour: @item.FlavourName</div>
-                                <div>Tier: @item.TierName</div>
+                                <div>Base price: RM @item.BasePrice.ToString("N2")</div>
+                                <div>
+                                    Size: @item.SizeName
+                                    @(item.SizePrice == 0m
+                                        ? "(Included)"
+                                        : $"(+RM {item.SizePrice:N2})")
+                                </div>
+
+                                <div>
+                                    Flavour: @item.FlavourName
+                                    @(item.FlavourPrice == 0m
+                                        ? "(Included)"
+                                        : $"(+RM {item.FlavourPrice:N2})")
+                                </div>
+
+                                <div>
+                                    Tier: @item.TierName
+                                    @(item.TierPrice == 0m
+                                        ? "(Included)"
+                                        : $"(+RM {item.TierPrice:N2})")
+                                </div>
                                 <div>
                                     Quantity: @item.Quantity ×
                                     RM @item.UnitPrice.ToString("N2")

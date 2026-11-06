@@ -311,17 +311,17 @@
 
         <a asp-controller="Cart"
            asp-action="Index"
+           id="floatingCart"
            class="floating-cart"
            aria-label="Open cart, @cartQuantity cakes">
 
             <i class="bi bi-cart3" aria-hidden="true"></i>
 
-            @if (cartQuantity > 0)
-            {
-                <span class="floating-cart-count" aria-hidden="true">
-                    @(cartQuantity > 99 ? "99+" : cartQuantity.ToString())
-                </span>
-            }
+            <span id="floatingCartCount"
+                  class="floating-cart-count @(cartQuantity == 0 ? "d-none" : "")"
+                  aria-hidden="true">
+                @(cartQuantity > 99 ? "99+" : cartQuantity.ToString())
+            </span>
         </a>
     }
 

@@ -4,7 +4,8 @@
     <div class="card-body">
         <form asp-controller="Cart"
           asp-action="Add"
-          method="post">
+          method="post"
+          id="addToCartForm">
 
         <input type="hidden"
                name="CakeId"
@@ -188,8 +189,6 @@
                 RM @Model.Cake.BasePrice.ToString("0.00")
             </h4>
         </div>
-
-
 
         <button type="submit"
                 class="btn order-now-btn w-100 mt-3">

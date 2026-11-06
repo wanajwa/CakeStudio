@@ -1,7 +1,10 @@
 ﻿@model CakeStudio.ViewModels.CartViewModel
+@using CakeStudio.Models
 
 @{
     ViewData["Title"] = "My Cart";
+    var defaultFlavourIds =
+    (Dictionary<int, int>)ViewBag.DefaultFlavourIds;
 }
 
 <div class="container mt-4 mb-5">
@@ -56,7 +59,9 @@
                 @for (int i = 0; i < Model.Items.Count; i++)
                 {
                     var item = Model.Items[i];
-                    <div class="card border-0 shadow-sm rounded-4 mb-3">
+                    <div class="card border-0 shadow-sm rounded-4 mb-3"
+                         data-cart-item
+                         data-cart-item-id="@item.CartItemId">
                         <div class="card-body p-4">
 
                             <div class="d-flex justify-content-between align-items-start gap-3">
@@ -65,22 +70,87 @@
                                         @item.CakeName
                                     </h5>
 
-                                    <p class="text-muted mb-1">
-                                        Size: @item.SizeName
+                                    <p class="text-muted mb-3">
+                                        Base price: RM @item.BasePrice.ToString("N2")
                                     </p>
 
-                                    <p class="text-muted mb-1">
-                                        Flavour: @item.FlavourName
-                                    </p>
+                                    <div class="mt-3">
+                                        <label for="size-@item.CartItemId" class="form-label">
+                                            Size
+                                        </label>
 
-                                    <p class="text-muted mb-2">
-                                        Tier: @item.TierName
-                                    </p>
+                                        <select id="size-@item.CartItemId"
+                                                name="items[@i].SizeId"
+                                                form="cartCheckoutForm"
+                                                class="form-select"
+                                                required>
+                                            @foreach (var size in (IEnumerable<CakeSize>)ViewBag.Sizes)
+                                            {
+                                                <option value="@size.SizeId"
+                                                        selected="@(size.SizeId == item.SizeId)">
+                                                    @(size.SizeName.Trim().Equals(
+                                                        "6 inch", StringComparison.OrdinalIgnoreCase)
+                                                        ? $"{size.SizeName} (Included)"
+                                                        : $"{size.SizeName} (+RM {size.AdditionalPrice:N2})")
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
 
-                                    <span class="cake-price fw-semibold">
-                                        RM @item.UnitPrice.ToString("N2")
-                                        each
+                                    <div class="mt-3">
+                                        <label for="flavour-@item.CartItemId" class="form-label">
+                                            Flavour
+                                        </label>
+
+                                        <select id="flavour-@item.CartItemId"
+                                                name="items[@i].FlavourId"
+                                                form="cartCheckoutForm"
+                                                class="form-select"
+                                                required>
+                                            @foreach (var flavour in (IEnumerable<CakeFlavour>)ViewBag.Flavours)
+                                            {
+                                                <option value="@flavour.FlavourId"
+                                                        selected="@(flavour.FlavourId == item.FlavourId)">
+                                                    @(flavour.FlavourId == defaultFlavourIds.GetValueOrDefault(item.CakeId)
+                                                        ? $"{flavour.FlavourName} (Included)"
+                                                        : $"{flavour.FlavourName} (+RM {flavour.AdditionalPrice:N2})")
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="mt-3 mb-3">
+                                        <label for="tier-@item.CartItemId" class="form-label">
+                                            Tier
+                                        </label>
+
+                                        <select id="tier-@item.CartItemId"
+                                                name="items[@i].TierId"
+                                                form="cartCheckoutForm"
+                                                class="form-select"
+                                                required>
+                                            @foreach (var tier in (IEnumerable<CakeTier>)ViewBag.Tiers)
+                                            {
+                                                <option value="@tier.TierId"
+                                                        selected="@(tier.TierId == item.TierId)">
+                                                    @(tier.TierName.Trim().Equals(
+                                                        "1", StringComparison.OrdinalIgnoreCase)
+                                                        ? $"{tier.TierName} Tier (Included)"
+                                                        : $"{tier.TierName} Tiers (+RM {tier.AdditionalPrice:N2})")
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <span class="cake-price fw-semibold"
+                                          id="unit-price-@item.CartItemId">
+                                        Unit Price: RM @item.UnitPrice.ToString("N2")
+                                     
                                     </span>
+
+                                    <div class="text-danger small mt-2"
+                                         data-price-error
+                                         role="alert"></div>
                                 </div>
 
                                 <form asp-controller="Cart"
@@ -167,6 +237,27 @@
 
                         <hr />
 
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between gap-3">
+                                    <span>
+                                        @item.CakeName ×
+                                        <span id="summary-quantity-@item.CartItemId">
+                                            @item.Quantity
+                                        </span>
+                                    </span>
+
+                                    <strong class="cake-price text-nowrap"
+                                            id="summary-subtotal-@item.CartItemId">
+                                        RM @item.Subtotal.ToString("N2")
+                                    </strong>
+                                </div>
+                            </div>
+                        }
+
+                        <hr />
+
                         <div class="d-flex justify-content-between mb-3">
                             <span>Total quantity</span>
                             <strong id="cartTotalQuantity">@Model.TotalQuantity</strong>
@@ -179,10 +270,6 @@
                                 RM @Model.TotalPrice.ToString("N2")
                             </strong>
                         </div>
-
-                        <p class="text-muted small mt-3 mb-0">
-                            Prices and availability will be checked again at checkout.
-                        </p>
 
                         <button type="submit"
                                 form="cartCheckoutForm"
@@ -200,50 +287,180 @@
 
 @section Scripts {
     <script>
-        const quantityInputs =
-            document.querySelectorAll("[data-cart-quantity]");
+        const cartForm = document.getElementById("cartCheckoutForm");
+        const cards = document.querySelectorAll("[data-cart-item]");
+        const checkoutButton =
+            document.querySelector('button[form="cartCheckoutForm"]');
 
         const moneyFormatter = new Intl.NumberFormat("en-MY", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
 
+        // Track pending requests and prevent older responses replacing newer prices
+        const priceStates = new Map();
+
+        cards.forEach(card => {
+            priceStates.set(card, {
+                requestId: 0,
+                pending: false,
+                valid: true
+            });
+        });
+
         function updateCartTotals() {
             let totalQuantity = 0;
             let totalPrice = 0;
+            let allValid = true;
 
-            quantityInputs.forEach(input => {
+            cards.forEach(card => {
+                const input = card.querySelector("[data-cart-quantity]");
                 const subtotalElement =
                     document.getElementById(input.dataset.subtotalId);
+                const state = priceStates.get(card);
 
-                if (!input.checkValidity()) {
+                const summaryQuantity = document.getElementById(
+                    "summary-quantity-" + card.dataset.cartItemId
+                );
+
+                const summarySubtotal = document.getElementById(
+                    "summary-subtotal-" + card.dataset.cartItemId
+                  );
+
+                summaryQuantity.textContent =
+                input.checkValidity() ? input.value : "—";
+
+                const optionsValid = Array.from(
+                    card.querySelectorAll("select")
+                ).every(select => select.checkValidity());
+
+                if (!input.checkValidity() || !optionsValid ||
+                    state.pending || !state.valid) {
                     subtotalElement.textContent = "—";
+                    summarySubtotal.textContent = "—";
+                    allValid = false;
                     return;
                 }
 
                 const quantity = Number(input.value);
-                const unitPrice = Number(input.dataset.unitPrice);
-                const subtotal = quantity * unitPrice;
+                const subtotal = quantity * Number(input.dataset.unitPrice);
 
                 totalQuantity += quantity;
                 totalPrice += subtotal;
 
                 subtotalElement.textContent =
                     "RM " + moneyFormatter.format(subtotal);
+                    summarySubtotal.textContent = subtotalElement.textContent;
             });
 
-            const allValid = Array.from(quantityInputs)
-                .every(input => input.checkValidity());
+            const quantityElement =
+                document.getElementById("cartTotalQuantity");
+            const priceElement =
+                document.getElementById("cartTotalPrice");
 
-            document.getElementById("cartTotalQuantity").textContent =
-                allValid ? totalQuantity : "—";
+            if (quantityElement && priceElement) {
+                quantityElement.textContent = allValid ? totalQuantity : "—";
+                priceElement.textContent =
+                    allValid ? "RM " + moneyFormatter.format(totalPrice) : "—";
+            }
 
-            document.getElementById("cartTotalPrice").textContent =
-                allValid ? "RM " + moneyFormatter.format(totalPrice) : "—";
+            if (checkoutButton) {
+                checkoutButton.disabled = !allValid;
+            }
         }
 
-        quantityInputs.forEach(input => {
-            input.addEventListener("input", updateCartTotals);
+        async function refreshItemPrice(card) {
+            const state = priceStates.get(card);
+            const requestId = ++state.requestId;
+
+            const quantityInput =
+                card.querySelector("[data-cart-quantity]");
+            const priceElement = document.getElementById(
+                "unit-price-" + card.dataset.cartItemId
+            );
+            const errorElement = card.querySelector("[data-price-error]");
+
+            state.pending = true;
+            state.valid = false;
+            errorElement.textContent = "";
+            priceElement.textContent = "Updating price...";
+            updateCartTotals();
+
+            const data = new FormData();
+
+            data.set("__RequestVerificationToken",
+                cartForm.querySelector(
+                    'input[name="__RequestVerificationToken"]'
+                ).value);
+
+            data.set("cartItemId", card.dataset.cartItemId);
+            data.set("sizeId",
+                card.querySelector('select[name$=".SizeId"]').value);
+            data.set("flavourId",
+                card.querySelector('select[name$=".FlavourId"]').value);
+            data.set("tierId",
+                card.querySelector('select[name$=".TierId"]').value);
+
+            try {
+                const response = await fetch(
+                    '@Url.Action("CalculatePrice", "Cart")',
+                    {
+                        method: "POST",
+                        body: data
+                    }
+                );
+
+                const result = await response.json();
+
+                if (requestId !== state.requestId) return;
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.message || "Unable to calculate the price."
+                    );
+                }
+
+                quantityInput.dataset.unitPrice = result.unitPrice;
+                priceElement.textContent =
+                    "Unit price: RM " + moneyFormatter.format(result.unitPrice);
+
+                state.valid = true;
+            }
+            catch (error) {
+                if (requestId !== state.requestId) return;
+
+                priceElement.textContent = "Price unavailable";
+                errorElement.textContent =
+                    error.message || "Unable to calculate the price.";
+            }
+            finally {
+                if (requestId === state.requestId) {
+                    state.pending = false;
+                    updateCartTotals();
+                }
+            }
+        }
+
+        cards.forEach(card => {
+            card.querySelector("[data-cart-quantity]")
+                .addEventListener("input", updateCartTotals);
+
+            card.querySelectorAll("select").forEach(select => {
+                select.addEventListener("change", () => {
+                    refreshItemPrice(card);
+                });
+            });
         });
+
+        cartForm.addEventListener("submit", function (event) {
+            const priceUnavailable = Array.from(priceStates.values())
+                .some(state => state.pending || !state.valid);
+
+            if (priceUnavailable) {
+                event.preventDefault();
+            }
+        });
+
+        updateCartTotals();
     </script>
 }

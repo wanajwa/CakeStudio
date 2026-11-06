@@ -10,10 +10,19 @@ namespace CakeStudio.Controllers
     public class CartController : Controller
     {
         private readonly ICartService _cartService;
-
-        public CartController(ICartService cartService)
+        private readonly ICakeSizeService _cakeSizeService;
+        private readonly ICakeFlavourService _cakeFlavourService;
+        private readonly ICakeTierService _cakeTierService;
+        private readonly IOrderService _orderService;
+        private readonly ICakeService _cakeService;
+        public CartController(ICartService cartService, ICakeSizeService sizeService, ICakeFlavourService flavourService, ICakeTierService tierService, IOrderService orderService, ICakeService cakeService)
         {
             _cartService = cartService;
+            _cakeSizeService = sizeService;
+            _cakeFlavourService = flavourService;
+            _cakeTierService = tierService;
+            _orderService = orderService;
+            _cakeService = cakeService;
         }
 
         // Display cart
@@ -22,7 +31,60 @@ namespace CakeStudio.Controllers
         {
             var model = _cartService.GetCart();
 
+            ViewBag.Sizes = _cakeSizeService.GetAll()
+                .Where(x => x.IsAvailable)
+                .ToList();
+
+            ViewBag.Flavours = _cakeFlavourService.GetAll()
+                .Where(x => x.IsAvailable)
+                .ToList();
+
+            ViewBag.Tiers = _cakeTierService.GetAll()
+                .Where(x => x.IsAvailable)
+                .ToList();
+
+            ViewBag.DefaultFlavourIds = _cakeService.GetAll()
+                .ToDictionary(
+                    cake => cake.CakeId,
+                    cake => cake.Flavour.FlavourId);
+
             return View(model);
+        }
+
+        // Calculate a cart item's price for the selected options
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult CalculatePrice(
+            string cartItemId,
+            int sizeId,
+            int flavourId,
+            int tierId)
+        {
+            var cart = _cartService.GetCart();
+
+            var item = cart.Items.FirstOrDefault(
+                x => x.CartItemId == cartItemId);
+
+            if (item == null)
+                return BadRequest(new { message = Resource.CartItemNotFound });
+
+            try
+            {
+                decimal unitPrice = _orderService.CalculateTotalPrice(
+                    new OrderViewModel
+                    {
+                        CakeId = item.CakeId,
+                        SizeId = sizeId,
+                        FlavourId = flavourId,
+                        TierId = tierId
+                    });
+
+                return Json(new { unitPrice });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // Add selected cake to cart
@@ -32,24 +94,28 @@ namespace CakeStudio.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = Resource.InvalidCartOptions;
-
-                return RedirectToAction("Index", "CustomerCake");
+                return BadRequest(new
+                {
+                    message = Resource.InvalidCartOptions
+                });
             }
 
             try
             {
                 _cartService.AddItem(model);
 
-                TempData["SuccessMessage"] = Resource.CartItemAddedSuccess;
-
-                return RedirectToAction(nameof(Index));
+                return Json(new
+                {
+                    message = Resource.CartItemAddedSuccess,
+                    totalQuantity = _cartService.GetCart().TotalQuantity
+                });
             }
             catch (ArgumentException ex)
             {
-                TempData["ErrorMessage"] = ex.Message;
-
-                return RedirectToAction("Index", "CustomerCake");
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
             }
         }
 

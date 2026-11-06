@@ -102,9 +102,24 @@ namespace CakeStudio.Services
                     : model.MessageOnCakes.Trim(),
 
                 CakeName = cake.CakeName,
+                BasePrice = cake.BasePrice,
                 SizeName = size.SizeName,
                 FlavourName = flavour.FlavourName,
                 TierName = tier.TierName,
+                SizePrice = size.SizeName.Trim().Equals(
+                "6 inch", StringComparison.OrdinalIgnoreCase)
+                    ? 0m
+                    : size.AdditionalPrice,
+
+                            FlavourPrice = flavour.FlavourId == cake.Flavour.FlavourId
+                ? 0m
+                : flavour.AdditionalPrice,
+
+                            TierPrice = tier.TierName.Trim().Equals(
+                "1", StringComparison.OrdinalIgnoreCase)
+                    ? 0m
+                    : tier.AdditionalPrice,
+
                 UnitPrice = unitPrice
             };
 
@@ -119,34 +134,90 @@ namespace CakeStudio.Services
             if (items == null || items.Count != cart.Items.Count)
                 throw new ArgumentException(Resource.CartChanged);
 
-            var checkedIds = new HashSet<string>();
+            using var session = _nhibernateHelper.OpenSession();
 
-            // Validate every item before changing the cart
+            var checkedIds = new HashSet<string>();
+            var updatedItems = new List<CartItemViewModel>();
+
+            // Validate and prepare all changes before saving
             foreach (var submittedItem in items)
             {
-                var savedItem = cart.Items.FirstOrDefault(x => x.CartItemId == submittedItem.CartItemId);
+                var savedItem = cart.Items.FirstOrDefault(
+                    x => x.CartItemId == submittedItem.CartItemId);
 
-                if (savedItem == null || !checkedIds.Add(submittedItem.CartItemId))
+                if (savedItem == null ||
+                    !checkedIds.Add(submittedItem.CartItemId))
                 {
                     throw new ArgumentException(Resource.InvalidCartItem);
                 }
 
                 ValidateQuantity(submittedItem.Quantity);
-
                 ValidateCakeMessage(submittedItem.MessageOnCakes);
+
+                var size = session.Get<CakeSize>(submittedItem.SizeId);
+                var flavour = session.Get<CakeFlavour>(submittedItem.FlavourId);
+                var tier = session.Get<CakeTier>(submittedItem.TierId);
+
+                if (size == null || flavour == null || tier == null ||
+                    !size.IsAvailable || !flavour.IsAvailable || !tier.IsAvailable)
+                {
+                    throw new ArgumentException(Resource.CartOptionsNotFound);
+                }
+
+                var cake = session.Get<Cake>(savedItem.CakeId);
+
+                if (cake == null || !cake.IsAvailable)
+                    throw new ArgumentException(Resource.CakeUnavailable);
+
+                // Keep the original cake and calculate its new option price
+                decimal unitPrice = _orderService.CalculateTotalPrice(
+                    new OrderViewModel
+                    {
+                        CakeId = savedItem.CakeId,
+                        SizeId = size.SizeId,
+                        FlavourId = flavour.FlavourId,
+                        TierId = tier.TierId
+                    });
+
+                updatedItems.Add(new CartItemViewModel
+                {
+                    CartItemId = savedItem.CartItemId,
+                    CakeId = savedItem.CakeId,
+                    CakeName = savedItem.CakeName,
+                    BasePrice = cake.BasePrice,
+
+                    SizeId = size.SizeId,
+                    SizeName = size.SizeName,
+                    FlavourId = flavour.FlavourId,
+                    FlavourName = flavour.FlavourName,
+                    TierId = tier.TierId,
+                    TierName = tier.TierName,
+
+                    Quantity = submittedItem.Quantity,
+                    SizePrice = size.SizeName.Trim().Equals(
+                        "6 inch", StringComparison.OrdinalIgnoreCase)
+                            ? 0m
+                            : size.AdditionalPrice,
+
+                                        FlavourPrice = flavour.FlavourId == cake.Flavour.FlavourId
+                        ? 0m
+                        : flavour.AdditionalPrice,
+
+                                        TierPrice = tier.TierName.Trim().Equals(
+                        "1", StringComparison.OrdinalIgnoreCase)
+                            ? 0m
+                            : tier.AdditionalPrice,
+
+                    UnitPrice = unitPrice,
+                    MessageOnCakes =
+                        string.IsNullOrWhiteSpace(submittedItem.MessageOnCakes)
+                            ? null
+                            : submittedItem.MessageOnCakes.Trim()
+                });
             }
 
-            // Update only quantities and messages
-            foreach (var submittedItem in items)
-            {
-                var savedItem = cart.Items.First(x => x.CartItemId == submittedItem.CartItemId);
-
-                savedItem.Quantity = submittedItem.Quantity;
-
-                savedItem.MessageOnCakes = string.IsNullOrWhiteSpace(submittedItem.MessageOnCakes)
-                        ? null
-                        : submittedItem.MessageOnCakes.Trim();
-            }
+            cart.Items.Clear();
+            cart.Items.AddRange(updatedItems);
 
             SaveCart(cart);
         }

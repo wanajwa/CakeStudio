@@ -25,6 +25,14 @@
 
         public string TierName { get; set; } = string.Empty;
 
+        // Additional charges per cake
+        public decimal BasePrice { get; set; }
+        public decimal SizePrice { get; set; }
+
+        public decimal FlavourPrice { get; set; }
+
+        public decimal TierPrice { get; set; }
+
         public decimal UnitPrice { get; set; }
 
         public decimal Subtotal => UnitPrice * Quantity;
