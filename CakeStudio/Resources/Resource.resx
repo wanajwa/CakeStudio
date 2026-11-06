@@ -438,4 +438,16 @@
   <data name="NameRequired" xml:space="preserve">
     <value>Name is Required.</value>
   </data>
+  <data name="CakeLoadFailed" xml:space="preserve">
+    <value>Unable to load cake information.</value>
+  </data>
+  <data name="CakeCreateFailed" xml:space="preserve">
+    <value>Unable to create the cake.</value>
+  </data>
+  <data name="CakeUpdateFailed" xml:space="preserve">
+    <value> Unable to update the cake.</value>
+  </data>
+  <data name="CakeDeleteFailed" xml:space="preserve">
+    <value>Unable to delete the cake.</value>
+  </data>
 </root>

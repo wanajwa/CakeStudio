@@ -7,10 +7,11 @@ namespace CakeStudio.Services
     public class CakeService : ICakeService
     {
         private readonly NHibernateHelper _nhibernateHelper;
-
-        public CakeService(NHibernateHelper nhibernateHelper)
+        private readonly ILogger<CakeService> _logger;
+        public CakeService(NHibernateHelper nhibernateHelper, ILogger<CakeService> logger)
         {
             _nhibernateHelper = nhibernateHelper;
+            _logger = logger;
         }
 
         public List<Cake> GetAll()
@@ -30,8 +31,8 @@ namespace CakeStudio.Services
             }
             catch (Exception ex)
             {
-                
-                Console.WriteLine($"An error occurred while fetching cakes: {ex.Message}");
+
+                _logger.LogError(ex, Resource.CakeLoadFailed);
                 throw;
             }
         }
@@ -54,9 +55,7 @@ namespace CakeStudio.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(
-                    $"An error occurred while fetching available cakes: {ex.Message}"
-                );
+                _logger.LogError(ex, Resource.CakeLoadFailed);
 
                 throw;
             }
@@ -77,7 +76,7 @@ namespace CakeStudio.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occurred while fetching the cake with ID {id}: {ex.Message}");
+                _logger.LogError(ex, Resource.CakeLoadFailed);
                 throw;
             }
         }
@@ -118,7 +117,7 @@ namespace CakeStudio.Services
                 {
                     transaction.Rollback();
                 }
-                Console.WriteLine($"An error occurred while creating the cake: {ex.Message}");
+                _logger.LogError(ex, Resource.CakeCreateFailed);
                 throw;
             }
         }
@@ -192,7 +191,7 @@ namespace CakeStudio.Services
                 {
                     transaction.Rollback();
                 }
-                Console.WriteLine($"An error occurred while updating the cake with ID {cake.CakeId}: {ex.Message}");
+                _logger.LogError(ex, Resource.CakeUpdateFailed);
                 throw;
             }
         }
@@ -235,7 +234,7 @@ namespace CakeStudio.Services
                 {
                     transaction.Rollback();
                 }
-                Console.WriteLine($"An error occurred while deleting the cake with ID {id}: {ex.Message}");
+                _logger.LogError(ex, Resource.CakeDeleteFailed);
                 throw;
 
             }

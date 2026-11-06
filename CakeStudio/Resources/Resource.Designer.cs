@@ -97,11 +97,29 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to create the cake..
+        /// </summary>
+        public static string CakeCreateFailed {
+            get {
+                return ResourceManager.GetString("CakeCreateFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cake deleted successfully!.
         /// </summary>
         public static string CakeDeletedSuccess {
             get {
                 return ResourceManager.GetString("CakeDeletedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to delete the cake..
+        /// </summary>
+        public static string CakeDeleteFailed {
+            get {
+                return ResourceManager.GetString("CakeDeleteFailed", resourceCulture);
             }
         }
         
@@ -165,6 +183,15 @@ namespace CakeStudio.Resources {
         public static string CakeFlavourUpdateFailed {
             get {
                 return ResourceManager.GetString("CakeFlavourUpdateFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to load cake information..
+        /// </summary>
+        public static string CakeLoadFailed {
+            get {
+                return ResourceManager.GetString("CakeLoadFailed", resourceCulture);
             }
         }
         
@@ -327,6 +354,15 @@ namespace CakeStudio.Resources {
         public static string CakeUpdatedSuccess {
             get {
                 return ResourceManager.GetString("CakeUpdatedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Unable to update the cake..
+        /// </summary>
+        public static string CakeUpdateFailed {
+            get {
+                return ResourceManager.GetString("CakeUpdateFailed", resourceCulture);
             }
         }
         

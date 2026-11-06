@@ -2,8 +2,6 @@
 using CakeStudio.Models;
 using CakeStudio.Resources;
 using CakeStudio.ViewModels;
-using Microsoft.AspNetCore.Http;
-using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json;
 namespace CakeStudio.Services
@@ -33,7 +31,7 @@ namespace CakeStudio.Services
 
                 if (string.IsNullOrEmpty(customerId) || !CurrentContext.User.IsInRole("Customer"))
                 {
-                    throw new UnauthorizedAccessException("Please log in as a customer.");
+                    throw new UnauthorizedAccessException(Resource.CustomerLoginRequired);
                 }
 
                 return $"Cart_{customerId}";
