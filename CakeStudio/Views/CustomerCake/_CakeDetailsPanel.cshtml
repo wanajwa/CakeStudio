@@ -21,8 +21,10 @@
             Base Price: RM @Model.Cake.BasePrice.ToString("0.00")
         </h5>
 
+        <div class="row g-3 mb-3">
+
         <!-- Cake Size -->
-        <div class="mb-3">
+        <div class="col-sm-6">
             <label class="form-label fw-semibold">Cake Size</label>
 
             <select id="cakeSize" name="sizeId" class="form-select cake-option">
@@ -64,7 +66,7 @@
         </div>
 
         <!-- Cake Flavour -->
-        <div class="mb-3">
+        <div class="col-sm-6">
             <label class="form-label fw-semibold">Cake Flavour</label>
 
             <select id="cakeFlavour" name="flavourId" class="form-select cake-option">
@@ -108,7 +110,7 @@
         </div>
 
         <!-- Cake Tier -->
-        <div class="mb-3">
+        <div class="col-sm-6">
             <label class="form-label fw-semibold">Cake Tier</label>
 
             <select id="cakeTier" name="tierId" class="form-select cake-option">
@@ -149,7 +151,7 @@
             </select>
         </div>
 
-        <div class="mb-3">
+        <div class="col-sm-6">
             <label for="cartQuantity" class="form-label fw-semibold">
                 Quantity
             </label>
@@ -164,6 +166,7 @@
                    required
                    class="form-control" />
         </div>
+        </div> <!-- End options row -->
 
         <div class="mb-3">
             <label for="cartMessage" class="form-label fw-semibold">
