@@ -233,7 +233,16 @@
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body p-4">
 
-                        <h5 class="fw-bold">Cart Summary</h5>
+                        <div class="d-flex justify-content-between align-items-center gap-3">
+                            <h5 class="fw-bold mb-0">Cart Summary</h5>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#clearCartModal">
+                                Clear Cart
+                            </button>
+                        </div>
 
                         <hr />
 
@@ -283,6 +292,48 @@
 
         </div>
     }
+</div>
+
+<div class="modal fade"
+     id="clearCartModal"
+     tabindex="-1"
+     aria-labelledby="clearCartTitle"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clearCartTitle">
+                    Clear Cart
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                Remove all items from your cart?
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <form asp-controller="Cart"
+                      asp-action="Clear"
+                      method="post">
+                    <button type="submit" class="btn btn-danger">
+                        Clear Cart
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {

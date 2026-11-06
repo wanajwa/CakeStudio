@@ -162,5 +162,16 @@ namespace CakeStudio.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Clear()
+        {
+            _cartService.ClearCart();
+
+            TempData["SuccessMessage"] = "Cart cleared successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
