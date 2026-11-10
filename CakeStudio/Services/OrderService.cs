@@ -233,8 +233,7 @@ namespace CakeStudio.Services
         {
             decimal price = cake.BasePrice;
 
-            if (!size.SizeName.Trim().Equals(
-                "6 inch", StringComparison.OrdinalIgnoreCase))
+            if (!size.SizeName.Trim().Equals("6 inch", StringComparison.OrdinalIgnoreCase))
             {
                 price += size.AdditionalPrice;
             }
@@ -258,7 +257,7 @@ namespace CakeStudio.Services
             return price;
         }
 
-        public int Create(int customerId, OrderViewModel model, string paymentMethod)
+        public int Create(int customerId, OrderViewModel model, string paymentMethod, string? stripeCheckoutSessionId = null, long? stripeAmountInSen = null)
         {
             if (model.Cart == null || !model.Cart.Items.Any())
             {
@@ -294,6 +293,24 @@ namespace CakeStudio.Services
 
             using var session = _nhibernateHelper.OpenSession();
             using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            if (stripeCheckoutSessionId != null)
+            {
+                Order existingOrder = null!;
+
+                var existingPayment = session.QueryOver<Payment>()
+                    .JoinAlias(payment => payment.Order, () => existingOrder)
+                    .Where(payment => payment.StripeCheckoutSessionId == stripeCheckoutSessionId)
+                    .And(() => existingOrder.CustId == customerId)
+                    .SingleOrDefault();
+
+                if (existingPayment != null)
+                {
+                    int existingOrderId = existingPayment.Order.OrderId;
+                    transaction.Commit();
+                    return existingOrderId;
+                }
+            }
 
             try
             {
@@ -360,6 +377,13 @@ namespace CakeStudio.Services
                     : 0m;
 
                 totalPrice += deliveryFee;
+
+                long orderAmountInSen = (long)decimal.Round(totalPrice * 100m, 0, MidpointRounding.AwayFromZero);
+
+                if (stripeCheckoutSessionId != null && stripeAmountInSen != orderAmountInSen)
+                {
+                    throw new InvalidOperationException("The verified Stripe amount does not match the order total.");
+                }
 
                 if (totalPrice <= 0 || totalPrice > 100000)
                     throw new ArgumentException(Resource.InvalidOrderPrice);
@@ -443,7 +467,8 @@ namespace CakeStudio.Services
                     Amount = totalPrice,
                     PaymentMethod = PaymentMethod.Card,
                     PaymentStatus = PaymentStatus.Paid,
-                    PaidAt = DateTime.Now
+                    PaidAt = DateTime.Now,
+                    StripeCheckoutSessionId = stripeCheckoutSessionId,
                 };
 
                 session.Save(payment);

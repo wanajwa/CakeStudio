@@ -17,12 +17,13 @@ namespace CakeStudio.Controllers
         private readonly IOrderService _orderService;
         private readonly ICartService _cartService;
         private readonly ILogger<OrderController> _logger;
-
-        public OrderController( IOrderService orderService,ICartService cartService, ILogger<OrderController> logger)
+        private readonly Stripe.StripeClient _stripeClient;
+        public OrderController( IOrderService orderService,ICartService cartService, ILogger<OrderController> logger, Stripe.StripeClient stripeClient)
         {
             _orderService = orderService;
             _cartService = cartService;
             _logger = logger;
+            _stripeClient = stripeClient;
         }
 
         private int? GetCurrentUserId()
@@ -72,12 +73,13 @@ namespace CakeStudio.Controllers
 
             var model = new OrderViewModel();
 
-            var pendingOrderJson = HttpContext.Session.GetString($"PendingOrder_{customerId.Value}");
+            var pendingOrderJson =
+                HttpContext.Session.GetString($"CheckoutDraft_{customerId.Value}")
+                ?? HttpContext.Session.GetString($"PendingOrder_{customerId.Value}");
 
             if (!string.IsNullOrEmpty(pendingOrderJson))
             {
-                var pendingOrder =
-                    JsonSerializer.Deserialize<OrderViewModel>(pendingOrderJson);
+                var pendingOrder = JsonSerializer.Deserialize<OrderViewModel>(pendingOrderJson);
 
                 if (pendingOrder != null)
                 {
@@ -96,12 +98,32 @@ namespace CakeStudio.Controllers
         [Authorize(Roles = "Customer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Checkout(OrderViewModel model)
+        public async Task<IActionResult> Checkout(OrderViewModel model, string? intent)
         {
             int? customerId = GetCurrentUserId();
 
             if (!customerId.HasValue)
                 return Challenge();
+
+            var draft = new
+            {
+                model.RequiredDate,
+                model.RequiredTime,
+                model.CollectionMethod,
+                model.DeliveryAddress
+            };
+
+            HttpContext.Session.SetString($"CheckoutDraft_{customerId.Value}",JsonSerializer.Serialize(draft));
+
+            if (intent == "backToCart")
+            {
+                return RedirectToAction("Index", "Cart");
+            }
+
+            if (intent == "backToCakes")
+            {
+                return RedirectToAction("Index", "CustomerCake");
+            }
 
             // Replace submitted cart data with the cart from Session
             model.Cart = _cartService.GetCart();
@@ -132,8 +154,7 @@ namespace CakeStudio.Controllers
             // Delivery requires an address
             if (model.CollectionMethod == CollectionMethod.Delivery && string.IsNullOrWhiteSpace(model.DeliveryAddress))
             {
-                ModelState.AddModelError(nameof(model.DeliveryAddress),
-                    Resource.DeliveryAddressRequired);
+                ModelState.AddModelError(nameof(model.DeliveryAddress), Resource.DeliveryAddressRequired);
             }
 
             try
@@ -183,10 +204,9 @@ namespace CakeStudio.Controllers
             if (!ModelState.IsValid)
                 return View("Create", model);
 
-            // Copy only the intended checkout information
+      
             var pendingOrder = new OrderViewModel
             {
-                CheckoutId = Guid.NewGuid().ToString("N"),
                 RequiredDate = model.RequiredDate,
                 RequiredTime = model.RequiredTime,
                 CollectionMethod = model.CollectionMethod,
@@ -196,11 +216,9 @@ namespace CakeStudio.Controllers
                 Cart = model.Cart
             };
 
-            HttpContext.Session.SetString(
-                $"PendingOrder_{customerId.Value}",
-                JsonSerializer.Serialize(pendingOrder));
+            HttpContext.Session.SetString($"PendingOrder_{customerId.Value}",JsonSerializer.Serialize(pendingOrder));
 
-            return RedirectToAction(nameof(Payment));
+            return await StartStripeCheckout(pendingOrder, HttpContext.RequestAborted);
         }
 
         // Customer: Order history
@@ -445,7 +463,6 @@ namespace CakeStudio.Controllers
 
             return new PaymentViewModel
             {
-                CheckoutId = order.CheckoutId,
                 Cart = order.Cart,
                 Amount = totalPrice,
                 DeliveryFee = deliveryFee,
@@ -456,43 +473,23 @@ namespace CakeStudio.Controllers
             };
         }
 
-        private IActionResult RedisplayPayment(OrderViewModel order,PaymentViewModel model,int customerId)
-        {
-            try
-            {
-                var summary = BuildPaymentViewModel(order);
-                model.CheckoutId = summary.CheckoutId;
-                model.Cart = summary.Cart;
-                model.Amount = summary.Amount;
-                model.DeliveryFee = summary.DeliveryFee;
-                model.PaymentMethod = summary.PaymentMethod;
-                model.RequiredDate = summary.RequiredDate;
-                model.RequiredTime = summary.RequiredTime;
-                model.CollectionMethod = summary.CollectionMethod;
-
-                // Save refreshed prices for the customer's next payment attempt
-                HttpContext.Session.SetString($"PendingOrder_{customerId}",JsonSerializer.Serialize(order));
-
-                return View("Payment", model);
-            }
-            catch (ArgumentException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-
-                return RedirectToAction("Index", "Cart");
-            }
-        }
-
         [Authorize(Roles = "Customer")]
         [HttpGet]
-        public IActionResult Payment()
+        public async Task<IActionResult> Payment([FromQuery(Name = "session_id")] string? sessionId)
         {
             int? customerId = GetCurrentUserId();
 
             if (!customerId.HasValue)
                 return Challenge();
 
-            var pendingOrder = HttpContext.Session.GetString($"PendingOrder_{customerId.Value}");
+            string pendingOrderKey = $"PendingOrder_{customerId.Value}";
+
+            if (!string.IsNullOrWhiteSpace(sessionId))
+            {
+                pendingOrderKey = $"PendingOrder_{customerId.Value}_{sessionId}";
+            }
+
+            var pendingOrder = HttpContext.Session.GetString(pendingOrderKey);
 
             if (string.IsNullOrEmpty(pendingOrder))
                 return RedirectToAction(nameof(MyOrders));
@@ -502,118 +499,134 @@ namespace CakeStudio.Controllers
             if (order == null)
                 return RedirectToAction(nameof(MyOrders));
 
-            try
+            if (!string.IsNullOrWhiteSpace(sessionId))
             {
-                var model = BuildPaymentViewModel(order);
-                HttpContext.Session.SetString($"PendingOrder_{customerId.Value}",JsonSerializer.Serialize(order));
-                return View(model);
-            }
-            catch (ArgumentException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Index", "Cart");
-            }
-        }
+                var savedAmount = HttpContext.Session.GetString($"StripeAmount_{sessionId}");
 
-
-        [Authorize(Roles = "Customer")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Payment(PaymentViewModel model)
-        {
-            int? customerId = GetCurrentUserId();
-
-            if (!customerId.HasValue)
-                return Challenge();
-
-            var pendingOrder = HttpContext.Session.GetString($"PendingOrder_{customerId.Value}");
-
-            if (string.IsNullOrEmpty(pendingOrder))
-                return RedirectToAction(nameof(MyOrders));
-
-            var order = JsonSerializer.Deserialize<OrderViewModel>(pendingOrder);
-
-            if (order == null)
-                return RedirectToAction(nameof(MyOrders));
-
-            if (string.IsNullOrEmpty(order.CheckoutId) || model.CheckoutId != order.CheckoutId)
-            {
-                TempData["ErrorMessage"] =
-                    "Your checkout has changed. Please review it before paying.";
-
-                return RedirectToAction(nameof(Checkout));
-            }
-
-            // Validate test card details entered by the customer
-            string cardNumber = (model.CardNumber ?? "")
-                .Replace(" ", "");
-
-            string expiryDate = (model.ExpiryDate ?? "").Trim();
-            string securityCode = (model.SecurityCode ?? "").Trim();
-
-            // Validate card number format (16 digits)
-            if (!System.Text.RegularExpressions.Regex.IsMatch(cardNumber, @"^\d{16}$"))
-            {
-                ModelState.AddModelError(
-                    nameof(model.CardNumber), Resource.InvalidCardNumber);
-            }
-
-            // Validate expiry date format and expiration
-            if (!DateTime.TryParseExact(
-                expiryDate,
-                "MM/yy",
-                System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.None,
-                out DateTime expiry))
-            {
-                ModelState.AddModelError(nameof(model.ExpiryDate), Resource.InvalidCardExpiryDate);
-            }
-            else
-            {
-                // Card is valid until the end of its expiry month
-                DateTime currentMonth = new DateTime(DateTime.Today.Year,DateTime.Today.Month,1);
-
-                if (expiry.Year < currentMonth.Year || (expiry.Year == currentMonth.Year && expiry.Month < currentMonth.Month))
+                if (!long.TryParse(savedAmount, out var expectedAmount))
                 {
-                    ModelState.AddModelError(nameof(model.ExpiryDate),Resource.CardExpired);
+                    return BadRequest("This Stripe session could not be matched to your checkout.");
+                }
+
+                try
+                {
+                    var stripeSession = await _stripeClient.V1.Checkout.Sessions.GetAsync(
+                        sessionId, cancellationToken: HttpContext.RequestAborted);
+
+                    if (stripeSession.Livemode || stripeSession.PaymentStatus != "paid" || stripeSession.Currency != "myr" || stripeSession.AmountTotal != expectedAmount)
+                    {
+                        return BadRequest("The Stripe payment could not be verified.");
+                    }
+
+                    int orderId;
+
+                    try
+                    {
+                        orderId = _orderService.Create(
+                            customerId.Value,
+                            order,
+                            PaymentMethod.Card,
+                            stripeCheckoutSessionId: stripeSession.Id,
+                            stripeAmountInSen: expectedAmount);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Unable to save the order after Stripe payment verification.");
+                        return StatusCode(500, "Stripe verified the payment, but the order could not be saved. " + "Refresh this page to retry saving the order.");
+                    }
+
+                    _cartService.ClearCart();
+                    HttpContext.Session.Remove(pendingOrderKey);
+                    HttpContext.Session.Remove($"PendingOrder_{customerId.Value}");
+                    HttpContext.Session.Remove($"CheckoutDraft_{customerId.Value}");
+                    HttpContext.Session.Remove($"StripeAmount_{stripeSession.Id}");
+
+                    TempData["SuccessMessage"] = Resource.OrderPlacedSuccess;
+                    return RedirectToAction(nameof(Details), new { id = orderId });
+                }
+                catch (Stripe.StripeException ex)
+                {
+                    _logger.LogError(ex, "Unable to verify Stripe Checkout payment.");
+                    return StatusCode(502, "Unable to verify the Stripe payment. Refresh to retry.");
                 }
             }
 
-            // Validate security code format (3 digits)
-            if (!System.Text.RegularExpressions.Regex.IsMatch(securityCode, @"^\d{3}$"))
-            {
-                ModelState.AddModelError(nameof(model.SecurityCode),Resource.InvalidSecurityCode);
-            }
+            return RedirectToAction(nameof(Checkout));
+        }
 
-            if (!ModelState.IsValid)
-            {
-                return RedisplayPayment(order, model, customerId.Value);
-            }
+        private async Task<IActionResult> StartStripeCheckout(OrderViewModel order, CancellationToken cancellationToken)
+        {
+            var customerId = GetCurrentUserId();
+
+            if (!customerId.HasValue)
+                return Challenge();
 
             try
             {
-                int orderId = _orderService.Create(customerId.Value,order,PaymentMethod.Card);
+                var summary = BuildPaymentViewModel(order);
+                long amountInSen = (long)decimal.Round(summary.Amount * 100m, 0, MidpointRounding.AwayFromZero);
 
-                _cartService.ClearCart();
+                const string paymentUrl = "https://localhost:7056/Order/Payment";
+                const string checkoutUrl = "https://localhost:7056/Order/Checkout";
 
-                HttpContext.Session.Remove($"PendingOrder_{customerId.Value}");
+                long ToSen(decimal amount) => (long)decimal.Round(amount * 100m, 0, MidpointRounding.AwayFromZero);
 
-                TempData["SuccessMessage"] = Resource.OrderPlacedSuccess;
+                var lineItems = summary.Cart.Items.Select(item => new Stripe.Checkout.SessionLineItemOptions
+                {
+                    Quantity = item.Quantity,
+                    PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
+                    {
+                        Currency = "myr",
+                        UnitAmount = ToSen(item.UnitPrice),
+                        ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = item.CakeName,
+                            Description = $"{item.SizeName} · {item.FlavourName} · Tier {item.TierName}"
+                        }
+                    }
+                }).ToList();
 
-                return RedirectToAction(nameof(Details), new { id = orderId });
+                if (summary.DeliveryFee > 0)
+                {
+                    lineItems.Add(new Stripe.Checkout.SessionLineItemOptions
+                    {
+                        Quantity = 1,
+                        PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
+                        {
+                            Currency = "myr",
+                            UnitAmount = ToSen(summary.DeliveryFee),
+                            ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = "Delivery fee"
+                            }
+                        }
+                    });
+                }
+
+                var options = new Stripe.Checkout.SessionCreateOptions
+                {
+                    Mode = "payment",
+                    AllowedPaymentMethodTypes = new List<string> { "card" },
+                    CancelUrl = checkoutUrl,
+                    SuccessUrl = paymentUrl + "?session_id={CHECKOUT_SESSION_ID}",
+                    LineItems = lineItems,
+                };
+
+                var session = await _stripeClient.V1.Checkout.Sessions.CreateAsync(options, cancellationToken: cancellationToken);
+                HttpContext.Session.SetString($"PendingOrder_{customerId.Value}_{session.Id}",JsonSerializer.Serialize(order));
+                HttpContext.Session.SetString($"StripeAmount_{session.Id}", amountInSen.ToString());
+                return Redirect(session.Url);
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("Index", "Cart");
             }
-            catch (Exception ex)
+            catch (Stripe.StripeException)
             {
-                _logger.LogError(ex, Resource.PaymentFailed);
-                ModelState.AddModelError(string.Empty,Resource.PaymentFailed);
+                TempData["ErrorMessage"] = "Unable to open Stripe Checkout. Please try again.";
+                return RedirectToAction(nameof(Checkout));
             }
-
-          
-            return RedisplayPayment(order, model, customerId.Value);
         }
     }
 

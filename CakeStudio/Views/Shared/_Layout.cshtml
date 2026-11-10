@@ -112,12 +112,27 @@
                     else if (User.IsInRole("Customer"))
                     {
                         <!-- Cakes -->
-                        <a class="nav-link sidebar-link @(currentController == "CustomerCake" ? "active" : "")"
-                           asp-controller="CustomerCake"
-                           asp-action="Index">
-                            <i class="bi bi-cake2 me-3"></i>
-                            Cakes
-                        </a>
+                        @if (currentController == "Order" && currentAction == "Checkout")
+                        {
+                            <button type="submit"
+                                    form="orderCheckoutForm"
+                                    name="intent"
+                                    value="backToCakes"
+                                    formnovalidate
+                                    class="nav-link sidebar-link border-0 w-100 text-start bg-transparent">
+                                <i class="bi bi-cake2 me-3"></i>
+                                Cakes
+                            </button>
+                        }
+                        else
+                        {
+                            <a class="nav-link sidebar-link @(currentController == "CustomerCake" ? "active" : "")"
+                               asp-controller="CustomerCake"
+                               asp-action="Index">
+                                <i class="bi bi-cake2 me-3"></i>
+                                Cakes
+                            </a>
+                        }
 
                         <!-- My Orders -->
                         <a class="nav-link sidebar-link @(currentController == "Order" ? "active" : "")"
@@ -259,10 +274,24 @@
             {
                 <div class="d-flex justify-content-between align-items-center bg-white border-bottom px-4 py-3">
                     <div class="d-flex align-items-center gap-3">
-                        @if (backUrl != null)
+                        @if (currentController == "Order" && currentAction == "Checkout")
+                        {
+                            <button type="submit"
+                                    form="orderCheckoutForm"
+                                    name="intent"
+                                    value="backToCart"
+                                    formnovalidate
+                                    class="btn btn-outline-secondary rounded-circle d-inline-flex align-items-center flex-shrink-0"
+                                    style="width:42px; height:42px;"
+                                    title="@backLabel"
+                                    aria-label="@backLabel">
+                                <i class="bi bi-arrow-left text-dark" aria-hidden="true"></i>
+                            </button>
+                        }
+                        else if (backUrl != null)
                         {
                             <a href="@backUrl"
-                               class="btn btn-outline-secondary rounded-circle d-inline-flex align-items-center  flex-shrink-0"
+                               class="btn btn-outline-secondary rounded-circle d-inline-flex align-items-center flex-shrink-0"
                                style="width:42px; height:42px;"
                                title="@backLabel"
                                aria-label="@backLabel">

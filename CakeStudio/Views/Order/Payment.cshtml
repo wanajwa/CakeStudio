@@ -21,83 +21,30 @@
             <div class="card border-0 rounded-4 shadow-sm">
                 <div class="card-body p-4">
 
+                    @if (TempData["ErrorMessage"] is string error)
+                    {
+                        <div class="alert alert-danger">@error</div>
+                    }
+
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-credit-card text-muted" aria-hidden="true"></i>
+                            <h5 class="mb-0">Pay by card</h5>
+                        </div>
+
+                    </div>
+
                     <form asp-controller="Order"
                           asp-action="Payment"
                           method="post"
                           id="paymentForm">
 
                         @Html.AntiForgeryToken()
-                        <input type="hidden" asp-for="CheckoutId" />
-                        <div asp-validation-summary="ModelOnly"
-                             class="text-danger mb-3">
-                         </div>
-                
-                        <!-- Card Details -->
-                        <h5 class="mb-3">Card Details</h5>
 
-           
-                        <!-- Card Number -->
-                        <div class="mb-3">
-                            <label asp-for="CardNumber" class="form-label">
-                                Card Number
-                            </label>
-
-                            <input asp-for="CardNumber"
-                                   class="form-control rounded-3"
-                                   placeholder="0000 0000 0000 0000"
-                                   maxlength="19"
-                                   inputmode="numeric"
-                                   autocomplete="off" />
-
-                            <span asp-validation-for="CardNumber"
-                                  class="text-danger"></span>
-                        </div>
-
-                        <div class="row mb-4">
-
-                            <!-- Expiry Date -->
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label asp-for="ExpiryDate" class="form-label">
-                                    Expiry Date
-                                </label>
-
-                                <input asp-for="ExpiryDate"
-                                       class="form-control rounded-3"
-                                       placeholder="MM/YY"
-                                       maxlength="5"
-                                       autocomplete="off" />
-
-                                <span asp-validation-for="ExpiryDate"
-                                      class="text-danger"></span>
-                            </div>
-
-                            <!-- Security Code -->
-                            <div class="col-md-6">
-                                <label asp-for="SecurityCode" class="form-label">
-                                    Security Code (CVV)
-                                </label>
-
-                                <input asp-for="SecurityCode"
-                                       type="password"
-                                       class="form-control rounded-3"
-                                       placeholder="000"
-                                       maxlength="3"
-                                       inputmode="numeric"
-                                       autocomplete="off" />
-
-                                <span asp-validation-for="SecurityCode"
-                                      class="text-danger"></span>
-                            </div>
-
-                        </div>
-
-                        <button type="submit"
-                                id="payButton"
-                                class="btn order-now-btn w-100">
+                        <button type="submit" id="payButton" class="btn order-now-btn w-100">
                             <i class="bi bi-credit-card me-2"></i>
                             Pay RM @Model.Amount.ToString("F2")
                         </button>
-
                     </form>
                 </div>
             </div>
@@ -225,29 +172,7 @@
 
                 const paymentForm = document.getElementById("paymentForm");
                 const payButton = document.getElementById("payButton");
-                const cardNumberInput = document.getElementById("CardNumber");
-
-                if (cardNumberInput) {
-                    cardNumberInput.addEventListener("input", function () {
-
-                        let value = this.value.replace(/\D/g, "").substring(0, 16); //rm non digit
-
-                        this.value = value.replace(/(\d{4})(?=\d)/g, "$1 "); //letak space after 4 digit
-                    });
-                }
-                const expiryInput = document.getElementById("ExpiryDate");
-
-                if (expiryInput) {
-                    expiryInput.addEventListener("input", function () {
-                        let value = this.value.replace(/\D/g, "").substring(0, 4); //rm non d
-
-                        if (value.length > 2) {
-                            value = value.substring(0, 2) + "/" + value.substring(2);
-                        }
-
-                        this.value = value;
-                    });
-                }
+            
 
                 if (!paymentForm || !payButton) return;
 

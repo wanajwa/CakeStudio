@@ -31,6 +31,5 @@ namespace CakeStudio.ViewModels
 
         public List<CakeStudio.Models.OrderItem> OrderItems { get; set; } = new List<CakeStudio.Models.OrderItem>();
 
-        public string? CheckoutId { get; set; }
     }
 }

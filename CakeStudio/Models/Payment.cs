@@ -21,5 +21,7 @@ namespace CakeStudio.Models
 
         public virtual DateTime? PaidAt { get; set; }
         public virtual DateTime? RefundedAt { get; set; }
+
+        public virtual string? StripeCheckoutSessionId { get; set; }
     }
 }

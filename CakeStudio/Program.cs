@@ -39,6 +39,12 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+builder.Services.AddSingleton(_ =>
+    new Stripe.StripeClient(
+        builder.Configuration["Stripe:SecretKey"]
+        ?? throw new InvalidOperationException("Stripe:SecretKey is missing.")));
+
 var app = builder.Build();
 
 

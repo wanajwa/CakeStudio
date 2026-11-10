@@ -35,6 +35,10 @@ namespace CakeStudio.Mappings
 
             Map(x => x.RefundedAt)
                 .Nullable();
+
+            Map(x => x.StripeCheckoutSessionId)
+                .Length(255)
+                .Nullable();
         }
     }
 }

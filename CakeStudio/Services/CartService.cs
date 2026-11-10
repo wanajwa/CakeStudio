@@ -106,8 +106,7 @@ namespace CakeStudio.Services
                 SizeName = size.SizeName,
                 FlavourName = flavour.FlavourName,
                 TierName = tier.TierName,
-                SizePrice = size.SizeName.Trim().Equals(
-                "6 inch", StringComparison.OrdinalIgnoreCase)
+                SizePrice = size.SizeName.Trim().Equals("6 inch", StringComparison.OrdinalIgnoreCase)
                     ? 0m
                     : size.AdditionalPrice,
 
@@ -115,8 +114,7 @@ namespace CakeStudio.Services
                 ? 0m
                 : flavour.AdditionalPrice,
 
-                            TierPrice = tier.TierName.Trim().Equals(
-                "1", StringComparison.OrdinalIgnoreCase)
+                            TierPrice = tier.TierName.Trim().Equals("1", StringComparison.OrdinalIgnoreCase)
                     ? 0m
                     : tier.AdditionalPrice,
 
