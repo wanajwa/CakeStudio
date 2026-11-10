@@ -505,17 +505,16 @@ namespace CakeStudio.Controllers
 
                 if (!long.TryParse(savedAmount, out var expectedAmount))
                 {
-                    return BadRequest("This Stripe session could not be matched to your checkout.");
+                    return BadRequest(Resource.StripeSessionMismatch);
                 }
 
                 try
                 {
-                    var stripeSession = await _stripeClient.V1.Checkout.Sessions.GetAsync(
-                        sessionId, cancellationToken: HttpContext.RequestAborted);
+                    var stripeSession = await _stripeClient.V1.Checkout.Sessions.GetAsync(sessionId, cancellationToken: HttpContext.RequestAborted);
 
                     if (stripeSession.Livemode || stripeSession.PaymentStatus != "paid" || stripeSession.Currency != "myr" || stripeSession.AmountTotal != expectedAmount)
                     {
-                        return BadRequest("The Stripe payment could not be verified.");
+                        return BadRequest(Resource.StripePaymentNotVerified);
                     }
 
                     int orderId;
@@ -532,7 +531,7 @@ namespace CakeStudio.Controllers
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Unable to save the order after Stripe payment verification.");
-                        return StatusCode(500, "Stripe verified the payment, but the order could not be saved. " + "Refresh this page to retry saving the order.");
+                        return StatusCode(500, Resource.StripePaidOrderSaveFailed);
                     }
 
                     _cartService.ClearCart();
@@ -547,7 +546,7 @@ namespace CakeStudio.Controllers
                 catch (Stripe.StripeException ex)
                 {
                     _logger.LogError(ex, "Unable to verify Stripe Checkout payment.");
-                    return StatusCode(502, "Unable to verify the Stripe payment. Refresh to retry.");
+                    return StatusCode(502, Resource.StripeVerificationUnavailable);
                 }
             }
 
@@ -624,7 +623,7 @@ namespace CakeStudio.Controllers
             }
             catch (Stripe.StripeException)
             {
-                TempData["ErrorMessage"] = "Unable to open Stripe Checkout. Please try again.";
+                TempData["ErrorMessage"] = Resource.StripeCheckoutStartFailed;
                 return RedirectToAction(nameof(Checkout));
             }
         }

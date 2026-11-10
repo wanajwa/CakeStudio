@@ -1042,6 +1042,60 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The verified Stripe amount does not match the order total..
+        /// </summary>
+        public static string StripeAmountMismatch {
+            get {
+                return ResourceManager.GetString("StripeAmountMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to open Stripe Checkout. Please try again..
+        /// </summary>
+        public static string StripeCheckoutStartFailed {
+            get {
+                return ResourceManager.GetString("StripeCheckoutStartFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stripe verified the payment, but the order could not be saved. Refresh this page to retry saving the order..
+        /// </summary>
+        public static string StripePaidOrderSaveFailed {
+            get {
+                return ResourceManager.GetString("StripePaidOrderSaveFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Stripe payment could not be verified..
+        /// </summary>
+        public static string StripePaymentNotVerified {
+            get {
+                return ResourceManager.GetString("StripePaymentNotVerified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This Stripe session could not be matched to your checkout..
+        /// </summary>
+        public static string StripeSessionMismatch {
+            get {
+                return ResourceManager.GetString("StripeSessionMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to verify the Stripe payment. Refresh to retry..
+        /// </summary>
+        public static string StripeVerificationUnavailable {
+            get {
+                return ResourceManager.GetString("StripeVerificationUnavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Selected tier is unavailable.
         /// </summary>
         public static string TierUnavailable {

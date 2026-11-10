@@ -382,7 +382,7 @@ namespace CakeStudio.Services
 
                 if (stripeCheckoutSessionId != null && stripeAmountInSen != orderAmountInSen)
                 {
-                    throw new InvalidOperationException("The verified Stripe amount does not match the order total.");
+                    throw new InvalidOperationException(Resource.StripeAmountMismatch);
                 }
 
                 if (totalPrice <= 0 || totalPrice > 100000)

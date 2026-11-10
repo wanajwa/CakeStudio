@@ -450,4 +450,22 @@
   <data name="CakeDeleteFailed" xml:space="preserve">
     <value>Unable to delete the cake.</value>
   </data>
+  <data name="StripeSessionMismatch" xml:space="preserve">
+    <value>This Stripe session could not be matched to your checkout.</value>
+  </data>
+  <data name="StripePaymentNotVerified" xml:space="preserve">
+    <value>The Stripe payment could not be verified.</value>
+  </data>
+  <data name="StripePaidOrderSaveFailed" xml:space="preserve">
+    <value>Stripe verified the payment, but the order could not be saved. Refresh this page to retry saving the order.</value>
+  </data>
+  <data name="StripeVerificationUnavailable" xml:space="preserve">
+    <value>Unable to verify the Stripe payment. Refresh to retry.</value>
+  </data>
+  <data name="StripeCheckoutStartFailed" xml:space="preserve">
+    <value>Unable to open Stripe Checkout. Please try again.</value>
+  </data>
+  <data name="StripeAmountMismatch" xml:space="preserve">
+    <value>The verified Stripe amount does not match the order total.</value>
+  </data>
 </root>
