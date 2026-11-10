@@ -33,7 +33,7 @@ namespace CakeStudio.Controllers
             var payments = _orderService.GetAllPayments();
 
             var paidPayments = payments
-                .Where(p => p.PaymentStatus == PaymentStatus.Paid)
+                .Where(p => p.PaymentStatus == PaymentStatus.Paid && p.Order.OrderStatus != OrderStatus.Pending)
                 .ToList();
 
 
