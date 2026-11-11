@@ -1,0 +1,16 @@
+﻿@model int
+
+<a asp-controller="Cart"
+   asp-action="Index"
+   id="floatingCart"
+   class="floating-cart"
+   aria-label="Open cart, @Model cakes">
+
+    <i class="bi bi-cart3" aria-hidden="true"></i>
+
+    <span id="floatingCartCount"
+          class="floating-cart-count @(Model == 0 ? "d-none" : "")"
+          aria-hidden="true">
+        @(Model > 99 ? "99+" : Model.ToString())
+    </span>
+</a>

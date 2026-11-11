@@ -58,7 +58,6 @@
 
                             <input asp-for="RequiredTime"
                                    type="time"
-                                   step="1800"
                                    class="form-control" />
 
                             <span asp-validation-for="RequiredTime"
@@ -243,10 +242,18 @@
             document.getElementById("checkoutDeliveryFee").textContent = "RM " + deliveryFee.toFixed(2);
 
             document.getElementById("checkoutTotal").textContent = "RM " + (subtotal + deliveryFee).toFixed(2);
-            }
+        }
 
-            document.getElementById("collectionMethod")
-                .addEventListener("change", toggleDelivery);
-        toggleDelivery();
+        document.getElementById("collectionMethod")
+            .addEventListener("change", toggleDelivery);
+            toggleDelivery();
+
+                $("#orderCheckoutForm").on(
+            "input change",
+            "input, select, textarea",
+            function () {
+                $(this).valid();
+            }
+        );
     </script>
 }
