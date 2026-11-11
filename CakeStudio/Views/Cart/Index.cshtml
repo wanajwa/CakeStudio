@@ -3,15 +3,17 @@
 
 @{
     ViewData["Title"] = "My Cart";
-    var defaultFlavourIds =
-    (Dictionary<int, int>)ViewBag.DefaultFlavourIds;
+    var defaultFlavourIds = (Dictionary<int, int>)ViewBag.DefaultFlavourIds;
+    var checkoutDraft = ViewBag.CheckoutDraft as CakeStudio.ViewModels.OrderViewModel;
+    var pickupDate = checkoutDraft?.RequiredDate?.ToString("yyyy-MM-dd");
+    var pickupTime = checkoutDraft?.RequiredTime?.ToString(@"hh\:mm");
 }
 
 <div class="container mt-4 mb-5">
-    <h2 class="mb-4">My Cart</h2>
+    <h2 class="cart-heading h3 fw-bold">My Cart</h2>
 
     <form id="cartCheckoutForm"
-          asp-controller="Cart"
+          asp-controller="Order"
           asp-action="Checkout"
           method="post">
     </form>
@@ -52,244 +54,176 @@
     }
     else
     {
-        <div class="row g-4">
+        <div class="cart-schedule">
+            <div class="cart-schedule-field">
+                <label for="requiredDate">Pickup Date</label>
+                <input id="requiredDate" name="RequiredDate" type="date"
+                       value="@pickupDate" form="cartCheckoutForm"
+                       class="form-control form-control-sm" required />
+            </div>
 
-            <!-- Cart items -->
-            <div class="col-lg-8">
-                @for (int i = 0; i < Model.Items.Count; i++)
-                {
-                    var item = Model.Items[i];
-                    <div class="card border-0 shadow-sm rounded-4 mb-3"
-                         data-cart-item
-                         data-cart-item-id="@item.CartItemId">
-                        <div class="card-body p-4">
+            <div class="cart-schedule-field">
+                <label for="requiredTime">Pickup Time</label>
+                <input id="requiredTime" name="RequiredTime" type="time"
+                       value="@pickupTime" form="cartCheckoutForm"
+                       class="form-control form-control-sm" required />
+            </div>
+        </div>
 
-                            <div class="d-flex justify-content-between align-items-start gap-3">
-                                <div>
-                                    <h5 class="fw-bold">
-                                        @item.CakeName
-                                    </h5>
+        <div class="cart-sheet">
+            <div class="table-responsive">
+                <table class="table align-middle cart-items mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Cake</th>
+                            <th scope="col">Size</th>
+                            <th scope="col">Flavour</th>
+                            <th scope="col">Tier</th>
+                            <th scope="col">Unit Price</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Item Subtotal</th>
+                        </tr>
+                    </thead>
 
-                                    <p class="text-muted mb-3">
-                                        Base price: RM @item.BasePrice.ToString("N2")
-                                    </p>
+                    @for (int i = 0; i < Model.Items.Count; i++)
+                    {
+                        var item = Model.Items[i];
 
-                                    <div class="mt-3">
-                                        <label for="size-@item.CartItemId" class="form-label">
-                                            Size
-                                        </label>
+                        <tbody data-cart-item data-cart-item-id="@item.CartItemId">
+                            <tr>
+                                <th scope="row" class="fw-normal">
+                                    @item.CakeName
+                                    <input type="hidden" name="items[@i].CartItemId"
+                                           value="@item.CartItemId" form="cartCheckoutForm" />
+                                </th>
 
-                                        <select id="size-@item.CartItemId"
-                                                name="items[@i].SizeId"
-                                                form="cartCheckoutForm"
-                                                class="form-select"
-                                                required>
-                                            @foreach (var size in (IEnumerable<CakeSize>)ViewBag.Sizes)
-                                            {
-                                                <option value="@size.SizeId"
-                                                        selected="@(size.SizeId == item.SizeId)">
-                                                    @(size.SizeName.Trim().Equals(
-                                                        "6 inch", StringComparison.OrdinalIgnoreCase)
-                                                        ? $"{size.SizeName} (Included)"
-                                                        : $"{size.SizeName} (+RM {size.AdditionalPrice:N2})")
-                                                </option>
-                                            }
-                                        </select>
-                                    </div>
+                                <td>
+                                    <select name="items[@i].SizeId" form="cartCheckoutForm"
+                                            class="form-select form-select-sm"
+                                            aria-label="Size for @item.CakeName" required>
+                                        @foreach (var size in (IEnumerable<CakeSize>)ViewBag.Sizes)
+                                        {
+                                            <option value="@size.SizeId"
+                                                    selected="@(size.SizeId == item.SizeId)">
+                                                @(size.SizeName.Trim().Equals(
+                                                                                    "6 inch", StringComparison.OrdinalIgnoreCase)
+                                                                                    ? $"{size.SizeName} (Included)"
+                                                                                    : $"{size.SizeName} (+RM {size.AdditionalPrice:N2})")
+                                </option>
+                                                                }
+                                    </select>
+                                </td>
 
-                                    <div class="mt-3">
-                                        <label for="flavour-@item.CartItemId" class="form-label">
-                                            Flavour
-                                        </label>
+                                <td>
+                                    <select name="items[@i].FlavourId" form="cartCheckoutForm"
+                                            class="form-select form-select-sm"
+                                            aria-label="Flavour for @item.CakeName" required>
+                                        @foreach (var flavour in (IEnumerable<CakeFlavour>)ViewBag.Flavours)
+                                        {
+                                            <option value="@flavour.FlavourId"
+                                                    selected="@(flavour.FlavourId == item.FlavourId)">
+                                                @(flavour.FlavourId == defaultFlavourIds.GetValueOrDefault(item.CakeId)
+                                                                                    ? $"{flavour.FlavourName} (Included)"
+                                                                                    : $"{flavour.FlavourName} (+RM {flavour.AdditionalPrice:N2})")
+                                </option>
+                                                                }
+                                    </select>
+                                </td>
 
-                                        <select id="flavour-@item.CartItemId"
-                                                name="items[@i].FlavourId"
-                                                form="cartCheckoutForm"
-                                                class="form-select"
-                                                required>
-                                            @foreach (var flavour in (IEnumerable<CakeFlavour>)ViewBag.Flavours)
-                                            {
-                                                <option value="@flavour.FlavourId"
-                                                        selected="@(flavour.FlavourId == item.FlavourId)">
-                                                    @(flavour.FlavourId == defaultFlavourIds.GetValueOrDefault(item.CakeId)
-                                                        ? $"{flavour.FlavourName} (Included)"
-                                                        : $"{flavour.FlavourName} (+RM {flavour.AdditionalPrice:N2})")
-                                                </option>
-                                            }
-                                        </select>
-                                    </div>
+                                <td>
+                                    <select name="items[@i].TierId" form="cartCheckoutForm"
+                                            class="form-select form-select-sm"
+                                            aria-label="Tier for @item.CakeName" required>
+                                        @foreach (var tier in (IEnumerable<CakeTier>)ViewBag.Tiers)
+                                        {
+                                            <option value="@tier.TierId"
+                                                    selected="@(tier.TierId == item.TierId)">
+                                                @(tier.TierName.Trim().Equals(
+                                                                                    "1", StringComparison.OrdinalIgnoreCase)
+                                                                                    ? $"{tier.TierName} Tier (Included)"
+                                                                                    : $"{tier.TierName} Tiers (+RM {tier.AdditionalPrice:N2})")
+                                </option>
+                                                                }
+                                    </select>
+                                </td>
 
-                                    <div class="mt-3 mb-3">
-                                        <label for="tier-@item.CartItemId" class="form-label">
-                                            Tier
-                                        </label>
-
-                                        <select id="tier-@item.CartItemId"
-                                                name="items[@i].TierId"
-                                                form="cartCheckoutForm"
-                                                class="form-select"
-                                                required>
-                                            @foreach (var tier in (IEnumerable<CakeTier>)ViewBag.Tiers)
-                                            {
-                                                <option value="@tier.TierId"
-                                                        selected="@(tier.TierId == item.TierId)">
-                                                    @(tier.TierName.Trim().Equals(
-                                                        "1", StringComparison.OrdinalIgnoreCase)
-                                                        ? $"{tier.TierName} Tier (Included)"
-                                                        : $"{tier.TierName} Tiers (+RM {tier.AdditionalPrice:N2})")
-                                                </option>
-                                            }
-                                        </select>
-                                    </div>
-
-                                    <span class="cake-price fw-semibold"
-                                          id="unit-price-@item.CartItemId">
-                                        Unit Price: RM @item.UnitPrice.ToString("N2")
-                                     
+                                <td>
+                                    <span class="cart-price" id="unit-price-@item.CartItemId">
+                                        RM @item.UnitPrice.ToString("N2")
                                     </span>
+                                </td>
 
-                                    <div class="text-danger small mt-2"
-                                         data-price-error
-                                         role="alert"></div>
-                                </div>
-
-                                <form asp-controller="Cart"
-                                      asp-action="Remove"
-                                      method="post">
-
-                                    <input type="hidden"
-                                           name="cartItemId"
-                                           value="@item.CartItemId" />
-
-                                    <button type="submit"
-                                            class="btn btn-delete-icon"
-                                            aria-label="Remove @item.CakeName">
-                                            <i class="bi bi-trash"
-                                           aria-hidden="true"></i>
-                                    </button>
-                                </form>
-                            </div>
-
-                            <div class="mt-3">
-                                <input type="hidden"
-                                       name="items[@i].CartItemId"
-                                       value="@item.CartItemId"
-                                       form="cartCheckoutForm" />
-
-                                <label for="message-@item.CartItemId"
-                                       class="form-label">
-                                    Message on Cake (optional)
-                                </label>
-
-                                <textarea id="message-@item.CartItemId"
-                                  name="items[@i].MessageOnCakes"
-                                  form="cartCheckoutForm"
-                                  class="form-control"
-                                  rows="2"
-                                  maxlength="500"
-                                  placeholder="e.g. Happy Birthday!">@item.MessageOnCakes</textarea>
-                            </div>
-
-                            <hr />
-
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-
-                                <div class="d-flex align-items-center gap-2">
-                                    <label for="quantity-@item.CartItemId"
-                                           class="mb-0">
-                                        Quantity
-                                    </label>
-
-                                    <input type="number"
-                                           id="quantity-@item.CartItemId"
-                                           name="items[@i].Quantity"
-                                           value="@item.Quantity"
-                                           form="cartCheckoutForm"
-                                           min="1"
-                                           max="20"
-                                           step="1"
-                                           required
-                                           class="form-control"
-                                           style="width: 85px;"
+                                <td>
+                                    <input type="number" name="items[@i].Quantity"
+                                           value="@item.Quantity" form="cartCheckoutForm"
+                                           min="1" max="20" step="1" required
+                                           class="form-control form-control-sm text-center"
+                                           aria-label="Quantity for @item.CakeName"
                                            data-cart-quantity
                                            data-unit-price="@item.UnitPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                                            data-subtotal-id="subtotal-@item.CartItemId" />
-                                </div>
+                                </td>
 
-                                <strong class="cake-price" id="subtotal-@item.CartItemId">
-                                    RM @item.Subtotal.ToString("N2")
-                                </strong>
-                            </div>
+                                <td>
+                                    <span class="cart-price" id="subtotal-@item.CartItemId">
+                                        RM @item.Subtotal.ToString("N2")
+                                    </span>
+                                </td>
+                            </tr>
 
-                        </div>
-                    </div>
-                }
+                            <tr>
+                                <td colspan="7">
+                                    <div class="d-flex align-items-center flex-wrap gap-2">
+                                        <label for="message-@item.CartItemId">Message on cake</label>
+                                        <textarea id="message-@item.CartItemId"
+                                          name="items[@i].MessageOnCakes"
+                                          form="cartCheckoutForm" maxlength="500" rows="1"
+                                          class="form-control form-control-sm cart-message-input">@item.MessageOnCakes</textarea>
 
-             
+                                        <form asp-controller="Cart" asp-action="Remove"
+                                              method="post" class="ms-auto">
+                                            <input type="hidden" name="cartItemId"
+                                                   value="@item.CartItemId" />
+                                            <button type="submit" class="btn btn-sm btn-delete-icon"
+                                                    aria-label="Remove @item.CakeName">
+                                                <i class="bi bi-trash" aria-hidden="true"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div class="text-danger small" data-price-error role="alert"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    }
+                </table>
             </div>
 
-            <!-- Summary -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body p-4">
+            <div class="cart-order-total text-end small py-2">
+                Order Total (<span data-cart-total-quantity>@Model.TotalQuantity</span> items)
+                <span data-cart-total-price>RM @Model.TotalPrice.ToString("N2")</span>
+            </div>
 
-                        <div class="d-flex justify-content-between align-items-center gap-3">
-                            <h5 class="fw-bold mb-0">Cart Summary</h5>
+            <div class="cart-footer">
+                <div aria-live="polite">
+                    <div class="small"><span data-cart-total-quantity>@Model.TotalQuantity</span> items</div>
+                    <strong class="cake-price fs-4" data-cart-total-price>
+                        RM @Model.TotalPrice.ToString("N2")
+                    </strong>
+                </div>
 
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-danger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#clearCartModal">
-                                Clear Cart
-                            </button>
-                        </div>
-
-                        <hr />
-
-                        @foreach (var item in Model.Items)
-                        {
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between gap-3">
-                                    <span>
-                                        @item.CakeName ×
-                                        <span id="summary-quantity-@item.CartItemId">
-                                            @item.Quantity
-                                        </span>
-                                    </span>
-
-                                    <strong class="cake-price text-nowrap"
-                                            id="summary-subtotal-@item.CartItemId">
-                                        RM @item.Subtotal.ToString("N2")
-                                    </strong>
-                                </div>
-                            </div>
-                        }
-
-                        <hr />
-
-                        <div class="d-flex justify-content-between mb-3">
-                            <span>Total quantity</span>
-                            <strong id="cartTotalQuantity">@Model.TotalQuantity</strong>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <strong>Total Price</strong>
-
-                            <strong class="cake-price" id="cartTotalPrice">
-                                RM @Model.TotalPrice.ToString("N2")
-                            </strong>
-                        </div>
-
-                        <button type="submit"
-                                form="cartCheckoutForm"
-                                class="btn order-now-btn w-100 mt-4">
-                            Proceed to Checkout
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <div class="cart-footer-actions">
+                        <button type="button" class="btn order-now-btn cart-clear-btn"
+                                data-bs-toggle="modal" data-bs-target="#clearCartModal">
+                            Clear Cart
                         </button>
 
+                        <button type="submit" form="cartCheckoutForm" class="btn order-now-btn">
+                            Place Order
+                        </button>
                     </div>
                 </div>
             </div>
-
         </div>
     }
 </div>
@@ -359,36 +293,21 @@
             });
         });
 
-        function updateCartTotals() {
+                function updateCartTotals() {
             let totalQuantity = 0;
             let totalPrice = 0;
             let allValid = true;
 
             cards.forEach(card => {
                 const input = card.querySelector("[data-cart-quantity]");
-                const subtotalElement =
-                    document.getElementById(input.dataset.subtotalId);
+                const subtotalElement = document.getElementById(input.dataset.subtotalId);
                 const state = priceStates.get(card);
 
-                const summaryQuantity = document.getElementById(
-                    "summary-quantity-" + card.dataset.cartItemId
-                );
+                const optionsValid = Array.from(card.querySelectorAll("select"))
+                    .every(select => select.checkValidity());
 
-                const summarySubtotal = document.getElementById(
-                    "summary-subtotal-" + card.dataset.cartItemId
-                  );
-
-                summaryQuantity.textContent =
-                input.checkValidity() ? input.value : "—";
-
-                const optionsValid = Array.from(
-                    card.querySelectorAll("select")
-                ).every(select => select.checkValidity());
-
-                if (!input.checkValidity() || !optionsValid ||
-                    state.pending || !state.valid) {
+                if (!input.checkValidity() || !optionsValid || state.pending || !state.valid) {
                     subtotalElement.textContent = "—";
-                    summarySubtotal.textContent = "—";
                     allValid = false;
                     return;
                 }
@@ -398,22 +317,16 @@
 
                 totalQuantity += quantity;
                 totalPrice += subtotal;
-
-                subtotalElement.textContent =
-                    "RM " + moneyFormatter.format(subtotal);
-                    summarySubtotal.textContent = subtotalElement.textContent;
+                subtotalElement.textContent = "RM " + moneyFormatter.format(subtotal);
             });
 
-            const quantityElement =
-                document.getElementById("cartTotalQuantity");
-            const priceElement =
-                document.getElementById("cartTotalPrice");
+            document.querySelectorAll("[data-cart-total-quantity]").forEach(element => {
+                element.textContent = allValid ? totalQuantity : "—";
+            });
 
-            if (quantityElement && priceElement) {
-                quantityElement.textContent = allValid ? totalQuantity : "—";
-                priceElement.textContent =
-                    allValid ? "RM " + moneyFormatter.format(totalPrice) : "—";
-            }
+            document.querySelectorAll("[data-cart-total-price]").forEach(element => {
+                element.textContent = allValid ? "RM " + moneyFormatter.format(totalPrice) : "—";
+            });
 
             if (checkoutButton) {
                 checkoutButton.disabled = !allValid;
@@ -472,8 +385,7 @@
                 }
 
                 quantityInput.dataset.unitPrice = result.unitPrice;
-                priceElement.textContent =
-                    "Unit price: RM " + moneyFormatter.format(result.unitPrice);
+                priceElement.textContent = "RM " + moneyFormatter.format(result.unitPrice);
 
                 state.valid = true;
             }

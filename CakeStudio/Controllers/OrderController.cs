@@ -52,175 +52,79 @@ namespace CakeStudio.Controllers
             }
         }
 
-        // Display checkout for all cart items
         [Authorize(Roles = "Customer")]
         [HttpGet]
         public IActionResult Checkout()
         {
-            int? customerId = GetCurrentUserId();
-
-            if (!customerId.HasValue)
-                return Challenge();
-
-            var cart = _cartService.GetCart();
-
-            if (!cart.Items.Any())
-            {
-                TempData["ErrorMessage"] = Resource.CartEmpty;
-
-                return RedirectToAction("Index", "Cart");
-            }
-
-            var model = new OrderViewModel();
-
-            var pendingOrderJson =
-                HttpContext.Session.GetString($"CheckoutDraft_{customerId.Value}")
-                ?? HttpContext.Session.GetString($"PendingOrder_{customerId.Value}");
-
-            if (!string.IsNullOrEmpty(pendingOrderJson))
-            {
-                var pendingOrder = JsonSerializer.Deserialize<OrderViewModel>(pendingOrderJson);
-
-                if (pendingOrder != null)
-                {
-                    model.RequiredDate = pendingOrder.RequiredDate;
-                    model.RequiredTime = pendingOrder.RequiredTime;
-                    model.CollectionMethod = pendingOrder.CollectionMethod;
-                    model.DeliveryAddress = pendingOrder.DeliveryAddress;
-                }
-            }
-
-            model.Cart = cart;
-
-            return View("Create", model);
+            return RedirectToAction("Index", "Cart");
         }
 
         [Authorize(Roles = "Customer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Checkout(OrderViewModel model, string? intent)
+        public async Task<IActionResult> Checkout(List<CartItemViewModel> items, DateTime? requiredDate, TimeSpan? requiredTime)
         {
-            int? customerId = GetCurrentUserId();
+            var customerId = GetCurrentUserId();
 
             if (!customerId.HasValue)
                 return Challenge();
 
-            var draft = new
+            if (!ModelState.IsValid)
             {
-                model.RequiredDate,
-                model.RequiredTime,
-                model.CollectionMethod,
-                model.DeliveryAddress
-            };
-
-            HttpContext.Session.SetString($"CheckoutDraft_{customerId.Value}",JsonSerializer.Serialize(draft));
-
-            if (intent == "backToCart")
-            {
+                TempData["ErrorMessage"] = "Check the pickup date, time, and cake options.";
                 return RedirectToAction("Index", "Cart");
             }
 
-            if (intent == "backToCakes")
+            var order = new OrderViewModel
             {
-                return RedirectToAction("Index", "CustomerCake");
-            }
+                RequiredDate = requiredDate,
+                RequiredTime = requiredTime,
+                CollectionMethod = CollectionMethod.Pickup
+            };
 
-            // Replace submitted cart data with the cart from Session
-            model.Cart = _cartService.GetCart();
+            HttpContext.Session.SetString(
+                $"CheckoutDraft_{customerId.Value}",
+                JsonSerializer.Serialize(new { order.RequiredDate, order.RequiredTime }));
 
-            if (!model.Cart.Items.Any())
+            if (items.Count == 0)
             {
                 TempData["ErrorMessage"] = Resource.CartEmpty;
                 return RedirectToAction("Index", "Cart");
             }
 
-            // Validate date and time
-            if (model.RequiredDate.HasValue && model.RequiredTime.HasValue)
-            {
-                var time = model.RequiredTime.Value;
-
-                if (time < TimeSpan.Zero || time >= TimeSpan.FromDays(1) || model.RequiredDate.Value.Date.Add(time) <= DateTime.Now)
-                {
-                    ModelState.AddModelError(nameof(model.RequiredDate),Resource.InvalidRequiredDateTime);
-                }
-            }
-
-            // Validate collection method
-            if (model.CollectionMethod != CollectionMethod.Pickup && model.CollectionMethod != CollectionMethod.Delivery)
-            {
-                ModelState.AddModelError(nameof(model.CollectionMethod),Resource.InvalidCollectionMethod);
-            }
-
-            // Delivery requires an address
-            if (model.CollectionMethod == CollectionMethod.Delivery && string.IsNullOrWhiteSpace(model.DeliveryAddress))
-            {
-                ModelState.AddModelError(nameof(model.DeliveryAddress), Resource.DeliveryAddressRequired);
-            }
-
             try
             {
-                foreach (var item in model.Cart.Items)
-                {
-                    if (item.Quantity < 1 || item.Quantity > 20)
-                    {
-                        throw new ArgumentException(Resource.InvalidCakeQuantity);
-                    }
-
-                    // Validate availability and calculate database price
-                    item.UnitPrice = _orderService.CalculateTotalPrice(
-                        new OrderViewModel
-                        {
-                            CakeId = item.CakeId,
-                            SizeId = item.SizeId,
-                            FlavourId = item.FlavourId,
-                            TierId = item.TierId
-                        });
-                }
+                // Save the submitted options, quantities, and messages.
+                // UpdateItems also validates the options and calculates current prices.
+                _cartService.UpdateItems(items);
+                order.Cart = _cartService.GetCart();
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError("", ex.Message);
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("Index", "Cart");
             }
 
-            if (model.RequiredDate.HasValue)
+            if (!requiredDate.HasValue || !requiredTime.HasValue || requiredTime.Value < TimeSpan.Zero || requiredTime.Value >= TimeSpan.FromDays(1) || requiredDate.Value.Date.Add(requiredTime.Value) <= DateTime.Now)
             {
-                int bookedQuantity = _orderService.GetBookedCakeQuantity(model.RequiredDate.Value);
-
-                int requestedQuantity = model.Cart.Items.Sum(item => item.Quantity);
-
-                int remaining = Math.Max(0, BakingCapacity.DailyLimit - bookedQuantity);
-
-                if (requestedQuantity > remaining)
-                {
-                    string message = remaining == 0
-                        ? Resource.DateFullyBooked
-                        : $"Only {remaining} more {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
-
-                    ModelState.AddModelError("", message);
-                }
+                TempData["ErrorMessage"] = "Choose a pickup date and time in the future.";
+                return RedirectToAction("Index", "Cart");
             }
 
+            var bookedQuantity = _orderService.GetBookedCakeQuantity(requiredDate.Value.Date);
+            var remaining = Math.Max(0, BakingCapacity.DailyLimit - bookedQuantity);
 
-            if (!ModelState.IsValid)
-                return View("Create", model);
-
-      
-            var pendingOrder = new OrderViewModel
+            if (order.Cart.TotalQuantity > remaining)
             {
-                RequiredDate = model.RequiredDate,
-                RequiredTime = model.RequiredTime,
-                CollectionMethod = model.CollectionMethod,
-                DeliveryAddress = model.CollectionMethod == CollectionMethod.Delivery
-                    ? model.DeliveryAddress?.Trim()
-                    : null,
-                Cart = model.Cart
-            };
+                TempData["ErrorMessage"] = remaining == 0
+                    ? Resource.DateFullyBooked
+                    : $"Only {remaining} more {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
 
-            HttpContext.Session.SetString($"PendingOrder_{customerId.Value}",JsonSerializer.Serialize(pendingOrder));
+                return RedirectToAction("Index", "Cart");
+            }
 
-            return await StartStripeCheckout(pendingOrder, HttpContext.RequestAborted);
+            return await StartStripeCheckout(order, HttpContext.RequestAborted);
         }
-
         // Customer: Order history
         [Authorize(Roles = "Customer")]
         [HttpGet]
@@ -566,7 +470,7 @@ namespace CakeStudio.Controllers
                 long amountInSen = (long)decimal.Round(summary.Amount * 100m, 0, MidpointRounding.AwayFromZero);
 
                 const string paymentUrl = "https://localhost:7056/Order/Payment";
-                const string checkoutUrl = "https://localhost:7056/Order/Checkout";
+                const string checkoutUrl = "https://localhost:7056/Cart";
 
                 long ToSen(decimal amount) => (long)decimal.Round(amount * 100m, 0, MidpointRounding.AwayFromZero);
 

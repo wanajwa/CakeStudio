@@ -3,7 +3,8 @@ using CakeStudio.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CakeStudio.Resources;
-
+using System.Security.Claims;
+using System.Text.Json;
 namespace CakeStudio.Controllers
 {
     [Authorize(Roles = "Customer")]
@@ -48,17 +49,25 @@ namespace CakeStudio.Controllers
                     cake => cake.CakeId,
                     cake => cake.Flavour.FlavourId);
 
+            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (int.TryParse(customerId, out var id))
+            {
+                var draftJson = HttpContext.Session.GetString($"CheckoutDraft_{id}");
+
+                if (!string.IsNullOrEmpty(draftJson))
+                {
+                    ViewBag.CheckoutDraft = JsonSerializer.Deserialize<OrderViewModel>(draftJson);
+                }
+            }
+
             return View(model);
         }
 
         // Calculate a cart item's price for the selected options
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CalculatePrice(
-            string cartItemId,
-            int sizeId,
-            int flavourId,
-            int tierId)
+        public IActionResult CalculatePrice(string cartItemId,int sizeId,int flavourId,int tierId)
         {
             var cart = _cartService.GetCart();
 
@@ -116,31 +125,6 @@ namespace CakeStudio.Controllers
                 {
                     message = ex.Message
                 });
-            }
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Checkout(List<CartItemViewModel> items)
-        {
-            if (!ModelState.IsValid)
-            {
-                TempData["ErrorMessage"] = Resource.InvalidCartOptions;
-                return RedirectToAction(nameof(Index));
-            }
-
-            try
-            {
-                _cartService.UpdateItems(items);
-
-                return RedirectToAction("Checkout", "Order");
-            }
-            catch (ArgumentException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-
-                return RedirectToAction(nameof(Index));
             }
         }
 

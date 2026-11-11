@@ -1088,3 +1088,142 @@ body {
             margin-bottom: 0;
         }
 }
+
+/* Customer cart */
+
+.cart-heading {
+    color: #3d2c53;
+    margin-bottom: 1.75rem;
+}
+
+.cart-schedule,
+.cart-sheet {
+    background-color: #fff;
+    border: 1px solid #e9e3f4;
+    border-radius: 20px;
+    box-shadow: 0 3px 12px rgba(40, 30, 70, 0.05);
+}
+
+.cart-schedule {
+    width: min(100%, 44rem);
+    display: grid;
+    gap: 0.625rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem clamp(0.875rem, 2.5vw, 1.5rem);
+}
+
+.cart-schedule-field {
+    display: grid;
+    grid-template-columns: 6.75rem minmax(0, 10rem);
+    align-items: center;
+    gap: 0.5rem;
+    color: #3d2c53;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.cart-sheet {
+    min-height: 32rem;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.cart-items {
+    min-width: 48rem;
+    font-size: 0.875rem;
+    border-color: #e9e3f4;
+}
+
+.cart-items thead th {
+    padding-block: 0.75rem;
+    background-color: #fff;
+    color: #4e396b;
+    white-space: nowrap;
+}
+
+.cart-items thead th:nth-child(n+5),
+.cart-items td:nth-child(n+5) {
+    text-align: center;
+}
+
+.cart-items tbody tr:first-child > * {
+    border-bottom: 0;
+}
+
+.cart-items .form-select {
+    min-width: 8rem;
+}
+
+.cart-items input[type="number"] {
+    min-width: 4rem;
+}
+
+.cart-schedule .form-control,
+.cart-sheet .form-control,
+.cart-sheet .form-select {
+    border-color: #ded4eb;
+}
+
+.cart-schedule .form-control:focus,
+.cart-sheet .form-control:focus,
+.cart-sheet .form-select:focus {
+    border-color: #7352a2;
+    box-shadow: 0 0 0 0.2rem rgba(115, 82, 162, 0.18);
+}
+
+.cart-price {
+    display: block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    background-color: #f6f1fa;
+    color: #5e4089;
+    white-space: nowrap;
+}
+
+.cart-message-input {
+    width: min(100%, 17rem);
+}
+
+.cart-order-total {
+    color: #000000;
+    font-weight: 700;
+}
+
+
+.cart-items tbody:last-of-type tr:last-child > td {
+    border-bottom: 2px solid #000000;
+}
+
+.cart-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 1rem;
+    margin-top: auto;
+    padding-top: 1.25rem;
+}
+
+@media (max-width: 767.98px) {
+    .cart-sheet {
+        min-height: auto;
+    }
+}
+
+.cart-footer-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.cart-footer-actions .btn.cart-clear-btn {
+    background-color: #fff;
+    color: #7352a2;
+}
+
+.cart-footer-actions .btn.cart-clear-btn:hover,
+.cart-footer-actions .btn.cart-clear-btn:focus-visible {
+    background-color: #f3eef8;
+    color: #5e4089;
+}
