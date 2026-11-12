@@ -35,7 +35,7 @@ namespace CakeStudio.Controllers
             var paidPayments = payments
                 .Where(p => p.PaymentStatus == PaymentStatus.Paid && p.Order.OrderStatus != OrderStatus.Pending)
                 .ToList();
-
+            var cakeSalesByOrder = orders.ToDictionary(order => order.OrderId, order => order.OrderItems.Sum(item => item.UnitPrice * item.Quantity));
 
             var salesByPeriod = new Dictionary<string, ChartPeriodData>();
 
@@ -53,7 +53,7 @@ namespace CakeStudio.Controllers
                 Values = dailyDates
                     .Select(d => paidPayments
                         .Where(p => p.PaidAt.HasValue && p.PaidAt.Value.Date == d)
-                        .Sum(p => p.Amount - p.Order.DeliveryFee))
+                        .Sum(p => cakeSalesByOrder.GetValueOrDefault(p.Order.OrderId)))
                     .ToList()
             };
 
@@ -75,7 +75,7 @@ namespace CakeStudio.Controllers
                 Values = weekStarts
                     .Select(start => paidPayments
                         .Where(p => p.PaidAt.HasValue && p.PaidAt.Value >= start && p.PaidAt.Value < start.AddDays(7))
-                        .Sum(p => p.Amount - p.Order.DeliveryFee))
+                        .Sum(p => cakeSalesByOrder.GetValueOrDefault(p.Order.OrderId)))
                     .ToList()
             };
 
@@ -93,7 +93,7 @@ namespace CakeStudio.Controllers
                     .Select(m => paidPayments
                         .Where(p => p.PaidAt.HasValue && p.PaidAt.Value.Year == today.Year &&
                                     p.PaidAt.Value.Month == m)
-                        .Sum(p => p.Amount - p.Order.DeliveryFee))
+                        .Sum(p => cakeSalesByOrder.GetValueOrDefault(p.Order.OrderId)))
                     .ToList()
             };
 
@@ -109,7 +109,7 @@ namespace CakeStudio.Controllers
                 Values = years
                     .Select(y => paidPayments
                         .Where(p => p.PaidAt.HasValue && p.PaidAt.Value.Year == y)
-                        .Sum(p => p.Amount - p.Order.DeliveryFee))
+                        .Sum(p => cakeSalesByOrder.GetValueOrDefault(p.Order.OrderId)))
                     .ToList()
             };
 
@@ -152,7 +152,7 @@ namespace CakeStudio.Controllers
 
                 PendingOrders = orders.Count(o => o.OrderStatus == OrderStatus.Pending),
 
-                TotalSales = paidPayments.Sum(p => p.Amount - p.Order.DeliveryFee),
+                TotalSales = paidPayments.Sum(p => cakeSalesByOrder.GetValueOrDefault(p.Order.OrderId)),
 
                 SalesByPeriod = salesByPeriod,
 

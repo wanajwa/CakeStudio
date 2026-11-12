@@ -78,8 +78,7 @@ namespace CakeStudio.Controllers
             var order = new OrderViewModel
             {
                 RequiredDate = requiredDate,
-                RequiredTime = requiredTime,
-                CollectionMethod = CollectionMethod.Pickup
+                RequiredTime = requiredTime
             };
 
             HttpContext.Session.SetString(
@@ -174,8 +173,6 @@ namespace CakeStudio.Controllers
                 OrderId = order.OrderId,
                 RequiredDate = order.RequiredDate?.Date,
                 RequiredTime = order.RequiredDate?.TimeOfDay,
-                CollectionMethod = order.CollectionMethod,
-                DeliveryAddress = order.DeliveryAddress,
                 OrderItems = details.OrderItems
             };
 
@@ -333,7 +330,7 @@ namespace CakeStudio.Controllers
         }
 
         //	Payment Summary
-        private PaymentViewModel BuildPaymentViewModel(OrderViewModel order)
+        private decimal ValidateCartForPayment(OrderViewModel order)
         {
             if (!order.Cart.Items.Any())
                 throw new ArgumentException(Resource.CartEmpty);
@@ -341,11 +338,8 @@ namespace CakeStudio.Controllers
             foreach (var item in order.Cart.Items)
             {
                 if (item.Quantity < 1 || item.Quantity > 20)
-                {
                     throw new ArgumentException(Resource.InvalidCakeQuantity);
-                }
 
-                // Recheck availability and calculate the current price
                 item.UnitPrice = _orderService.CalculateTotalPrice(
                     new OrderViewModel
                     {
@@ -356,25 +350,12 @@ namespace CakeStudio.Controllers
                     });
             }
 
-            decimal deliveryFee = order.CollectionMethod == CollectionMethod.Delivery
-                ? DeliveryRate.FixedFee
-                : 0m;
-
-            decimal totalPrice = order.Cart.TotalPrice + deliveryFee;
+            var totalPrice = order.Cart.TotalPrice;
 
             if (totalPrice <= 0 || totalPrice > 100000)
                 throw new ArgumentException(Resource.InvalidOrderPrice);
 
-            return new PaymentViewModel
-            {
-                Cart = order.Cart,
-                Amount = totalPrice,
-                DeliveryFee = deliveryFee,
-                PaymentMethod = PaymentMethod.Card,
-                RequiredDate = order.RequiredDate,
-                RequiredTime = order.RequiredTime,
-                CollectionMethod = order.CollectionMethod
-            };
+            return totalPrice;
         }
 
         [Authorize(Roles = "Customer")]
@@ -466,15 +447,15 @@ namespace CakeStudio.Controllers
 
             try
             {
-                var summary = BuildPaymentViewModel(order);
-                long amountInSen = (long)decimal.Round(summary.Amount * 100m, 0, MidpointRounding.AwayFromZero);
+                var totalprice = ValidateCartForPayment(order);
+                long amountInSen = (long)decimal.Round(totalprice * 100m, 0, MidpointRounding.AwayFromZero);
 
                 const string paymentUrl = "https://localhost:7056/Order/Payment";
                 const string checkoutUrl = "https://localhost:7056/Cart";
 
                 long ToSen(decimal amount) => (long)decimal.Round(amount * 100m, 0, MidpointRounding.AwayFromZero);
 
-                var lineItems = summary.Cart.Items.Select(item => new Stripe.Checkout.SessionLineItemOptions
+                var lineItems = order.Cart.Items.Select(item => new Stripe.Checkout.SessionLineItemOptions
                 {
                     Quantity = item.Quantity,
                     PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
@@ -488,23 +469,6 @@ namespace CakeStudio.Controllers
                         }
                     }
                 }).ToList();
-
-                if (summary.DeliveryFee > 0)
-                {
-                    lineItems.Add(new Stripe.Checkout.SessionLineItemOptions
-                    {
-                        Quantity = 1,
-                        PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
-                        {
-                            Currency = "myr",
-                            UnitAmount = ToSen(summary.DeliveryFee),
-                            ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
-                            {
-                                Name = "Delivery fee"
-                            }
-                        }
-                    });
-                }
 
                 var options = new Stripe.Checkout.SessionCreateOptions
                 {

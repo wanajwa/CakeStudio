@@ -141,23 +141,10 @@
                     @Model.Order.RequiredDate?.ToString("dd MMM yyyy")
                 </dd>
 
-                <dt class="col-sm-4">Pickup / Delivery Time</dt>
-                <dd class="col-sm-8">
-                    @Model.Order.RequiredDate?.ToString("hh:mm tt")
-                </dd>
-
-                <dt class="col-sm-4">Collection Method</dt>
-                <dd class="col-sm-8">
-                    @Model.Order.CollectionMethod
-                </dd>
-
-                @if (Model.Order.CollectionMethod == CollectionMethod.Delivery)
-                {
-                    <dt class="col-sm-4">Delivery Address</dt>
+                    <dt class="col-sm-4">Scheduled Time</dt>
                     <dd class="col-sm-8">
-                        @Model.Order.DeliveryAddress
+                        @Model.Order.RequiredDate?.ToString("hh:mm tt")
                     </dd>
-                }
 
                 </dl>
             </div>
@@ -235,15 +222,7 @@
             <div class="d-flex justify-content-between mb-2">
                 <span>Cake Subtotal</span>
                 <span>
-                    RM @((Model.Order.TotalPrice -
-                                        Model.Order.DeliveryFee).ToString("F2"))
-                </span>
-            </div>
-
-            <div class="d-flex justify-content-between mb-3">
-                <span>Delivery Fee</span>
-                <span>
-                    RM @Model.Order.DeliveryFee.ToString("F2")
+                    RM @(Model.OrderItems.Sum(item => item.UnitPrice * item.Quantity).ToString("F2"))
                 </span>
             </div>
 

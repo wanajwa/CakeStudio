@@ -14,16 +14,9 @@ namespace CakeStudio.ViewModels
         [DataType(DataType.Date)]
         public DateTime? RequiredDate { get; set; }
 
-        [Required(ErrorMessage = "Please select a pickup/delivery time.")]
+        [Required(ErrorMessage = "Please select a pickup time.")]
         [DataType(DataType.Time)]
         public TimeSpan? RequiredTime { get; set; }
-
-
-        [Required(ErrorMessage = "Collection method is required.")]
-        public string CollectionMethod { get; set; } = string.Empty;
-
-        [StringLength(500)]
-        public string? DeliveryAddress { get; set; }
 
         public CartViewModel Cart { get; set; } = new CartViewModel();
 

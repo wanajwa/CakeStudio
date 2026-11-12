@@ -1,5 +1,4 @@
 ﻿@model CakeStudio.ViewModels.OrderViewModel
-@using CakeStudio.Constant
 @{
     ViewData["Title"] = "Edit Order";
 }
@@ -41,9 +40,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="RequiredTime"
-                                   class="form-label">
-                                Pickup / Delivery Time
+                            <label asp-for="RequiredTime" class="form-label">
+                                Scheduled Time
                             </label>
 
                             <input asp-for="RequiredTime"
@@ -55,38 +53,7 @@
                                   class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="CollectionMethod"
-                                   class="form-label">
-                                Collection Method
-                            </label>
-
-                            <input asp-for="CollectionMethod"
-                                   class="form-control"
-                                   id="collectionMethod"
-                                   readonly />
-
-                            <small class="text-muted">
-                                Collection method cannot be changed after payment.
-                            </small>
-
-                            <span asp-validation-for="CollectionMethod"
-                                  class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3" id="deliverySection">
-                            <label asp-for="DeliveryAddress"
-                                   class="form-label">
-                                Delivery Address
-                            </label>
-
-                            <textarea asp-for="DeliveryAddress"
-                                      class="form-control"
-                                      rows="3"></textarea>
-
-                            <span asp-validation-for="DeliveryAddress"
-                                  class="text-danger"></span>
-                        </div>
+                       
 
                         @for (int i =0; i < Model.OrderItems.Count; i++)
                         {
@@ -131,20 +98,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
-    <script>
-        const collectionMethod = document.getElementById("collectionMethod");
-        const deliverySection = document.getElementById("deliverySection");
-        const deliveryAddress = document.getElementById("DeliveryAddress");
-
-        function toggleDelivery() {
-            const isDelivery = collectionMethod.value === "Delivery";
-
-            deliverySection.style.display = isDelivery ? "block" : "none";
-            deliveryAddress.required = isDelivery;
-        }
-
-        collectionMethod.addEventListener("change", toggleDelivery);
-        toggleDelivery();
-    </script>
 }

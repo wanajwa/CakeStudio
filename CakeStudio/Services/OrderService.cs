@@ -279,18 +279,6 @@ namespace CakeStudio.Services
             }
 
 
-
-            string method = model.CollectionMethod?.Trim() ?? "";
-
-
-            if (method != CollectionMethod.Pickup && method != CollectionMethod.Delivery)
-                throw new ArgumentException(Resource.InvalidCollectionMethod);
-
-            if (method == CollectionMethod.Delivery && string.IsNullOrWhiteSpace(model.DeliveryAddress))
-            {
-                throw new ArgumentException(Resource.DeliveryAddressRequired);
-            }
-
             using var session = _nhibernateHelper.OpenSession();
             using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
@@ -372,12 +360,6 @@ namespace CakeStudio.Services
                     });
                 }
 
-                decimal deliveryFee = method == CollectionMethod.Delivery
-                    ? DeliveryRate.FixedFee
-                    : 0m;
-
-                totalPrice += deliveryFee;
-
                 long orderAmountInSen = (long)decimal.Round(totalPrice * 100m, 0, MidpointRounding.AwayFromZero);
 
                 if (stripeCheckoutSessionId != null && stripeAmountInSen != orderAmountInSen)
@@ -437,14 +419,7 @@ namespace CakeStudio.Services
                 {
                     CustId = customerId,
                     BakerId = baker.UserId,
-
                     RequiredDate = requiredDateTime,
-                    CollectionMethod = method,
-
-                    DeliveryAddress = method == CollectionMethod.Delivery
-                        ? model.DeliveryAddress?.Trim()
-                        : null,
-                    DeliveryFee = deliveryFee,
                     TotalPrice = totalPrice,
                     OrderStatus = OrderStatus.Pending,
                     CreatedAt = DateTime.Now,
@@ -617,25 +592,7 @@ namespace CakeStudio.Services
             if (requiredDateTime <= DateTime.Now)
                 throw new ArgumentException(Resource.InvalidRequiredDateTime);
 
-            string method = model.CollectionMethod?.Trim() ?? "";
-
-            if (method != CollectionMethod.Pickup && method != CollectionMethod.Delivery)
-                throw new ArgumentException(Resource.InvalidCollectionMethod);
-
-            if (method == CollectionMethod.Delivery && string.IsNullOrWhiteSpace(model.DeliveryAddress))
-            {
-                throw new ArgumentException(Resource.DeliveryAddressRequired);
-            }
-
-            if (model.DeliveryAddress?.Length > 500 )
-            {
-                throw new ArgumentException(Resource.DeliveryAddressTooLong);
-            }
-
-            if (method != order.CollectionMethod)
-            {
-                throw new InvalidOperationException(Resource.CollectionMethodChangeNotAllowed);
-            }
+          
 
             // Load the order's saved cake quantities.
             var savedItems = session.QueryOver<OrderItem>()
@@ -677,10 +634,6 @@ namespace CakeStudio.Services
 
             // Update only the editable order information
             order.RequiredDate = requiredDateTime;
-            order.CollectionMethod = method;
-            order.DeliveryAddress = method == CollectionMethod.Delivery
-                ? model.DeliveryAddress?.Trim()
-                : null;
             order.UpdatedAt = DateTime.Now;
             order.UpdatedId = customerId;
 
@@ -840,13 +793,10 @@ namespace CakeStudio.Services
                 }
 
                 // status change notification , yang lain ikut je
-                string statusLabel = status;
-                if (status == OrderStatus.Ready)
-                {
-                    statusLabel = order.CollectionMethod == CollectionMethod.Delivery
-                        ? "Ready for Delivery"
-                        : "Ready for Pickup";
-                }
+                string statusLabel = status == OrderStatus.Ready
+                        ? "Ready for Pickup"
+                        : status;
+                
 
                 var notification = new Notification
                 {

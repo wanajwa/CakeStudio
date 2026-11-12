@@ -32,22 +32,7 @@ namespace CakeStudio.Mappings
             Map(x => x.RequiredDate)
                 .Not.Nullable();
 
-            // Collection method
-            Map(x => x.CollectionMethod)
-                .Length(50)
-                .Not.Nullable();
-
-            // Delivery address (optional)
-            Map(x => x.DeliveryAddress)
-                .Length(500)
-                .Nullable();
-
             Map(x => x.TotalPrice)
-                .Precision(18)
-                .Scale(2)
-                .Not.Nullable();
-
-            Map(x => x.DeliveryFee)
                 .Precision(18)
                 .Scale(2)
                 .Not.Nullable();

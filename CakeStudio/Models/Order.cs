@@ -13,17 +13,8 @@ namespace CakeStudio.Models
         [DataType(DataType.Date)]
         public virtual DateTime? RequiredDate { get; set; }
 
-        [Required(ErrorMessage = "Collection method is required.")]
-        [StringLength(50)]
-        public virtual string CollectionMethod { get; set; } = string.Empty;
-
-        [StringLength(500)]
-        public virtual string? DeliveryAddress { get; set; }
-
         [Range(typeof(decimal), "0.01", "100000", ErrorMessage = "Total price must be greater than RM0.")]
         public virtual decimal TotalPrice { get; set; }
-
-        public virtual decimal DeliveryFee { get; set; }
 
         [Required]
         [StringLength(50)]
