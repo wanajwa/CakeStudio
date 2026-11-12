@@ -290,6 +290,7 @@
                         else if (backUrl != null)
                         {
                             <a href="@backUrl"
+                               id="@(currentController == "Cart" && currentAction == "Index" ? "cartBackLink" : null)"
                                class="btn btn-outline-secondary rounded-circle d-inline-flex align-items-center flex-shrink-0"
                                style="width:42px; height:42px;"
                                title="@backLabel"

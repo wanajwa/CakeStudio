@@ -81,8 +81,7 @@ namespace CakeStudio.Controllers
                 RequiredTime = requiredTime
             };
 
-            HttpContext.Session.SetString(
-                $"CheckoutDraft_{customerId.Value}",
+            HttpContext.Session.SetString($"CheckoutDraft_{customerId.Value}",
                 JsonSerializer.Serialize(new { order.RequiredDate, order.RequiredTime }));
 
             if (items.Count == 0)

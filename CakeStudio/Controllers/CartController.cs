@@ -136,6 +136,10 @@ namespace CakeStudio.Controllers
             try
             {
                 _cartService.RemoveItem(cartItemId);
+                if (!_cartService.GetCart().Items.Any())
+                {
+                    ClearCheckoutDraft();
+                }
 
                 TempData["SuccessMessage"] = Resource.CartItemRemovedSuccess;
             }
@@ -152,10 +156,45 @@ namespace CakeStudio.Controllers
         public IActionResult Clear()
         {
             _cartService.ClearCart();
+            ClearCheckoutDraft();
 
             TempData["SuccessMessage"] = "Cart cleared successfully.";
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private void ClearCheckoutDraft()
+        {
+            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (int.TryParse(customerId, out var id))
+            {
+                HttpContext.Session.Remove($"CheckoutDraft_{id}");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SaveChanges(List<CartItemViewModel> items, bool stayInCart = false)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = Resource.InvalidCartOptions;
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                _cartService.UpdateItems(items);
+                return stayInCart
+                    ? RedirectToAction(nameof(Index))
+                    : RedirectToAction("Index", "CustomerCake");
+            }
+            catch (ArgumentException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
     }
 }

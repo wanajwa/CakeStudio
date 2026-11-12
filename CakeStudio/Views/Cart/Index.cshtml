@@ -274,8 +274,41 @@
     <script>
         const cartForm = document.getElementById("cartCheckoutForm");
         const cards = document.querySelectorAll("[data-cart-item]");
-        const checkoutButton =
-            document.querySelector('button[form="cartCheckoutForm"]');
+
+        function saveCartOnClick(link, saveUrl) {
+            if (!link || cards.length === 0) {
+                return;
+            }
+
+            link.addEventListener("click", function (event) {
+                if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const checkoutUrl = cartForm.action;
+                cartForm.action = saveUrl;
+
+                try {
+                    cartForm.submit();
+                } finally {
+                    cartForm.action = checkoutUrl;
+                }
+            });
+        }
+
+        saveCartOnClick(
+            document.getElementById("cartBackLink"),
+            '@Url.Action("SaveChanges", "Cart")'
+        );
+
+        saveCartOnClick(
+            document.getElementById("floatingCart"),
+            '@Url.Action("SaveChanges", "Cart", new { stayInCart = true })'
+        );
+
+        const checkoutButton = document.querySelector('button[form="cartCheckoutForm"]');
 
         const moneyFormatter = new Intl.NumberFormat("en-MY", {
             minimumFractionDigits: 2,
@@ -293,7 +326,7 @@
             });
         });
 
-                function updateCartTotals() {
+            function updateCartTotals() {
             let totalQuantity = 0;
             let totalPrice = 0;
             let allValid = true;
