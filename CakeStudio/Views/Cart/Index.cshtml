@@ -303,10 +303,6 @@
             '@Url.Action("SaveChanges", "Cart")'
         );
 
-        saveCartOnClick(
-            document.getElementById("floatingCart"),
-            '@Url.Action("SaveChanges", "Cart", new { stayInCart = true })'
-        );
 
         const checkoutButton = document.querySelector('button[form="cartCheckoutForm"]');
 

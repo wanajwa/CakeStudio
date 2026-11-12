@@ -175,7 +175,7 @@ namespace CakeStudio.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SaveChanges(List<CartItemViewModel> items, bool stayInCart = false)
+        public IActionResult SaveChanges(List<CartItemViewModel> items)
         {
             if (!ModelState.IsValid)
             {
@@ -186,9 +186,7 @@ namespace CakeStudio.Controllers
             try
             {
                 _cartService.UpdateItems(items);
-                return stayInCart
-                    ? RedirectToAction(nameof(Index))
-                    : RedirectToAction("Index", "CustomerCake");
+                return RedirectToAction("Index", "CustomerCake");
             }
             catch (ArgumentException ex)
             {
