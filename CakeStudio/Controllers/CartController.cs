@@ -44,10 +44,16 @@ namespace CakeStudio.Controllers
                 .Where(x => x.IsAvailable)
                 .ToList();
 
-            ViewBag.DefaultFlavourIds = _cakeService.GetAll()
-                .ToDictionary(
-                    cake => cake.CakeId,
-                    cake => cake.Flavour.FlavourId);
+            var cakes = _cakeService.GetAll();
+
+            ViewBag.DefaultFlavourIds = cakes.ToDictionary(
+                cake => cake.CakeId,
+                cake => cake.Flavour.FlavourId);
+
+            ViewBag.CakeIdsWithImages = cakes
+                .Where(cake => cake.IsAvailable && cake.Image?.ImageContent?.Length > 0)
+                .Select(cake => cake.CakeId)
+                .ToHashSet();
 
             var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 

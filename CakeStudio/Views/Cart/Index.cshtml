@@ -2,457 +2,475 @@
 @using CakeStudio.Models
 
 @{
-    ViewData["Title"] = "My Cart";
-    var defaultFlavourIds = (Dictionary<int, int>)ViewBag.DefaultFlavourIds;
-    var checkoutDraft = ViewBag.CheckoutDraft as CakeStudio.ViewModels.OrderViewModel;
-    var pickupDate = checkoutDraft?.RequiredDate?.ToString("yyyy-MM-dd");
-    var pickupTime = checkoutDraft?.RequiredTime?.ToString(@"hh\:mm");
+	ViewData["Title"] = "My Cart";
+	var defaultFlavourIds = (Dictionary<int, int>)ViewBag.DefaultFlavourIds;
+	var checkoutDraft = ViewBag.CheckoutDraft as CakeStudio.ViewModels.OrderViewModel;
+	var pickupDate = checkoutDraft?.RequiredDate?.ToString("yyyy-MM-dd");
+	var pickupTime = checkoutDraft?.RequiredTime?.ToString(@"hh\:mm");
+	var cakeIdsWithImages = (HashSet<int>)ViewBag.CakeIdsWithImages;
 }
 
 <div class="container mt-4 mb-5">
-    <h2 class="cart-heading h3 fw-bold">My Cart</h2>
+	<h2 class="cart-heading h3 fw-bold">My Cart</h2>
 
-    <form id="cartCheckoutForm"
-          asp-controller="Order"
-          asp-action="Checkout"
-          method="post">
-    </form>
+	<form id="cartCheckoutForm"
+		  asp-controller="Order"
+		  asp-action="Checkout"
+		  method="post">
+	</form>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">
-            @TempData["SuccessMessage"]
-        </div>
-    }
+	@if (TempData["SuccessMessage"] != null)
+	{
+		<div class="alert alert-success">
+			@TempData["SuccessMessage"]
+		</div>
+	}
 
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger">
-            @TempData["ErrorMessage"]
-        </div>
-    }
+	@if (TempData["ErrorMessage"] != null)
+	{
+		<div class="alert alert-danger">
+			@TempData["ErrorMessage"]
+		</div>
+	}
 
-    @if (!Model.Items.Any())
-    {
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-cart fs-1 text-muted"></i>
+	@if (!Model.Items.Any())
+	{
+		<div class="card border-0 shadow-sm rounded-4">
+			<div class="card-body text-center py-5">
+				<i class="bi bi-cart fs-1 text-muted"></i>
 
-                <h4 class="mt-3">Your cart is empty</h4>
+				<h4 class="mt-3">Your cart is empty</h4>
 
-                <p class="text-muted">
-                    Browse our cakes and add your favourites.
-                </p>
+				<p class="text-muted">
+					Browse our cakes and add your favourites.
+				</p>
 
-                <a asp-controller="CustomerCake"
-                   asp-action="Index"
-                   class="btn order-now-btn">
-                    Browse Cakes
-                </a>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="cart-schedule">
-            <div class="cart-schedule-field">
-                <label for="requiredDate">Pickup Date</label>
-                <input id="requiredDate" name="RequiredDate" type="date"
-                       value="@pickupDate" form="cartCheckoutForm"
-                       class="form-control form-control-sm" required />
-            </div>
+				<a asp-controller="CustomerCake"
+				   asp-action="Index"
+				   class="btn order-now-btn">
+					Browse Cakes
+				</a>
+			</div>
+		</div>
+	}
+	else
+	{
+		<div class="cart-schedule">
+			<div class="cart-schedule-field">
+				<label for="requiredDate">Pickup Date</label>
+				<input id="requiredDate" name="RequiredDate" type="date"
+					   value="@pickupDate" form="cartCheckoutForm"
+					   class="form-control form-control-sm" required />
+			</div>
 
-            <div class="cart-schedule-field">
-                <label for="requiredTime">Pickup Time</label>
-                <input id="requiredTime" name="RequiredTime" type="time"
-                       value="@pickupTime" form="cartCheckoutForm"
-                       class="form-control form-control-sm" required />
-            </div>
-        </div>
+			<div class="cart-schedule-field">
+				<label for="requiredTime">Pickup Time</label>
+				<input id="requiredTime" name="RequiredTime" type="time"
+					   value="@pickupTime" form="cartCheckoutForm"
+					   class="form-control form-control-sm" required />
+			</div>
+		</div>
 
-        <div class="cart-sheet">
-            <div class="table-responsive">
-                <table class="table align-middle cart-items mb-0">
-                    <thead>
-                        <tr>
-                            <th scope="col">Cake</th>
-                            <th scope="col">Size</th>
-                            <th scope="col">Flavour</th>
-                            <th scope="col">Tier</th>
-                            <th scope="col">Unit Price</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Item Subtotal</th>
-                        </tr>
-                    </thead>
+		<div class="cart-sheet">
+			<div class="table-responsive">
+				<table class="table align-middle cart-items mb-0">
+					<thead>
+						<tr>
+							<th scope="col">Cake</th>
+							<th scope="col">Size</th>
+							<th scope="col">Flavour</th>
+							<th scope="col">Tier</th>
+							<th scope="col">Unit Price</th>
+							<th scope="col">Quantity</th>
+							<th scope="col">Item Subtotal</th>
+						</tr>
+					</thead>
 
-                    @for (int i = 0; i < Model.Items.Count; i++)
-                    {
-                        var item = Model.Items[i];
+					@for (int i = 0; i < Model.Items.Count; i++)
+					{
+						var item = Model.Items[i];
 
-                        <tbody data-cart-item data-cart-item-id="@item.CartItemId">
-                            <tr>
-                                <th scope="row" class="fw-normal">
-                                    @item.CakeName
-                                    <input type="hidden" name="items[@i].CartItemId"
-                                           value="@item.CartItemId" form="cartCheckoutForm" />
-                                </th>
+						<tbody data-cart-item data-cart-item-id="@item.CartItemId">
+							<tr>
+								<th scope="row" class="fw-normal">
+									<div class="d-flex align-items-center gap-2">
+										@if (cakeIdsWithImages.Contains(item.CakeId))
+										{
+											<img src="@Url.Action("Image", "CustomerCake", new { id = item.CakeId })"
+												 class="cart-cake-image"
+												 alt=""
+												 loading="lazy" />
+										}
 
-                                <td>
-                                    <select name="items[@i].SizeId" form="cartCheckoutForm"
-                                            class="form-select form-select-sm"
-                                            aria-label="Size for @item.CakeName" required>
-                                        @foreach (var size in (IEnumerable<CakeSize>)ViewBag.Sizes)
-                                        {
-                                            <option value="@size.SizeId"
-                                                    selected="@(size.SizeId == item.SizeId)">
-                                                @(size.SizeName.Trim().Equals(
-                                                                                    "6 inch", StringComparison.OrdinalIgnoreCase)
-                                                                                    ? $"{size.SizeName} (Included)"
-                                                                                    : $"{size.SizeName} (+RM {size.AdditionalPrice:N2})")
-                                </option>
-                                                                }
-                                    </select>
-                                </td>
+										<span>@item.CakeName</span>
+									</div>
 
-                                <td>
-                                    <select name="items[@i].FlavourId" form="cartCheckoutForm"
-                                            class="form-select form-select-sm"
-                                            aria-label="Flavour for @item.CakeName" required>
-                                        @foreach (var flavour in (IEnumerable<CakeFlavour>)ViewBag.Flavours)
-                                        {
-                                            <option value="@flavour.FlavourId"
-                                                    selected="@(flavour.FlavourId == item.FlavourId)">
-                                                @(flavour.FlavourId == defaultFlavourIds.GetValueOrDefault(item.CakeId)
-                                                                                    ? $"{flavour.FlavourName} (Included)"
-                                                                                    : $"{flavour.FlavourName} (+RM {flavour.AdditionalPrice:N2})")
-                                </option>
-                                                                }
-                                    </select>
-                                </td>
+									<input type="hidden" name="items[@i].CartItemId"
+										   value="@item.CartItemId" form="cartCheckoutForm" />
+								</th>
 
-                                <td>
-                                    <select name="items[@i].TierId" form="cartCheckoutForm"
-                                            class="form-select form-select-sm"
-                                            aria-label="Tier for @item.CakeName" required>
-                                        @foreach (var tier in (IEnumerable<CakeTier>)ViewBag.Tiers)
-                                        {
-                                            <option value="@tier.TierId"
-                                                    selected="@(tier.TierId == item.TierId)">
-                                                @(tier.TierName.Trim().Equals(
-                                                                                    "1", StringComparison.OrdinalIgnoreCase)
-                                                                                    ? $"{tier.TierName} Tier (Included)"
-                                                                                    : $"{tier.TierName} Tiers (+RM {tier.AdditionalPrice:N2})")
-                                </option>
-                                                                }
-                                    </select>
-                                </td>
+								<td>
+									<select name="items[@i].SizeId" form="cartCheckoutForm"
+											class="form-select form-select-sm"
+											aria-label="Size for @item.CakeName" required>
+										@foreach (var size in ((IEnumerable<CakeSize>)ViewBag.Sizes)
+											.OrderByDescending(s => s.SizeName.Trim().Equals("6 inch", StringComparison.OrdinalIgnoreCase))
+											.ThenBy(s => int.TryParse(s.SizeName.Trim().Split(' ')[0], out var inches)
+											? inches
+											: int.MaxValue))
+										{
+											<option value="@size.SizeId"
+													selected="@(size.SizeId == item.SizeId)">
+												@(size.SizeName.Trim().Equals("6 inch", StringComparison.OrdinalIgnoreCase)
+													? size.SizeName
+													: $"{size.SizeName} (+RM{size.AdditionalPrice:0.##})")
+											</option>
+										}
+									</select>
+								</td>
 
-                                <td>
-                                    <span class="cart-price" id="unit-price-@item.CartItemId">
-                                        RM @item.UnitPrice.ToString("N2")
-                                    </span>
-                                </td>
+								<td>
+									<select name="items[@i].FlavourId" form="cartCheckoutForm"
+											class="form-select form-select-sm"
+											aria-label="Flavour for @item.CakeName" required>
+										@foreach (var flavour in ((IEnumerable<CakeFlavour>)ViewBag.Flavours)
+											.OrderByDescending(f => f.FlavourId == defaultFlavourIds.GetValueOrDefault(item.CakeId))
+											.ThenBy(f => f.FlavourName))
+										{
+											<option value="@flavour.FlavourId"
+													selected="@(flavour.FlavourId == item.FlavourId)">
+												@(flavour.FlavourId == defaultFlavourIds.GetValueOrDefault(item.CakeId)
+													? flavour.FlavourName
+													: $"{flavour.FlavourName} (+RM{flavour.AdditionalPrice:0.##})")
+											</option>
+										}
+									</select>
+								</td>
 
-                                <td>
-                                    <input type="number" name="items[@i].Quantity"
-                                           value="@item.Quantity" form="cartCheckoutForm"
-                                           min="1" max="20" step="1" required
-                                           class="form-control form-control-sm text-center"
-                                           aria-label="Quantity for @item.CakeName"
-                                           data-cart-quantity
-                                           data-unit-price="@item.UnitPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                           data-subtotal-id="subtotal-@item.CartItemId" />
-                                </td>
+								<td>
+									<select name="items[@i].TierId" form="cartCheckoutForm"
+											class="form-select form-select-sm"
+											aria-label="Tier for @item.CakeName" required>
+										@foreach (var tier in ((IEnumerable<CakeTier>)ViewBag.Tiers)
+											.OrderByDescending(t => t.TierName.Trim().Equals("1", StringComparison.OrdinalIgnoreCase))
+											.ThenBy(t => t.TierName))
+										{
+											<option value="@tier.TierId"
+													selected="@(tier.TierId == item.TierId)">
+												@(tier.TierName.Trim().Equals("1", StringComparison.OrdinalIgnoreCase)
+													? $"{tier.TierName} Tier"
+													: $"{tier.TierName} Tiers (+RM{tier.AdditionalPrice:0.##})")
+											</option>
+										}
+									</select>
+								</td>
 
-                                <td>
-                                    <span class="cart-price" id="subtotal-@item.CartItemId">
-                                        RM @item.Subtotal.ToString("N2")
-                                    </span>
-                                </td>
-                            </tr>
+								<td>
+									<span class="cart-price" id="unit-price-@item.CartItemId">
+										RM @item.UnitPrice.ToString("N2")
+									</span>
+								</td>
 
-                            <tr>
-                                <td colspan="7">
-                                    <div class="d-flex align-items-center flex-wrap gap-2">
-                                        <label for="message-@item.CartItemId">Message on cake</label>
-                                        <textarea id="message-@item.CartItemId"
-                                          name="items[@i].MessageOnCakes"
-                                          form="cartCheckoutForm" maxlength="500" rows="1"
-                                          class="form-control form-control-sm cart-message-input">@item.MessageOnCakes</textarea>
+								<td>
+									<input type="number" name="items[@i].Quantity"
+										   value="@item.Quantity" form="cartCheckoutForm"
+										   min="1" max="20" step="1" required
+										   class="form-control form-control-sm text-center"
+										   aria-label="Quantity for @item.CakeName"
+										   data-cart-quantity
+										   data-unit-price="@item.UnitPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+										   data-subtotal-id="subtotal-@item.CartItemId" />
+								</td>
 
-                                        <form asp-controller="Cart" asp-action="Remove"
-                                              method="post" class="ms-auto">
-                                            <input type="hidden" name="cartItemId"
-                                                   value="@item.CartItemId" />
-                                            <button type="submit" class="btn btn-sm btn-delete-icon"
-                                                    aria-label="Remove @item.CakeName">
-                                                <i class="bi bi-trash" aria-hidden="true"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                    <div class="text-danger small" data-price-error role="alert"></div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    }
-                </table>
-            </div>
+								<td>
+									<span class="cart-price" id="subtotal-@item.CartItemId">
+										RM @item.Subtotal.ToString("N2")
+									</span>
+								</td>
+							</tr>
 
-            <div class="cart-order-total text-end small py-2">
-                Order Total (<span data-cart-total-quantity>@Model.TotalQuantity</span> items)
-                <span data-cart-total-price>RM @Model.TotalPrice.ToString("N2")</span>
-            </div>
+							<tr>
+								<td colspan="7">
+									<div class="d-flex align-items-center flex-wrap gap-2">
+										<label for="message-@item.CartItemId">Message on cake</label>
+										<textarea id="message-@item.CartItemId"
+										  name="items[@i].MessageOnCakes"
+										  form="cartCheckoutForm" maxlength="500" rows="1"
+										  class="form-control form-control-sm cart-message-input">@item.MessageOnCakes</textarea>
 
-            <div class="cart-footer">
-                <div aria-live="polite">
-                    <div class="small"><span data-cart-total-quantity>@Model.TotalQuantity</span> items</div>
-                    <strong class="cake-price fs-4" data-cart-total-price>
-                        RM @Model.TotalPrice.ToString("N2")
-                    </strong>
-                </div>
+										<form asp-controller="Cart" asp-action="Remove"
+											  method="post" class="ms-auto">
+											<input type="hidden" name="cartItemId"
+												   value="@item.CartItemId" />
+											<button type="submit" class="btn btn-sm btn-delete-icon"
+													aria-label="Remove @item.CakeName">
+												<i class="bi bi-trash" aria-hidden="true"></i>
+											</button>
+										</form>
+									</div>
+									<div class="text-danger small" data-price-error role="alert"></div>
+								</td>
+							</tr>
+						</tbody>
+					}
+				</table>
+			</div>
 
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <div class="cart-footer-actions">
-                        <button type="button" class="btn order-now-btn cart-clear-btn"
-                                data-bs-toggle="modal" data-bs-target="#clearCartModal">
-                            Clear Cart
-                        </button>
+			<div class="cart-order-total text-end small py-2">
+				Order Total (<span data-cart-total-quantity>@Model.TotalQuantity</span> items)
+				<span data-cart-total-price>RM @Model.TotalPrice.ToString("N2")</span>
+			</div>
 
-                        <button type="submit" form="cartCheckoutForm" class="btn order-now-btn">
-                            Place Order
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
+			<div class="cart-footer">
+				<div aria-live="polite">
+					<div class="small"><span data-cart-total-quantity>@Model.TotalQuantity</span> items</div>
+					<strong class="cake-price fs-4" data-cart-total-price>
+						RM @Model.TotalPrice.ToString("N2")
+					</strong>
+				</div>
+
+				<div class="d-flex flex-wrap align-items-center gap-2">
+					<div class="cart-footer-actions">
+						<button type="button" class="btn order-now-btn cart-clear-btn"
+								data-bs-toggle="modal" data-bs-target="#clearCartModal">
+							Clear Cart
+						</button>
+
+						<button type="submit" form="cartCheckoutForm" class="btn order-now-btn">
+							Place Order
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
 </div>
 
 <div class="modal fade"
-     id="clearCartModal"
-     tabindex="-1"
-     aria-labelledby="clearCartTitle"
-     aria-hidden="true">
+	 id="clearCartModal"
+	 tabindex="-1"
+	 aria-labelledby="clearCartTitle"
+	 aria-hidden="true">
 
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="clearCartTitle">
-                    Clear Cart
-                </h5>
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="clearCartTitle">
+					Clear Cart
+				</h5>
 
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-            </div>
+				<button type="button"
+						class="btn-close"
+						data-bs-dismiss="modal"
+						aria-label="Close"></button>
+			</div>
 
-            <div class="modal-body">
-                Remove all items from your cart?
-            </div>
+			<div class="modal-body">
+				Remove all items from your cart?
+			</div>
 
-            <div class="modal-footer">
-                <button type="button"
-                        class="btn btn-outline-secondary"
-                        data-bs-dismiss="modal">
-                    Cancel
-                </button>
+			<div class="modal-footer">
+				<button type="button"
+						class="btn btn-outline-secondary"
+						data-bs-dismiss="modal">
+					Cancel
+				</button>
 
-                <form asp-controller="Cart"
-                      asp-action="Clear"
-                      method="post">
-                    <button type="submit" class="btn btn-danger">
-                        Clear Cart
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
+				<form asp-controller="Cart"
+					  asp-action="Clear"
+					  method="post">
+					<button type="submit" class="btn btn-danger">
+						Clear Cart
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
 </div>
 
 @section Scripts {
-    <script>
-        const cartForm = document.getElementById("cartCheckoutForm");
-        const cards = document.querySelectorAll("[data-cart-item]");
+	<script>
+		const cartForm = document.getElementById("cartCheckoutForm");
+		const cards = document.querySelectorAll("[data-cart-item]");
 
-        function saveCartOnClick(link, saveUrl) {
-            if (!link || cards.length === 0) {
-                return;
-            }
+		function saveCartOnClick(link, saveUrl) {
+			if (!link || cards.length === 0) {
+				return;
+			}
 
-            link.addEventListener("click", function (event) {
-                if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
-                    return;
-                }
+			link.addEventListener("click", function (event) {
+				if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+					return;
+				}
 
-                event.preventDefault();
+				event.preventDefault();
 
-                const checkoutUrl = cartForm.action;
-                cartForm.action = saveUrl;
+				const checkoutUrl = cartForm.action;
+				cartForm.action = saveUrl;
 
-                try {
-                    cartForm.submit();
-                } finally {
-                    cartForm.action = checkoutUrl;
-                }
-            });
-        }
+				try {
+					cartForm.submit();
+				} finally {
+					cartForm.action = checkoutUrl;
+				}
+			});
+		}
 
-        saveCartOnClick(
-            document.getElementById("cartBackLink"),
-            '@Url.Action("SaveChanges", "Cart")'
-        );
+		saveCartOnClick(
+			document.getElementById("cartBackLink"),
+			'@Url.Action("SaveChanges", "Cart")'
+		);
 
 
-        const checkoutButton = document.querySelector('button[form="cartCheckoutForm"]');
+		const checkoutButton = document.querySelector('button[form="cartCheckoutForm"]');
 
-        const moneyFormatter = new Intl.NumberFormat("en-MY", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+		const moneyFormatter = new Intl.NumberFormat("en-MY", {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
 
-        // Track pending requests and prevent older responses replacing newer prices
-        const priceStates = new Map();
+		// Track pending requests and prevent older responses replacing newer prices
+		const priceStates = new Map();
 
-        cards.forEach(card => {
-            priceStates.set(card, {
-                requestId: 0,
-                pending: false,
-                valid: true
-            });
-        });
+		cards.forEach(card => {
+			priceStates.set(card, {
+				requestId: 0,
+				pending: false,
+				valid: true
+			});
+		});
 
-            function updateCartTotals() {
-            let totalQuantity = 0;
-            let totalPrice = 0;
-            let allValid = true;
+			function updateCartTotals() {
+			let totalQuantity = 0;
+			let totalPrice = 0;
+			let allValid = true;
 
-            cards.forEach(card => {
-                const input = card.querySelector("[data-cart-quantity]");
-                const subtotalElement = document.getElementById(input.dataset.subtotalId);
-                const state = priceStates.get(card);
+			cards.forEach(card => {
+				const input = card.querySelector("[data-cart-quantity]");
+				const subtotalElement = document.getElementById(input.dataset.subtotalId);
+				const state = priceStates.get(card);
 
-                const optionsValid = Array.from(card.querySelectorAll("select"))
-                    .every(select => select.checkValidity());
+				const optionsValid = Array.from(card.querySelectorAll("select"))
+					.every(select => select.checkValidity());
 
-                if (!input.checkValidity() || !optionsValid || state.pending || !state.valid) {
-                    subtotalElement.textContent = "—";
-                    allValid = false;
-                    return;
-                }
+				if (!input.checkValidity() || !optionsValid || state.pending || !state.valid) {
+					subtotalElement.textContent = "—";
+					allValid = false;
+					return;
+				}
 
-                const quantity = Number(input.value);
-                const subtotal = quantity * Number(input.dataset.unitPrice);
+				const quantity = Number(input.value);
+				const subtotal = quantity * Number(input.dataset.unitPrice);
 
-                totalQuantity += quantity;
-                totalPrice += subtotal;
-                subtotalElement.textContent = "RM " + moneyFormatter.format(subtotal);
-            });
+				totalQuantity += quantity;
+				totalPrice += subtotal;
+				subtotalElement.textContent = "RM " + moneyFormatter.format(subtotal);
+			});
 
-            document.querySelectorAll("[data-cart-total-quantity]").forEach(element => {
-                element.textContent = allValid ? totalQuantity : "—";
-            });
+			document.querySelectorAll("[data-cart-total-quantity]").forEach(element => {
+				element.textContent = allValid ? totalQuantity : "—";
+			});
 
-            document.querySelectorAll("[data-cart-total-price]").forEach(element => {
-                element.textContent = allValid ? "RM " + moneyFormatter.format(totalPrice) : "—";
-            });
+			document.querySelectorAll("[data-cart-total-price]").forEach(element => {
+				element.textContent = allValid ? "RM " + moneyFormatter.format(totalPrice) : "—";
+			});
 
-            if (checkoutButton) {
-                checkoutButton.disabled = !allValid;
-            }
-        }
+			if (checkoutButton) {
+				checkoutButton.disabled = !allValid;
+			}
+		}
 
-        async function refreshItemPrice(card) {
-            const state = priceStates.get(card);
-            const requestId = ++state.requestId;
+		async function refreshItemPrice(card) {
+			const state = priceStates.get(card);
+			const requestId = ++state.requestId;
 
-            const quantityInput =
-                card.querySelector("[data-cart-quantity]");
-            const priceElement = document.getElementById(
-                "unit-price-" + card.dataset.cartItemId
-            );
-            const errorElement = card.querySelector("[data-price-error]");
+			const quantityInput =
+				card.querySelector("[data-cart-quantity]");
+			const priceElement = document.getElementById(
+				"unit-price-" + card.dataset.cartItemId
+			);
+			const errorElement = card.querySelector("[data-price-error]");
 
-            state.pending = true;
-            state.valid = false;
-            errorElement.textContent = "";
-            priceElement.textContent = "Updating price...";
-            updateCartTotals();
+			state.pending = true;
+			state.valid = false;
+			errorElement.textContent = "";
+			priceElement.textContent = "Updating price...";
+			updateCartTotals();
 
-            const data = new FormData();
+			const data = new FormData();
 
-            data.set("__RequestVerificationToken",
-                cartForm.querySelector(
-                    'input[name="__RequestVerificationToken"]'
-                ).value);
+			data.set("__RequestVerificationToken",
+				cartForm.querySelector(
+					'input[name="__RequestVerificationToken"]'
+				).value);
 
-            data.set("cartItemId", card.dataset.cartItemId);
-            data.set("sizeId",
-                card.querySelector('select[name$=".SizeId"]').value);
-            data.set("flavourId",
-                card.querySelector('select[name$=".FlavourId"]').value);
-            data.set("tierId",
-                card.querySelector('select[name$=".TierId"]').value);
+			data.set("cartItemId", card.dataset.cartItemId);
+			data.set("sizeId",
+				card.querySelector('select[name$=".SizeId"]').value);
+			data.set("flavourId",
+				card.querySelector('select[name$=".FlavourId"]').value);
+			data.set("tierId",
+				card.querySelector('select[name$=".TierId"]').value);
 
-            try {
-                const response = await fetch(
-                    '@Url.Action("CalculatePrice", "Cart")',
-                    {
-                        method: "POST",
-                        body: data
-                    }
-                );
+			try {
+				const response = await fetch(
+					'@Url.Action("CalculatePrice", "Cart")',
+					{
+						method: "POST",
+						body: data
+					}
+				);
 
-                const result = await response.json();
+				const result = await response.json();
 
-                if (requestId !== state.requestId) return;
+				if (requestId !== state.requestId) return;
 
-                if (!response.ok) {
-                    throw new Error(
-                        result.message || "Unable to calculate the price."
-                    );
-                }
+				if (!response.ok) {
+					throw new Error(
+						result.message || "Unable to calculate the price."
+					);
+				}
 
-                quantityInput.dataset.unitPrice = result.unitPrice;
-                priceElement.textContent = "RM " + moneyFormatter.format(result.unitPrice);
+				quantityInput.dataset.unitPrice = result.unitPrice;
+				priceElement.textContent = "RM " + moneyFormatter.format(result.unitPrice);
 
-                state.valid = true;
-            }
-            catch (error) {
-                if (requestId !== state.requestId) return;
+				state.valid = true;
+			}
+			catch (error) {
+				if (requestId !== state.requestId) return;
 
-                priceElement.textContent = "Price unavailable";
-                errorElement.textContent =
-                    error.message || "Unable to calculate the price.";
-            }
-            finally {
-                if (requestId === state.requestId) {
-                    state.pending = false;
-                    updateCartTotals();
-                }
-            }
-        }
+				priceElement.textContent = "Price unavailable";
+				errorElement.textContent =
+					error.message || "Unable to calculate the price.";
+			}
+			finally {
+				if (requestId === state.requestId) {
+					state.pending = false;
+					updateCartTotals();
+				}
+			}
+		}
 
-        cards.forEach(card => {
-            card.querySelector("[data-cart-quantity]")
-                .addEventListener("input", updateCartTotals);
+		cards.forEach(card => {
+			card.querySelector("[data-cart-quantity]")
+				.addEventListener("input", updateCartTotals);
 
-            card.querySelectorAll("select").forEach(select => {
-                select.addEventListener("change", () => {
-                    refreshItemPrice(card);
-                });
-            });
-        });
+			card.querySelectorAll("select").forEach(select => {
+				select.addEventListener("change", () => {
+					refreshItemPrice(card);
+				});
+			});
+		});
 
-        cartForm.addEventListener("submit", function (event) {
-            const priceUnavailable = Array.from(priceStates.values())
-                .some(state => state.pending || !state.valid);
+		cartForm.addEventListener("submit", function (event) {
+			const priceUnavailable = Array.from(priceStates.values())
+				.some(state => state.pending || !state.valid);
 
-            if (priceUnavailable) {
-                event.preventDefault();
-            }
-        });
+			if (priceUnavailable) {
+				event.preventDefault();
+			}
+		});
 
-        updateCartTotals();
-    </script>
+		updateCartTotals();
+	</script>
 }

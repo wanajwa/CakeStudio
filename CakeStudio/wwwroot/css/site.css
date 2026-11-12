@@ -17,10 +17,6 @@ html {
   min-height: 100%;
 }
 
-body {
-  margin-bottom: 60px;
-}
-
 /* =========================
    Baker Sidebar
 ========================= */
@@ -1079,14 +1075,14 @@ body {
         margin-bottom: 1rem;
     }
 
-        .cake-page-header h1 {
-            font-size: 2rem;
-            margin-bottom: .5rem;
-        }
+    .cake-page-header h1 {
+        font-size: 2rem;
+        margin-bottom: .5rem;
+    }
 
-        .cake-page-header p {
-            margin-bottom: 0;
-        }
+    .cake-page-header p {
+        margin-bottom: 0;
+    }
 }
 
 /* Customer cart */
@@ -1130,9 +1126,12 @@ body {
 }
 
 .cart-items {
-    min-width: 48rem;
+    width: 100%;
+    min-width: 54rem;
+    table-layout: fixed;
     font-size: 0.875rem;
     border-color: #e9e3f4;
+    overflow-wrap: anywhere;
 }
 
 .cart-items thead th {
@@ -1142,6 +1141,16 @@ body {
     white-space: nowrap;
 }
 
+.cart-items thead th:first-child {
+    width: 19%;
+}
+
+.cart-items thead th:nth-child(n+5) {
+    width: 11%;
+}
+.cart-items thead th:nth-child(6) {
+    width: 7%; /* Quantity */
+}
 .cart-items thead th:nth-child(n+5),
 .cart-items td:nth-child(n+5) {
     text-align: center;
@@ -1152,11 +1161,12 @@ body {
 }
 
 .cart-items .form-select {
-    min-width: 8rem;
+    min-width: 0;
+    text-overflow: ellipsis;
 }
 
 .cart-items input[type="number"] {
-    min-width: 4rem;
+    min-width: 0;
 }
 
 .cart-schedule .form-control,
@@ -1226,4 +1236,12 @@ body {
 .cart-footer-actions .btn.cart-clear-btn:focus-visible {
     background-color: #f3eef8;
     color: #5e4089;
+}
+
+.cart-cake-image {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 8px;
 }
