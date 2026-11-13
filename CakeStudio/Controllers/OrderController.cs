@@ -72,7 +72,7 @@ namespace CakeStudio.Controllers
 
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "Check the pickup date, time, and cake options.";
+                TempData["ErrorMessage"] = Resource.InvalidCheckoutDetails;
                 return RedirectToAction("Index", "Cart");
             }
 
@@ -106,7 +106,7 @@ namespace CakeStudio.Controllers
 
             if (!requiredDate.HasValue || !requiredTime.HasValue || requiredTime.Value < TimeSpan.Zero || requiredTime.Value >= TimeSpan.FromDays(1) || requiredDate.Value.Date.Add(requiredTime.Value) <= DateTime.Now)
             {
-                TempData["ErrorMessage"] = "Choose a pickup date and time in the future.";
+                TempData["ErrorMessage"] = Resource.InvalidRequiredDateTime;
                 return RedirectToAction("Index", "Cart");
             }
 
@@ -148,7 +148,7 @@ namespace CakeStudio.Controllers
 
                         if (previousSession.Status != "expired" || previousSession.PaymentStatus != "unpaid")
                         {
-                            TempData["ErrorMessage"] = "The previous payment is still being checked. Please try again.";
+                            TempData["ErrorMessage"] = Resource.PreviousPaymentProcessing;
                             return RedirectToAction(nameof(Details), new { id = orderId.Value });
                         }
 
@@ -167,7 +167,7 @@ namespace CakeStudio.Controllers
             catch (Stripe.StripeException ex)
             {
                 _logger.LogError(ex, "Unable to check or close the previous Stripe session.");
-                TempData["ErrorMessage"] = "Could not check the previous payment. Please try again.";
+                TempData["ErrorMessage"] = Resource.PreviousPaymentCheckFailed;
                 return RedirectToAction("Index", "Cart", new { orderId });
             }
             catch (ArgumentException ex)
@@ -178,7 +178,7 @@ namespace CakeStudio.Controllers
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Unable to update the unpaid order.");
-                TempData["ErrorMessage"] = "Could not update this order. Please try again.";
+                TempData["ErrorMessage"] = Resource.OrderUpdateFailed;
                 return RedirectToAction("Index", "Cart", new { orderId });
             }
         }
@@ -393,35 +393,6 @@ namespace CakeStudio.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        //	Payment Summary
-        private decimal ValidateCartForPayment(OrderViewModel order)
-        {
-            if (!order.Cart.Items.Any())
-                throw new ArgumentException(Resource.CartEmpty);
-
-            foreach (var item in order.Cart.Items)
-            {
-                if (item.Quantity < 1 || item.Quantity > 20)
-                    throw new ArgumentException(Resource.InvalidCakeQuantity);
-
-                item.UnitPrice = _orderService.CalculateTotalPrice(
-                    new OrderViewModel
-                    {
-                        CakeId = item.CakeId,
-                        SizeId = item.SizeId,
-                        FlavourId = item.FlavourId,
-                        TierId = item.TierId
-                    });
-            }
-
-            var totalPrice = order.Cart.TotalPrice;
-
-            if (totalPrice <= 0 || totalPrice > 100000)
-                throw new ArgumentException(Resource.InvalidOrderPrice);
-
-            return totalPrice;
-        }
-
         [Authorize(Roles = "Customer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -465,8 +436,8 @@ namespace CakeStudio.Controllers
                     if (stripeSession.Status != "expired" || stripeSession.PaymentStatus != "unpaid")
                     {
                         TempData["ErrorMessage"] = details.Order.RequiredDate <= DateTime.Now
-                            ? "This pickup time has passed."
-                            : "Your payment is still being checked. Please try again shortly.";
+                            ? Resource.PickupTimePassed
+                            : Resource.PreviousPaymentProcessing;
 
                         return RedirectToAction(nameof(Details), new { id });
                     }
@@ -474,7 +445,7 @@ namespace CakeStudio.Controllers
 
                 if (!details.Order.RequiredDate.HasValue || details.Order.RequiredDate.Value <= DateTime.Now)
                 {
-                    TempData["ErrorMessage"] = "This pickup time has passed.";
+                    TempData["ErrorMessage"] = Resource.PickupTimePassed;
                     return RedirectToAction(nameof(Details), new { id });
                 }
 
@@ -502,12 +473,12 @@ namespace CakeStudio.Controllers
             catch (Stripe.StripeException ex)
             {
                 _logger.LogError(ex, "Unable to reopen Stripe Checkout for order {OrderId}.", id);
-                TempData["ErrorMessage"] = "Could not open the payment page. Please try again.";
+                TempData["ErrorMessage"] = Resource.StripeCheckoutStartFailed;
             }
             catch (InvalidOperationException ex)
             {
                 _logger.LogError(ex, "Unable to update checkout for order {OrderId}.", id);
-                TempData["ErrorMessage"] = "The payment link changed. Please try again.";
+                TempData["ErrorMessage"] = Resource.StripePaymentLinkChanged;
             }
 
             return RedirectToAction(nameof(Details), new { id });
@@ -542,7 +513,7 @@ namespace CakeStudio.Controllers
                     stripeSession.AmountTotal.Value);
 
                 TempData["SuccessMessage"] = Resource.OrderPlacedSuccess;
-                _cartService.RemovePaidCheckoutItems(customerId.Value);
+
                 return RedirectToAction(nameof(Details), new { id = orderId });
             }
             catch (Stripe.StripeException ex)

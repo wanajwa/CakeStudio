@@ -32,9 +32,6 @@ namespace CakeStudio.Controllers
         {
             var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (int.TryParse(customerId, out var paidCartCustomerId))
-                _cartService.RemovePaidCheckoutItems(paidCartCustomerId);
-
             var model = _cartService.GetCart();
 
             ViewBag.Sizes = _cakeSizeService.GetAll()
@@ -169,7 +166,7 @@ namespace CakeStudio.Controllers
             _cartService.ClearCart();
             ClearCheckoutDraft();
 
-            TempData["SuccessMessage"] = "Cart cleared successfully.";
+            TempData["SuccessMessage"] = Resource.CartClearedSuccess;
 
             return RedirectToAction(nameof(Index));
         }
