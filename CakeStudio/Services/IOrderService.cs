@@ -27,7 +27,6 @@ namespace CakeStudio.Services
 
         int Create(int customerId, OrderViewModel model, string paymentMethod, string? stripeCheckoutSessionId = null, long? stripeAmountInSen = null);
 
-        int GetBookedCakeQuantity(DateTime requiredDate,int? excludeOrderId = null);
         void UpdateStatus(int orderId, string status, int bakerId, string? rejectionReason = null);
 
         decimal CalculateTotalPrice(OrderViewModel model);

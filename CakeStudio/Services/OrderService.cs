@@ -405,19 +405,7 @@ namespace CakeStudio.Services
 
                 // ni nak cek limit baker 
 
-                DateTime startDate = requiredDateTime.Date;
-                DateTime endDate = startDate.AddDays(1);
-
-                Order existingOrder = null!;
-
-                int bookedQuantity = session.QueryOver<OrderItem>()
-                    .JoinAlias(item => item.Order, () => existingOrder)
-                    .Where(() => existingOrder.RequiredDate >= startDate)
-                    .And(() => existingOrder.RequiredDate < endDate)
-                    .And(() => existingOrder.OrderStatus != OrderStatus.Rejected)
-                    .And(() => existingOrder.OrderId != (existingOrderId ?? 0))
-                    .SelectList(list => list.SelectSum(item => item.Quantity))
-                    .SingleOrDefault<int?>() ?? 0;
+                int bookedQuantity = GetBookedCakeQuantity(session, requiredDateTime, existingOrderId);
 
                 int requestedQuantity = orderItems.Sum(item => item.Quantity);
 
@@ -429,7 +417,7 @@ namespace CakeStudio.Services
                 {
                     string message = remaining == 0
                         ? Resource.DateFullyBooked
-                        : $"Only {remaining} more {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
+                        : $"Only {remaining} {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
 
                     throw new ArgumentException(message);
                 }
@@ -615,9 +603,8 @@ namespace CakeStudio.Services
             return orderId;
         }
 
-        public int GetBookedCakeQuantity(DateTime requiredDate,int? excludeOrderId = null)
+        private static int GetBookedCakeQuantity(NHibernate.ISession session, DateTime requiredDate,int? excludeOrderId = null)
         {
-            using var session = _nhibernateHelper.OpenSession();
 
             DateTime startDate = requiredDate.Date;
             DateTime endDate = startDate.AddDays(1);
@@ -756,20 +743,7 @@ namespace CakeStudio.Services
             // Check capacity only when moving to another day.
             if (order.RequiredDate?.Date != requiredDateTime.Date)
             {
-                DateTime startDate = requiredDateTime.Date;
-                DateTime endDate = startDate.AddDays(1);
-
-                Order existingOrder = null!;
-
-                // Count other orders on the new date.
-                int bookedQuantity = session.QueryOver<OrderItem>()
-                    .JoinAlias(item => item.Order, () => existingOrder)
-                    .Where(() => existingOrder.RequiredDate >= startDate)
-                    .And(() => existingOrder.RequiredDate < endDate)
-                    .And(() => existingOrder.OrderStatus != OrderStatus.Rejected)
-                    .And(() => existingOrder.OrderId != orderId)
-                    .SelectList(list => list.SelectSum(item => item.Quantity))
-                    .SingleOrDefault<int?>() ?? 0;
+                int bookedQuantity = GetBookedCakeQuantity(session, requiredDateTime, orderId);
 
                 int orderQuantity = savedItems.Sum(item => item.Quantity);
 
@@ -780,7 +754,7 @@ namespace CakeStudio.Services
                 {
                     string message = remaining == 0
                         ? Resource.DateFullyBooked
-                        : $"Only {remaining} more {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
+                        : $"Only {remaining} {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
 
                     throw new ArgumentException(message);
                 }
