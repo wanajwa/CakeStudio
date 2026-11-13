@@ -1,0 +1,211 @@
+﻿@model CakeStudio.ViewModels.PaymentViewModel
+
+@{
+    ViewData["Title"] = "Payment";
+}
+
+<div class="container mt-4 mb-5">
+
+    <div class="mb-4">
+        <h3>Complete Payment</h3>
+
+        <p class="text-muted">
+            Enter your test card details to complete payment.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Left: Card Details -->
+        <div class="col-lg-8">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-body p-4">
+
+                    @if (TempData["ErrorMessage"] is string error)
+                    {
+                        <div class="alert alert-danger">@error</div>
+                    }
+
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-credit-card text-muted" aria-hidden="true"></i>
+                            <h5 class="mb-0">Pay by card</h5>
+                        </div>
+
+                    </div>
+
+                    <form asp-controller="Order"
+                          asp-action="Payment"
+                          method="post"
+                          id="paymentForm">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit" id="payButton" class="btn order-now-btn w-100">
+                            <i class="bi bi-credit-card me-2"></i>
+                            Pay RM @Model.Amount.ToString("F2")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Order Summary -->
+        <div class="col-lg-4">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-body p-4">
+
+                    <h5 class="mb-3">Order Summary</h5>
+                    <hr />
+
+                    @foreach (var item in Model.Cart.Items)
+                    {
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between gap-3">
+                                <strong>@item.CakeName</strong>
+
+                                <strong class="cake-price text-nowrap">
+                                    RM @item.Subtotal.ToString("N2")
+                                </strong>
+                            </div>
+
+                            <div class="text-muted small mt-2">
+                                <div>Base price: RM @item.BasePrice.ToString("N2")</div>
+                                <div>
+                                    Size: @item.SizeName
+                                    @(item.SizePrice == 0m
+                                        ? "(Included)"
+                                        : $"(+RM {item.SizePrice:N2})")
+                                                                    </div>
+
+                                <div>
+                                    Flavour: @item.FlavourName
+                                    @(item.FlavourPrice == 0m
+                                        ? "(Included)"
+                                        : $"(+RM {item.FlavourPrice:N2})")
+                                                                        </div>
+
+                                <div>
+                                    Tier: @item.TierName
+                                    @(item.TierPrice == 0m
+                                        ? "(Included)"
+                                        : $"(+RM {item.TierPrice:N2})")
+                                </div>
+                                <div>
+                                    Quantity: @item.Quantity ×
+                                    RM @item.UnitPrice.ToString("N2")
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(item.MessageOnCakes))
+                            {
+                                <p class="small mt-2 mb-0">
+                                    Message: @item.MessageOnCakes
+                                </p>
+                            }
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total quantity</span>
+                        <strong>@Model.Cart.TotalQuantity</strong>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Cake Subtotal</span>
+                        <span>RM @Model.Cart.TotalPrice.ToString("F2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Delivery Fee</span>
+                        <span>RM @Model.DeliveryFee.ToString("F2")</span>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between fw-bold mb-3">
+                        <span>Total Price</span>
+                        <span class="cake-price">
+                            RM @Model.Amount.ToString("F2")
+                        </span>
+                    </div>
+
+                    <hr />
+
+                    <h6 class="mb-3">Order Information</h6>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Required Date</span>
+                        <span>@Model.RequiredDate?.ToString("dd/MM/yyyy")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Required Time</span>
+                        <span>@Model.RequiredTime?.ToString(@"hh\:mm")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Collection</span>
+                        <span>@Model.CollectionMethod</span>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between">
+                        <span>Payment Method</span>
+                        <strong>Card</strong>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+
+                const paymentForm = document.getElementById("paymentForm");
+                const payButton = document.getElementById("payButton");
+            
+
+                if (!paymentForm || !payButton) return;
+
+                let isSubmitting = false;
+
+                paymentForm.addEventListener("submit", function (event) {
+
+                    if (isSubmitting) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    if (!paymentForm.checkValidity()) {
+                        return;
+                    }
+
+                    if (window.jQuery &&
+                        $.validator &&
+                        !$(paymentForm).valid()) {
+                        return;
+                    }
+
+                    isSubmitting = true;
+
+                    payButton.disabled = true;
+                    payButton.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2"
+                              role="status"
+                              aria-hidden="true"></span>
+                        Processing Payment...
+                    `;
+                });
+
+            });
+        </script>
+    }

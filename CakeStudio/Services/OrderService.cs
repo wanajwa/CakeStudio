@@ -440,18 +440,23 @@ namespace CakeStudio.Services
                 {
                     var savedOrder = session.Get<Order>(existingOrderId.Value);
 
-                    if (savedOrder == null || savedOrder.CustId != customerId || savedOrder.OrderStatus != OrderStatus.AwaitingPayment)
+                    if (savedOrder == null ||
+                        savedOrder.CustId != customerId ||
+                        savedOrder.OrderStatus != OrderStatus.AwaitingPayment)
                     {
-                        throw new ArgumentException(Resource.UnpaidOrderCannotBeEdited);
+                        throw new ArgumentException("This order can no longer be edited.");
                     }
 
                     var payment = session.QueryOver<Payment>()
                         .Where(p => p.Order.OrderId == savedOrder.OrderId)
                         .SingleOrDefault();
 
-                    if (payment == null || payment.PaymentStatus != PaymentStatus.Pending || payment.StripeCheckoutSessionId != null)
+                    if (payment == null ||
+                        payment.PaymentStatus != PaymentStatus.Pending ||
+                        payment.StripeCheckoutSessionId != null)
                     {
-                        throw new ArgumentException(Resource.PreviousCheckoutMustBeClosed);
+                        throw new ArgumentException(
+                            "The previous checkout must be closed before editing this order.");
                     }
 
                     order = savedOrder;

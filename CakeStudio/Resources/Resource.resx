@@ -468,37 +468,4 @@
   <data name="StripeAmountMismatch" xml:space="preserve">
     <value>The verified Stripe amount does not match the order total.</value>
   </data>
-  <data name="CartClearedSuccess" xml:space="preserve">
-    <value>Cart cleared successfully.</value>
-  </data>
-  <data name="InvalidCheckoutDetails" xml:space="preserve">
-    <value>Check the pickup date, time, and cake options.</value>
-  </data>
-  <data name="PickupTimePassed" xml:space="preserve">
-    <value> This pickup time has passed.</value>
-  </data>
-  <data name="PreviousPaymentProcessing" xml:space="preserve">
-    <value>The previous payment is still being checked. Please try again.</value>
-  </data>
-  <data name="PaymentStillProcessing" xml:space="preserve">
-    <value>Your payment is still being checked. Please try again shortly.</value>
-  </data>
-  <data name="PreviousPaymentCheckFailed" xml:space="preserve">
-    <value>Could not check the previous payment. Please try again.</value>
-  </data>
-  <data name="StripePaymentLinkChanged" xml:space="preserve">
-    <value>The payment link changed. Please try again.</value>
-  </data>
-  <data name="UnpaidOrderCannotBeEdited" xml:space="preserve">
-    <value> This order can no longer be edited.</value>
-  </data>
-  <data name="PreviousCheckoutMustBeClosed" xml:space="preserve">
-    <value> The previous checkout must be closed before editing this order.</value>
-  </data>
-  <data name="RemainingCakeCapacitySingle" xml:space="preserve">
-    <value>Only {0} more cake can be booked for this date.</value>
-  </data>
-  <data name="RemainingCakeCapacityMultiple" xml:space="preserve">
-    <value> Only {0} more cakes can be booked for this date.</value>
-  </data>
 </root>

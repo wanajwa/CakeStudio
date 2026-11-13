@@ -10,6 +10,7 @@ namespace CakeStudio.Services
 
         void UpdateItems(List<CartItemViewModel> items);
         void RemoveItem(string cartItemId);
+        void RemovePaidCheckoutItems(int customerId);
         void ClearCart();
     }
 }

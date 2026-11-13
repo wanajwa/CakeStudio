@@ -385,15 +385,6 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cart cleared successfully..
-        /// </summary>
-        public static string CartClearedSuccess {
-            get {
-                return ResourceManager.GetString("CartClearedSuccess", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Your cart is empty. Please add a cake first..
         /// </summary>
         public static string CartEmpty {
@@ -718,15 +709,6 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Check the pickup date, time, and cake options..
-        /// </summary>
-        public static string InvalidCheckoutDetails {
-            get {
-                return ResourceManager.GetString("InvalidCheckoutDetails", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid collection method.
         /// </summary>
         public static string InvalidCollectionMethod {
@@ -988,56 +970,11 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your payment is still being checked. Please try again shortly..
-        /// </summary>
-        public static string PaymentStillProcessing {
-            get {
-                return ResourceManager.GetString("PaymentStillProcessing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to This phone number is already registered..
         /// </summary>
         public static string PhoneNumberAlreadyRegistered {
             get {
                 return ResourceManager.GetString("PhoneNumberAlreadyRegistered", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to  This pickup time has passed..
-        /// </summary>
-        public static string PickupTimePassed {
-            get {
-                return ResourceManager.GetString("PickupTimePassed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to  The previous checkout must be closed before editing this order..
-        /// </summary>
-        public static string PreviousCheckoutMustBeClosed {
-            get {
-                return ResourceManager.GetString("PreviousCheckoutMustBeClosed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not check the previous payment. Please try again..
-        /// </summary>
-        public static string PreviousPaymentCheckFailed {
-            get {
-                return ResourceManager.GetString("PreviousPaymentCheckFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The previous payment is still being checked. Please try again..
-        /// </summary>
-        public static string PreviousPaymentProcessing {
-            get {
-                return ResourceManager.GetString("PreviousPaymentProcessing", resourceCulture);
             }
         }
         
@@ -1065,24 +1002,6 @@ namespace CakeStudio.Resources {
         public static string RejectionReasonTooLong {
             get {
                 return ResourceManager.GetString("RejectionReasonTooLong", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to  Only {0} more cakes can be booked for this date..
-        /// </summary>
-        public static string RemainingCakeCapacityMultiple {
-            get {
-                return ResourceManager.GetString("RemainingCakeCapacityMultiple", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Only {0} more cake can be booked for this date..
-        /// </summary>
-        public static string RemainingCakeCapacitySingle {
-            get {
-                return ResourceManager.GetString("RemainingCakeCapacitySingle", resourceCulture);
             }
         }
         
@@ -1150,15 +1069,6 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The payment link changed. Please try again..
-        /// </summary>
-        public static string StripePaymentLinkChanged {
-            get {
-                return ResourceManager.GetString("StripePaymentLinkChanged", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The Stripe payment could not be verified..
         /// </summary>
         public static string StripePaymentNotVerified {
@@ -1200,15 +1110,6 @@ namespace CakeStudio.Resources {
         public static string UnknownOrderStatus {
             get {
                 return ResourceManager.GetString("UnknownOrderStatus", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to  This order can no longer be edited..
-        /// </summary>
-        public static string UnpaidOrderCannotBeEdited {
-            get {
-                return ResourceManager.GetString("UnpaidOrderCannotBeEdited", resourceCulture);
             }
         }
     }
