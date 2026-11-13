@@ -17,6 +17,14 @@ namespace CakeStudio.Services
         OrderListViewModel GetPagedOrdersByCustomer(int customerId, int page, int pageSize);
         List<Payment> GetAllPayments();
 
+        int CreateAwaitingPayment(int customerId, OrderViewModel model, int? existingOrderId = null);
+
+        void SaveStripeSession(int orderId, int customerId, string stripeSessionId);
+
+        void ClearStripeSession(int orderId, int customerId, string stripeSessionId);
+
+        int ConfirmStripePayment(int? customerId, string stripeSessionId, long amountInSen);
+
         int Create(int customerId, OrderViewModel model, string paymentMethod, string? stripeCheckoutSessionId = null, long? stripeAmountInSen = null);
 
         int GetBookedCakeQuantity(DateTime requiredDate,int? excludeOrderId = null);

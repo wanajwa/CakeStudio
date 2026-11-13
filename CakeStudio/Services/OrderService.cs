@@ -63,6 +63,7 @@ namespace CakeStudio.Services
             var model = new OrderListViewModel
             {
                 TotalOrders = session.QueryOver<Order>()
+                    .Where(o => o.OrderStatus != OrderStatus.AwaitingPayment)
                     .RowCount(),
 
                 PreparingOrders = session.QueryOver<Order>()
@@ -79,7 +80,8 @@ namespace CakeStudio.Services
             };
 
             // Filter and sort the orders
-            var query = session.QueryOver<Order>();
+            var query = session.QueryOver<Order>()
+                .Where(o => o.OrderStatus != OrderStatus.AwaitingPayment);
 
             switch (sort)
             {
@@ -257,7 +259,24 @@ namespace CakeStudio.Services
             return price;
         }
 
-        public int Create(int customerId, OrderViewModel model, string paymentMethod, string? stripeCheckoutSessionId = null, long? stripeAmountInSen = null)
+        public int Create(int customerId,OrderViewModel model,string paymentMethod,string? stripeCheckoutSessionId = null,long? stripeAmountInSen = null)
+        {
+            return CreateOrder(
+                customerId, model, paymentMethod,
+                stripeCheckoutSessionId, stripeAmountInSen,
+                awaitingPayment: false);
+        }
+
+        public int CreateAwaitingPayment(int customerId, OrderViewModel model, int? existingOrderId = null)
+        {
+            return CreateOrder(
+                customerId, model, PaymentMethod.Card,
+                stripeCheckoutSessionId: null,
+                stripeAmountInSen: null,
+                awaitingPayment: true,
+                existingOrderId: existingOrderId);
+        }
+        private int CreateOrder(int customerId,OrderViewModel model,string paymentMethod,string? stripeCheckoutSessionId,long? stripeAmountInSen,bool awaitingPayment, int? existingOrderId = null)
         {
             if (model.Cart == null || !model.Cart.Items.Any())
             {
@@ -294,9 +313,9 @@ namespace CakeStudio.Services
 
                 if (existingPayment != null)
                 {
-                    int existingOrderId = existingPayment.Order.OrderId;
+                    int paidOrderId = existingPayment.Order.OrderId;
                     transaction.Commit();
-                    return existingOrderId;
+                    return paidOrderId;
                 }
             }
 
@@ -396,6 +415,7 @@ namespace CakeStudio.Services
                     .Where(() => existingOrder.RequiredDate >= startDate)
                     .And(() => existingOrder.RequiredDate < endDate)
                     .And(() => existingOrder.OrderStatus != OrderStatus.Rejected)
+                    .And(() => existingOrder.OrderId != (existingOrderId ?? 0))
                     .SelectList(list => list.SelectSum(item => item.Quantity))
                     .SingleOrDefault<int?>() ?? 0;
 
@@ -414,39 +434,84 @@ namespace CakeStudio.Services
                     throw new ArgumentException(message);
                 }
 
-                // Create Order entity
-                var order = new Order
+                Order order;
+
+                if (existingOrderId.HasValue)
                 {
-                    CustId = customerId,
-                    BakerId = baker.UserId,
-                    RequiredDate = requiredDateTime,
-                    TotalPrice = totalPrice,
-                    OrderStatus = OrderStatus.Pending,
-                    CreatedAt = DateTime.Now,
-                    CreatedId = customerId
-                };
+                    var savedOrder = session.Get<Order>(existingOrderId.Value);
 
-                session.Save(order);
+                    if (savedOrder == null ||
+                        savedOrder.CustId != customerId ||
+                        savedOrder.OrderStatus != OrderStatus.AwaitingPayment)
+                    {
+                        throw new ArgumentException("This order can no longer be edited.");
+                    }
 
-                // Save each cake item under the new order
+                    var payment = session.QueryOver<Payment>()
+                        .Where(p => p.Order.OrderId == savedOrder.OrderId)
+                        .SingleOrDefault();
+
+                    if (payment == null ||
+                        payment.PaymentStatus != PaymentStatus.Pending ||
+                        payment.StripeCheckoutSessionId != null)
+                    {
+                        throw new ArgumentException(
+                            "The previous checkout must be closed before editing this order.");
+                    }
+
+                    order = savedOrder;
+                    order.RequiredDate = requiredDateTime;
+                    order.TotalPrice = totalPrice;
+                    order.UpdatedAt = DateTime.Now;
+                    order.UpdatedId = customerId;
+                    payment.Amount = totalPrice;
+
+                    var oldItems = session.QueryOver<OrderItem>()
+                        .Where(item => item.OrderId == order.OrderId)
+                        .List();
+
+                    foreach (var oldItem in oldItems)
+                    {
+                        session.Delete(oldItem);
+                    }
+                }
+                else
+                {
+                    order = new Order
+                    {
+                        CustId = customerId,
+                        BakerId = baker.UserId,
+                        RequiredDate = requiredDateTime,
+                        TotalPrice = totalPrice,
+                        OrderStatus = awaitingPayment
+                            ? OrderStatus.AwaitingPayment
+                            : OrderStatus.Pending,
+                        CreatedAt = DateTime.Now,
+                        CreatedId = customerId
+                    };
+
+                    session.Save(order);
+
+                    var payment = new Payment
+                    {
+                        Order = order,
+                        Amount = totalPrice,
+                        PaymentMethod = PaymentMethod.Card,
+                        PaymentStatus = awaitingPayment
+                            ? PaymentStatus.Pending
+                            : PaymentStatus.Paid,
+                        PaidAt = awaitingPayment ? null : DateTime.Now,
+                        StripeCheckoutSessionId = stripeCheckoutSessionId
+                    };
+
+                    session.Save(payment);
+                }
+
                 foreach (var item in orderItems)
                 {
                     item.OrderId = order.OrderId;
-
                     session.Save(item);
                 }
-
-                var payment = new Payment
-                {
-                    Order = order,
-                    Amount = totalPrice,
-                    PaymentMethod = PaymentMethod.Card,
-                    PaymentStatus = PaymentStatus.Paid,
-                    PaidAt = DateTime.Now,
-                    StripeCheckoutSessionId = stripeCheckoutSessionId,
-                };
-
-                session.Save(payment);
 
                 transaction.Commit();
 
@@ -459,6 +524,100 @@ namespace CakeStudio.Services
 
                 throw;
             }
+        }
+
+        public void SaveStripeSession(int orderId, int customerId, string stripeSessionId)
+        {
+            using var session = _nhibernateHelper.OpenSession();
+            using var transaction = session.BeginTransaction(
+                System.Data.IsolationLevel.Serializable);
+
+            Order order = null!;
+
+            var payment = session.QueryOver<Payment>()
+                .JoinAlias(p => p.Order, () => order)
+                .Where(() => order.OrderId == orderId && order.CustId == customerId)
+                .SingleOrDefault();
+
+            if (payment == null)
+                throw new InvalidOperationException(Resource.PaymentNotFound);
+
+            if (payment.PaymentStatus != PaymentStatus.Pending || payment.Order.OrderStatus != OrderStatus.AwaitingPayment)
+            {
+                throw new InvalidOperationException(Resource.StripeSessionMismatch);
+            }
+
+            if (payment.StripeCheckoutSessionId != null && payment.StripeCheckoutSessionId != stripeSessionId)
+            {
+                throw new InvalidOperationException(Resource.StripeSessionMismatch);
+            }
+
+            payment.StripeCheckoutSessionId = stripeSessionId;
+            transaction.Commit();
+        }
+
+        public void ClearStripeSession(int orderId, int customerId, string stripeSessionId)
+        {
+            using var session = _nhibernateHelper.OpenSession();
+            using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            Order order = null!;
+
+            var payment = session.QueryOver<Payment>()
+                .JoinAlias(p => p.Order, () => order)
+                .Where(() => order.OrderId == orderId && order.CustId == customerId)
+                .SingleOrDefault();
+
+            if (payment == null || payment.PaymentStatus != PaymentStatus.Pending || payment.Order.OrderStatus != OrderStatus.AwaitingPayment || payment.StripeCheckoutSessionId != stripeSessionId)
+            {
+                throw new InvalidOperationException(Resource.StripeSessionMismatch);
+            }
+
+            payment.StripeCheckoutSessionId = null;
+            transaction.Commit();
+        }
+        public int ConfirmStripePayment(int? customerId,string stripeSessionId,long amountInSen)
+        {
+            using var session = _nhibernateHelper.OpenSession();
+            using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            Order order = null!;
+
+            var query = session.QueryOver<Payment>()
+                .JoinAlias(p => p.Order, () => order)
+                .Where(p => p.StripeCheckoutSessionId == stripeSessionId);
+
+            if (customerId.HasValue)
+            {
+                query.And(() => order.CustId == customerId.Value);
+            }
+
+            var payment = query.SingleOrDefault();
+
+            if (payment == null)
+                throw new InvalidOperationException(Resource.StripeSessionMismatch);
+
+            var expectedAmountInSen = (long)decimal.Round(
+                payment.Amount * 100m, 0, MidpointRounding.AwayFromZero);
+
+            if (amountInSen != expectedAmountInSen)
+                throw new InvalidOperationException(Resource.StripeAmountMismatch);
+
+            if (payment.PaymentStatus == PaymentStatus.Pending && payment.Order.OrderStatus == OrderStatus.AwaitingPayment)
+            {
+                payment.PaymentStatus = PaymentStatus.Paid;
+                payment.PaidAt = DateTime.Now;
+                payment.Order.OrderStatus = OrderStatus.Pending;
+            }
+            else if (payment.PaymentStatus != PaymentStatus.Paid && payment.PaymentStatus != PaymentStatus.Refunded)
+            {
+                throw new InvalidOperationException(Resource.StripePaymentNotVerified);
+            }
+
+            var orderId = payment.Order.OrderId;
+            transaction.Commit();
+
+            return orderId;
         }
 
         public int GetBookedCakeQuantity(DateTime requiredDate,int? excludeOrderId = null)

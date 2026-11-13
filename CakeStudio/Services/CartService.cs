@@ -1,4 +1,5 @@
-﻿using CakeStudio.Data;
+﻿using CakeStudio.Constant;
+using CakeStudio.Data;
 using CakeStudio.Models;
 using CakeStudio.Resources;
 using CakeStudio.ViewModels;
@@ -232,6 +233,68 @@ namespace CakeStudio.Services
             cart.Items.Remove(item);
 
             SaveCart(cart);
+        }
+
+        public void RemovePaidCheckoutItems(int customerId)
+        {
+            var browserSession = CurrentContext.Session;
+            var prefix = $"CheckoutCart_{customerId}_";
+            var cart = GetCart();
+            var removedItems = false;
+
+            foreach (var key in browserSession.Keys
+                .Where(key => key.StartsWith(prefix, StringComparison.Ordinal))
+                .ToList())
+            {
+                if (!int.TryParse(key[prefix.Length..], out var orderId))
+                    continue;
+
+                var details = _orderService.GetOrderDetails(orderId);
+
+                if (details == null ||
+                    details.Order.CustId != customerId ||
+                    details.Payment?.PaymentStatus != PaymentStatus.Paid)
+                {
+                    continue;
+                }
+
+                var json = browserSession.GetString(key);
+
+                if (json == null)
+                    continue;
+
+                var purchasedItems = JsonSerializer.Deserialize<List<CartItemViewModel>>(json);
+
+                if (purchasedItems == null)
+                    continue;
+
+                foreach (var purchased in purchasedItems)
+                {
+                    var item = cart.Items.FirstOrDefault(current =>
+                        current.CartItemId == purchased.CartItemId &&
+                        current.SizeId == purchased.SizeId &&
+                        current.FlavourId == purchased.FlavourId &&
+                        current.TierId == purchased.TierId &&
+                        current.Quantity == purchased.Quantity &&
+                        current.MessageOnCakes == purchased.MessageOnCakes);
+
+                    if (item != null)
+                    {
+                        cart.Items.Remove(item);
+                        removedItems = true;
+                    }
+                }
+
+                browserSession.Remove(key);
+            }
+
+            if (removedItems)
+            {
+                SaveCart(cart);
+
+                if (cart.Items.Count == 0)
+                    browserSession.Remove($"CheckoutDraft_{customerId}");
+            }
         }
 
         public void ClearCart()

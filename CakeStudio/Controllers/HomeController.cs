@@ -25,7 +25,9 @@ namespace CakeStudio.Controllers
         public IActionResult Index()
         {
             var cakes = _cakeService.GetAll();
-            var orders = _orderService.GetAll();
+            var orders = _orderService.GetAll()
+                .Where(o => o.OrderStatus != OrderStatus.AwaitingPayment)
+                .ToList();
 
             var today = DateTime.Today;
 

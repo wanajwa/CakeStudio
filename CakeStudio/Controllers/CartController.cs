@@ -28,8 +28,13 @@ namespace CakeStudio.Controllers
 
         // Display cart
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(int? orderId)
         {
+            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (int.TryParse(customerId, out var paidCartCustomerId))
+                _cartService.RemovePaidCheckoutItems(paidCartCustomerId);
+
             var model = _cartService.GetCart();
 
             ViewBag.Sizes = _cakeSizeService.GetAll()
@@ -55,8 +60,6 @@ namespace CakeStudio.Controllers
                 .Select(cake => cake.CakeId)
                 .ToHashSet();
 
-            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             if (int.TryParse(customerId, out var id))
             {
                 var draftJson = HttpContext.Session.GetString($"CheckoutDraft_{id}");
@@ -66,6 +69,8 @@ namespace CakeStudio.Controllers
                     ViewBag.CheckoutDraft = JsonSerializer.Deserialize<OrderViewModel>(draftJson);
                 }
             }
+
+            ViewBag.AwaitingPaymentOrderId = orderId;
 
             return View(model);
         }
