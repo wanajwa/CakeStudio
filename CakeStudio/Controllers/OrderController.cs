@@ -82,8 +82,7 @@ namespace CakeStudio.Controllers
                 RequiredTime = requiredTime
             };
 
-            HttpContext.Session.SetString($"CheckoutDraft_{customerId.Value}",
-                JsonSerializer.Serialize(new { order.RequiredDate, order.RequiredTime }));
+            HttpContext.Session.SetString($"CheckoutDraft_{customerId.Value}", JsonSerializer.Serialize(new { order.RequiredDate, order.RequiredTime }));
 
             if (items.Count == 0)
             {
@@ -132,13 +131,11 @@ namespace CakeStudio.Controllers
                         var stripeSessions = _stripeClient.V1.Checkout.Sessions;
                         var cancellationToken = HttpContext.RequestAborted;
 
-                        var previousSession = await stripeSessions.GetAsync(
-                            previousSessionId, cancellationToken: cancellationToken);
+                        var previousSession = await stripeSessions.GetAsync(previousSessionId, cancellationToken: cancellationToken);
 
                         if (previousSession.PaymentStatus == "paid")
                         {
-                            return RedirectToAction(
-                                nameof(Payment), new { sessionId = previousSessionId });
+                            return RedirectToAction(nameof(Payment), new { sessionId = previousSessionId });
                         }
 
                         if (previousSession.Status == "open")
@@ -152,8 +149,7 @@ namespace CakeStudio.Controllers
                             return RedirectToAction(nameof(Details), new { id = orderId.Value });
                         }
 
-                        _orderService.ClearStripeSession(
-                            orderId.Value, customerId.Value, previousSessionId);
+                        _orderService.ClearStripeSession(orderId.Value, customerId.Value, previousSessionId);
                     }
                 }
 

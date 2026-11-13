@@ -269,8 +269,7 @@ namespace CakeStudio.Services
 
         public int CreateAwaitingPayment(int customerId, OrderViewModel model, int? existingOrderId = null)
         {
-            return CreateOrder(
-                customerId, model, PaymentMethod.Card,
+            return CreateOrder(customerId, model, PaymentMethod.Card,
                 stripeCheckoutSessionId: null,
                 stripeAmountInSen: null,
                 awaitingPayment: true,
