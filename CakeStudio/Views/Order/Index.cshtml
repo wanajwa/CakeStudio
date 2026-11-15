@@ -125,7 +125,7 @@
                     <option class="text-dark"
                             value="pending"
                             selected="@(sort == "pending")">
-                        Pending
+                        Order Placed
                     </option>
 
                     <option class="text-dark"
@@ -188,7 +188,7 @@
                         {
                             string statusClass = order.OrderStatus switch
                             {
-                                OrderStatus.Pending => "status-pending",
+                                OrderStatus.OrderPlaced => "status-pending",
                                 OrderStatus.Preparing => "status-preparing",
                                 OrderStatus.Ready => "status-ready",
                                 OrderStatus.Completed => "status-completed",
@@ -198,7 +198,7 @@
 
                             string[] nextStatuses = order.OrderStatus switch
                             {
-                                OrderStatus.Pending => new[]
+                                OrderStatus.OrderPlaced => new[]
                                 {
                                         OrderStatus.Preparing,
                                         OrderStatus.Rejected
@@ -261,7 +261,7 @@
                                                     data-bs-toggle="dropdown"
                                                     aria-expanded="false"
                                                     aria-label="Change order @no status">
-                                                @order.OrderStatus
+                                                @(order.OrderStatus == OrderStatus.OrderPlaced ? "Order Placed" : order.OrderStatus)
                                              </button>
 
                                         <ul class="dropdown-menu dropdown-menu-end">
@@ -307,7 +307,7 @@
                                     else
                                     {
                                         <span class="order-status @statusClass">
-                                            @order.OrderStatus
+                                            @(order.OrderStatus == OrderStatus.OrderPlaced ? "Order Placed" : order.OrderStatus)
                                         </span>
                                     }
                                 </td>

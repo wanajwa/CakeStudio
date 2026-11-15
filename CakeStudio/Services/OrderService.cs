@@ -86,7 +86,7 @@ namespace CakeStudio.Services
             switch (sort)
             {
                 case "pending":
-                    query.Where(o => o.OrderStatus == OrderStatus.Pending);
+                    query.Where(o => o.OrderStatus == OrderStatus.OrderPlaced);
                     break;
 
                 case "preparing":
@@ -106,7 +106,7 @@ namespace CakeStudio.Services
                     break;
 
                 case "nearest":
-                    query.Where(o => o.OrderStatus == OrderStatus.Pending || o.OrderStatus == OrderStatus.Preparing);
+                    query.Where(o => o.OrderStatus == OrderStatus.OrderPlaced || o.OrderStatus == OrderStatus.Preparing);
                     break;
             }
 
@@ -467,7 +467,7 @@ namespace CakeStudio.Services
                         TotalPrice = totalPrice,
                         OrderStatus = awaitingPayment
                             ? OrderStatus.AwaitingPayment
-                            : OrderStatus.Pending,
+                            : OrderStatus.OrderPlaced,
                         CreatedAt = DateTime.Now,
                         CreatedId = customerId
                     };
@@ -588,7 +588,7 @@ namespace CakeStudio.Services
             {
                 payment.PaymentStatus = PaymentStatus.Paid;
                 payment.PaidAt = DateTime.Now;
-                payment.Order.OrderStatus = OrderStatus.Pending;
+                payment.Order.OrderStatus = OrderStatus.OrderPlaced;
             }
             else if (payment.PaymentStatus != PaymentStatus.Paid && payment.PaymentStatus != PaymentStatus.Refunded)
             {
@@ -712,7 +712,7 @@ namespace CakeStudio.Services
                 throw new UnauthorizedAccessException(Resource.OrderEditForbidden);
 
             // Editing is allowed only before preparation starts
-            if (order.OrderStatus != OrderStatus.Pending)
+            if (order.OrderStatus != OrderStatus.OrderPlaced)
                 throw new InvalidOperationException(Resource.OrderEditNotAllowed);
 
             if (!model.RequiredDate.HasValue || !model.RequiredTime.HasValue)
@@ -819,7 +819,7 @@ namespace CakeStudio.Services
                 var allowedTransitions = new Dictionary<string, string[]>
                 {
                     { 
-                        OrderStatus.Pending, new[] 
+                        OrderStatus.OrderPlaced, new[] 
                         { 
                             OrderStatus.Preparing, OrderStatus.Rejected
                         }

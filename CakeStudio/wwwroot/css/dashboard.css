@@ -139,7 +139,7 @@
     font-weight: 500;
 }
 
-.dashboard-status[data-status="Pending"] {
+.dashboard-status[data-status="Order Placed"] {
     background: #fff3dc;
     color: #a66a12;
 }

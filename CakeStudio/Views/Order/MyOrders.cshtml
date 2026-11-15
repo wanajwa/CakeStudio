@@ -73,7 +73,7 @@
                                     string statusClass = order.OrderStatus switch
                                     {
                                             OrderStatus.AwaitingPayment => "status-awaiting-payment",
-                                            OrderStatus.Pending => "status-pending",
+                                            OrderStatus.OrderPlaced => "status-pending",
                                             OrderStatus.Preparing => "status-preparing",
                                             OrderStatus.Ready => "status-ready",
                                             OrderStatus.Completed => "status-completed",
@@ -83,7 +83,12 @@
                                 }
 
                                 <span class="order-status @statusClass">
-                                        @(order.OrderStatus == OrderStatus.AwaitingPayment ? "Payment Pending" : order.OrderStatus)
+                                    @(order.OrderStatus switch
+                                    {
+                                        OrderStatus.AwaitingPayment => "Payment Pending",
+                                        OrderStatus.OrderPlaced => "Order Placed",
+                                        _ => order.OrderStatus
+                                    })
                                 </span>
                             </td>
                         </tr>

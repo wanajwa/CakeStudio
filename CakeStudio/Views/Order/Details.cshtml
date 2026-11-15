@@ -37,7 +37,7 @@
         string statusClass = Model.Order.OrderStatus switch
         {
             OrderStatus.AwaitingPayment => "status-awaiting-payment",
-            OrderStatus.Pending => "status-pending",
+            OrderStatus.OrderPlaced => "status-pending",
             OrderStatus.Preparing => "status-preparing",
             OrderStatus.Ready => "status-ready",
             OrderStatus.Completed => "status-completed",
@@ -61,9 +61,12 @@
         <div class="d-flex align-items-center flex-wrap gap-3">
 
             <span class="order-status @statusClass">
-                @(Model.Order.OrderStatus == OrderStatus.AwaitingPayment
-                    ? "Payment Pending" 
-                    : Model.Order.OrderStatus)
+                @(Model.Order.OrderStatus switch
+                {
+                    OrderStatus.AwaitingPayment => "Payment Pending",
+                    OrderStatus.OrderPlaced => "Order Placed",
+                    _ => Model.Order.OrderStatus
+                })
             </span>
 
             @if (User.IsInRole("Customer") &&
@@ -76,7 +79,7 @@
             }
 
             @if (User.IsInRole("Customer") &&
-                        Model.Order.OrderStatus == OrderStatus.Pending)
+                        Model.Order.OrderStatus == OrderStatus.OrderPlaced)
             {
                 <a asp-controller="Order"
                    asp-action="Edit"

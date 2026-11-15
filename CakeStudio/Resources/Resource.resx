@@ -367,7 +367,7 @@
     <value>Your cart is empty. Please add a cake first.</value>
   </data>
   <data name="OrderEditNotAllowed" xml:space="preserve">
-    <value>Only pending orders can be edited.</value>
+    <value>You can only edit an order while it is awaiting baker acceptance.</value>
   </data>
   <data name="OrderUpdatedSuccess" xml:space="preserve">
     <value>Order updated successfully.</value>

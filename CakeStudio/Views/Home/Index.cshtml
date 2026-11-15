@@ -1,5 +1,6 @@
 ﻿@model CakeStudio.ViewModels.DashboardViewModel
 @using System.Text.Json
+@using CakeStudio.Constant
 
 @{
     ViewData["Title"] = "Dashboard";
@@ -43,7 +44,7 @@
         <div class="col-md-6 col-xl-3">
             <div class="card dashboard-card h-100">
                 <div class="card-body p-4">
-                    <div class="dashboard-card-label">Pending Orders</div>
+                    <div class="dashboard-card-label">Orders Awaiting Acceptance</div>
                     <h3 class="dashboard-card-value">@Model.PendingOrders</h3>
                 </div>
             </div>
@@ -183,9 +184,8 @@
                                     </td>
 
                                     <td>
-                                        <span class="dashboard-status"
-                                              data-status="@order.OrderStatus">
-                                            @order.OrderStatus
+                                        <span class="dashboard-status" data-status="@order.OrderStatus">
+                                            @(order.OrderStatus == OrderStatus.OrderPlaced ? "Order Placed" : order.OrderStatus)
                                         </span>
                                     </td>
                                 </tr>

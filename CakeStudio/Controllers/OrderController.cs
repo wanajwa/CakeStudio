@@ -212,7 +212,7 @@ namespace CakeStudio.Controllers
             if (order.CustId != customerId.Value)
                 return Forbid();
 
-            if (order.OrderStatus != OrderStatus.Pending)
+            if (order.OrderStatus != OrderStatus.OrderPlaced)
             {
                 TempData["ErrorMessage"] = Resource.OrderEditNotAllowed;
 
@@ -253,7 +253,7 @@ namespace CakeStudio.Controllers
             if (order.CustId != customerId.Value)
                 return Forbid();
 
-            if (order.OrderStatus != OrderStatus.Pending)
+            if (order.OrderStatus != OrderStatus.OrderPlaced)
             {
                 TempData["ErrorMessage"] = Resource.OrderEditNotAllowed;
 

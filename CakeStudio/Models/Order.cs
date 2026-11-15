@@ -18,7 +18,7 @@ namespace CakeStudio.Models
 
         [Required]
         [StringLength(50)]
-        public virtual string OrderStatus { get; set; } = "Pending";
+        public virtual string OrderStatus { get; set; } = CakeStudio.Constant.OrderStatus.OrderPlaced;
 
         public virtual DateTime CreatedAt { get; set; } = DateTime.Now;
 

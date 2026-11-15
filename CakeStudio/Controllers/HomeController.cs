@@ -35,7 +35,7 @@ namespace CakeStudio.Controllers
             var payments = _orderService.GetAllPayments();
 
             var paidPayments = payments
-                .Where(p => p.PaymentStatus == PaymentStatus.Paid && p.Order.OrderStatus != OrderStatus.Pending)
+                .Where(p => p.PaymentStatus == PaymentStatus.Paid && p.Order.OrderStatus != OrderStatus.OrderPlaced)
                 .ToList();
             var cakeSalesByOrder = orders.ToDictionary(order => order.OrderId, order => order.OrderItems.Sum(item => item.UnitPrice * item.Quantity));
 
@@ -140,7 +140,7 @@ namespace CakeStudio.Controllers
             var upcomingOrders = orders
                 .Where(o => o.RequiredDate.HasValue &&
                             o.RequiredDate.Value >= today &&
-                            (o.OrderStatus == OrderStatus.Pending ||
+                            (o.OrderStatus == OrderStatus.OrderPlaced ||
                              o.OrderStatus == OrderStatus.Preparing))
                 .OrderBy(o => o.RequiredDate)
                 .Take(5)
@@ -152,7 +152,7 @@ namespace CakeStudio.Controllers
 
                 AvailableCakes = cakes.Count(c => c.IsAvailable),
 
-                PendingOrders = orders.Count(o => o.OrderStatus == OrderStatus.Pending),
+                PendingOrders = orders.Count(o => o.OrderStatus == OrderStatus.OrderPlaced),
 
                 TotalSales = paidPayments.Sum(p => cakeSalesByOrder.GetValueOrDefault(p.Order.OrderId)),
 
