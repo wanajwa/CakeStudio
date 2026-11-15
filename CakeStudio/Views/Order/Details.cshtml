@@ -185,8 +185,23 @@
                 @foreach (var item in Model.OrderItems)
                 {
                     <div class="mb-4">
-                        <div class="order-item-name">
-                            @(item.Cake?.CakeName ?? "Unknown Cake")
+                        <div class="order-item-name d-flex align-items-center gap-2">
+                            <img src="@Url.Action("CakeImage", "Order", new
+                                 {
+                                     id = Model.Order.OrderId,
+                                     cakeId = item.CakeId
+                                 })"
+                                    class="cart-cake-image"
+                                    alt=""
+                                    loading="lazy"
+                                    onerror="this.hidden = true; this.nextElementSibling.classList.remove('d-none');" />
+
+                            <span class="d-none cart-cake-image bg-light text-center align-content-center">
+                                <i class="bi bi-cake2" aria-hidden="true"></i>
+                                <span class="visually-hidden">No image available</span>
+                            </span>
+
+                            <span>@(item.Cake?.CakeName ?? "Unknown Cake")</span>
                         </div>
 
                         <div class="order-item-options">

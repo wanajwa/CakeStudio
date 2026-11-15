@@ -333,6 +333,40 @@ namespace CakeStudio.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "Customer,Baker")]
+        [HttpGet]
+        public IActionResult CakeImage(int id, int cakeId, [FromServices] ICakeService cakeService)
+        {
+            var userId = GetCurrentUserId();
+
+            if (!userId.HasValue)
+                return Challenge();
+
+            var details = _orderService.GetOrderDetails(id);
+
+            if (details == null)
+                return NotFound();
+
+            if (User.IsInRole("Customer") && details.Order.CustId != userId.Value)
+                return Forbid();
+
+            if (User.IsInRole("Baker") &&
+                details.Order.OrderStatus == OrderStatus.AwaitingPayment)
+            {
+                return NotFound();
+            }
+
+            if (!details.OrderItems.Any(item => item.CakeId == cakeId))
+                return NotFound();
+
+            var image = cakeService.GetById(cakeId)?.Image;
+
+            if (image == null || image.ImageContent is not { Length: > 0 })
+                return NotFound();
+
+            return File(image.ImageContent, image.ImageType);
+        }
+
         // Baker: All orders
         [Authorize(Roles = "Baker")]
         [HttpGet]
