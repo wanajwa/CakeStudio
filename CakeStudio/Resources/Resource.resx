@@ -501,4 +501,10 @@
   <data name="RemainingCakeCapacityMultiple" xml:space="preserve">
     <value> Only {0} more cakes can be booked for this date.</value>
   </data>
+  <data name="CatalogueItemUsedInOrder" xml:space="preserve">
+    <value> This item is used in an existing order. Mark it as unavailable instead.</value>
+  </data>
+  <data name="FlavourUsedAsCakeDefault" xml:space="preserve">
+    <value> This flavour is a cake's default flavour. Change the cake's default flavour before deleting it.</value>
+  </data>
 </root>

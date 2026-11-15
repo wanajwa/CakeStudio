@@ -199,7 +199,7 @@ namespace CakeStudio.Services
         public void Delete(int id)
         {
             using var session = _nhibernateHelper.OpenSession();
-            using var transaction = session.BeginTransaction();
+            using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
             try
             {
                 var cake = session.QueryOver<Cake>()
@@ -211,6 +211,12 @@ namespace CakeStudio.Services
                     transaction.Rollback();
                     return;
                 }
+
+                if (session.QueryOver<OrderItem>().Where(item => item.CakeId == id).RowCount() > 0)
+                {
+                    throw new InvalidOperationException(Resource.CatalogueItemUsedInOrder);
+                }
+
                 // Keep the image before deleting the cake
                 var image = cake.Image;
 

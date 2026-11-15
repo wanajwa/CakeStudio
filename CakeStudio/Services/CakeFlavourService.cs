@@ -105,7 +105,7 @@ namespace CakeStudio.Services
         public void Delete(int id)
         {
             using var session = _nhibernateHelper.OpenSession();
-            using var transaction = session.BeginTransaction();
+            using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
             try
             {
@@ -115,6 +115,21 @@ namespace CakeStudio.Services
 
                 if (cakeFlavour == null)
                     return;
+
+                if (session.QueryOver<OrderItem>()
+                    .Where(item => item.FlavourId == id)
+                    .RowCount() > 0)
+                {
+                    throw new InvalidOperationException(Resource.CatalogueItemUsedInOrder);
+                }
+
+                if (session.QueryOver<Cake>()
+                    .JoinQueryOver(cake => cake.Flavour)
+                    .Where(flavour => flavour.FlavourId == id)
+                    .RowCount() > 0)
+                {
+                    throw new InvalidOperationException(Resource.FlavourUsedAsCakeDefault);
+                }
 
                 session.Delete(cakeFlavour);
                 transaction.Commit();

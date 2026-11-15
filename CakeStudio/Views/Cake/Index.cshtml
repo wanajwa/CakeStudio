@@ -29,6 +29,12 @@
         </button>
     </div>
 }
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
 <div class="manage-orders-card pt-4">
     <div class="table-responsive">
 

@@ -98,7 +98,7 @@ namespace CakeStudio.Services
         public void Delete(int id)
         {
             using var session = _nhibernateHelper.OpenSession();
-            using var transaction = session.BeginTransaction();
+            using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
             try
             {
@@ -108,6 +108,11 @@ namespace CakeStudio.Services
 
                 if (cakeSize == null)
                     return;
+
+                if (session.QueryOver<OrderItem>().Where(item => item.SizeId == id).RowCount() > 0)
+                {
+                    throw new InvalidOperationException(Resource.CatalogueItemUsedInOrder);
+                }
 
                 session.Delete(cakeSize);
                 transaction.Commit();

@@ -439,6 +439,15 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to  This item is used in an existing order. Mark it as unavailable instead..
+        /// </summary>
+        public static string CatalogueItemUsedInOrder {
+            get {
+                return ResourceManager.GetString("CatalogueItemUsedInOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Collection method cannot be changed after payment..
         /// </summary>
         public static string CollectionMethodChangeNotAllowed {
@@ -570,6 +579,15 @@ namespace CakeStudio.Resources {
         public static string FlavourUnavailable {
             get {
                 return ResourceManager.GetString("FlavourUnavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  This flavour is a cake&apos;s default flavour. Change the cake&apos;s default flavour before deleting it..
+        /// </summary>
+        public static string FlavourUsedAsCakeDefault {
+            get {
+                return ResourceManager.GetString("FlavourUsedAsCakeDefault", resourceCulture);
             }
         }
         
@@ -880,7 +898,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only pending orders can be edited..
+        ///   Looks up a localized string similar to You can only edit an order while it is awaiting baker acceptance..
         /// </summary>
         public static string OrderEditNotAllowed {
             get {

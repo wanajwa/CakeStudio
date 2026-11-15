@@ -157,6 +157,10 @@ namespace CakeStudio.Controllers
 
                 TempData["SuccessMessage"] = Resource.CakeSizeDeletedSuccess;
             }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, Resource.CakeSizeDeleteFailed);
@@ -261,6 +265,10 @@ namespace CakeStudio.Controllers
 
                 TempData["SuccessMessage"] = Resource.CakeFlavourDeletedSuccess;
             }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, Resource.CakeFlavourDeleteFailed);
@@ -353,6 +361,10 @@ namespace CakeStudio.Controllers
                 }
                 _cakeTierService.Delete(id);
                 TempData["SuccessMessage"] = Resource.CakeTierDeletedSuccess;
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
             }
             catch (Exception ex)
             {

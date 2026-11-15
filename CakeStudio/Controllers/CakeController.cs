@@ -220,15 +220,21 @@ namespace CakeStudio.Controllers
         }
 
 
-        // Actually delete the Cake from the database.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-               _cakeService.Delete(id);
-            TempData["SuccessMessage"] = Resource.CakeDeletedSuccess;
+            try
+            {
+                _cakeService.Delete(id);
+                TempData["SuccessMessage"] = Resource.CakeDeletedSuccess;
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
     }
 }
