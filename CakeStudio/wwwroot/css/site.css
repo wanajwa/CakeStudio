@@ -1245,3 +1245,10 @@ html {
     object-fit: cover;
     border-radius: 8px;
 }
+
+
+/*status payment*/
+.order-status.status-awaiting-payment {
+    background-color: #ffedd5;
+    color: #9a3412;
+}

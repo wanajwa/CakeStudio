@@ -511,8 +511,7 @@ namespace CakeStudio.Services
         public void SaveStripeSession(int orderId, int customerId, string stripeSessionId)
         {
             using var session = _nhibernateHelper.OpenSession();
-            using var transaction = session.BeginTransaction(
-                System.Data.IsolationLevel.Serializable);
+            using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
             Order order = null!;
 

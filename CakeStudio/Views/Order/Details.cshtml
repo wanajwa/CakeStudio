@@ -36,7 +36,7 @@
     @{
         string statusClass = Model.Order.OrderStatus switch
         {
-            OrderStatus.AwaitingPayment => "status-pending",
+            OrderStatus.AwaitingPayment => "status-awaiting-payment",
             OrderStatus.Pending => "status-pending",
             OrderStatus.Preparing => "status-preparing",
             OrderStatus.Ready => "status-ready",
@@ -62,7 +62,7 @@
 
             <span class="order-status @statusClass">
                 @(Model.Order.OrderStatus == OrderStatus.AwaitingPayment
-                    ? "To Pay"
+                    ? "Payment Pending" 
                     : Model.Order.OrderStatus)
             </span>
 

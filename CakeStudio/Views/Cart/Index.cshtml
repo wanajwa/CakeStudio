@@ -62,7 +62,8 @@
 				<label for="requiredDate">Pickup Date</label>
 				<input id="requiredDate" name="RequiredDate" type="date"
 					   value="@pickupDate" form="cartCheckoutForm"
-					   class="form-control form-control-sm" required />
+					   class="form-control form-control-sm" required
+					   min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" />
 			</div>
 
 			<div class="cart-schedule-field">

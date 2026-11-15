@@ -11,8 +11,7 @@ namespace CakeStudio.Controllers
         private readonly IOrderService _orderService;
         private readonly IConfiguration _configuration;
 
-        public StripeWebhookController(
-            IOrderService orderService, IConfiguration configuration)
+        public StripeWebhookController(IOrderService orderService, IConfiguration configuration)
         {
             _orderService = orderService;
             _configuration = configuration;
@@ -49,8 +48,7 @@ namespace CakeStudio.Controllers
             {
                 try
                 {
-                    _orderService.ConfirmStripePayment(
-                        null, checkout.Id, checkout.AmountTotal.Value);
+                    _orderService.ConfirmStripePayment(null, checkout.Id, checkout.AmountTotal.Value);
                 }
                 catch (Exception ex)
                 {
