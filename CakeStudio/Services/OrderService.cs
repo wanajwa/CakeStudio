@@ -303,7 +303,7 @@ namespace CakeStudio.Services
             DateTime requiredDateTime = model.RequiredDate.Value.Date
                 .Add(model.RequiredTime.Value);
 
-            if (requiredDateTime <= DateTime.Now)
+            if (requiredDateTime.Date <= DateTime.Today)
             {
                 throw new ArgumentException(Resource.InvalidRequiredDateTime);
             }
@@ -780,7 +780,7 @@ namespace CakeStudio.Services
             DateTime requiredDateTime = model.RequiredDate.Value.Date
                 .Add(model.RequiredTime.Value);
 
-            if (requiredDateTime <= DateTime.Now)
+            if (requiredDateTime.Date <= DateTime.Today)
                 throw new ArgumentException(Resource.InvalidRequiredDateTime);
 
           

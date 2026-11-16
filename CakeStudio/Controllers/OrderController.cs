@@ -121,7 +121,7 @@ namespace CakeStudio.Controllers
                 }
 
 
-                if (!requiredDate.HasValue || !requiredTime.HasValue || requiredTime.Value < TimeSpan.Zero || requiredTime.Value >= TimeSpan.FromDays(1) || requiredDate.Value.Date.Add(requiredTime.Value) <= DateTime.Now)
+                if (!requiredDate.HasValue || !requiredTime.HasValue || requiredTime.Value < TimeSpan.Zero || requiredTime.Value >= TimeSpan.FromDays(1) || requiredDate.Value.Date <= DateTime.Now)
                 {
                     TempData["ErrorMessage"] = Resource.InvalidRequiredDateTime;
                     return RedirectToAction("Index", "Cart");
