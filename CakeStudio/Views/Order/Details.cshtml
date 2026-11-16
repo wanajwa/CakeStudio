@@ -2,6 +2,7 @@
 @model CakeStudio.ViewModels.OrderDetailsViewModel
 @{
     ViewData["Title"] = "Order Details";
+    var cakeImageSources = ViewData["CakeImageSources"] as Dictionary<int, string>;
 }
 
 <div class="container mt-4 mb-5">
@@ -208,23 +209,29 @@
                 {
                     <div class="mb-4">
                         <div class="order-item-name d-flex align-items-center gap-2">
-                            <img src="@Url.Action("CakeImage", "Order", new
-                                 {
-                                     id = Model.Order.OrderId,
-                                     cakeId = item.CakeId
-                                 })"
-                                    class="cart-cake-image"
-                                    alt=""
-                                    loading="lazy"
-                                    onerror="this.hidden = true; this.nextElementSibling.classList.remove('d-none');" />
+                            @{
+                                var imageSrc = cakeImageSources != null &&
+                                cakeImageSources.TryGetValue(item.CakeId, out var source)
+                                ? source
+                                : null;
+                            }
 
-                            <span class="d-none cart-cake-image bg-light text-center align-content-center">
-                                <i class="bi bi-cake2" aria-hidden="true"></i>
-                                <span class="visually-hidden">No image available</span>
-                            </span>
+                            @if (imageSrc != null)
+                            {
+                                <img src="@imageSrc"
+                                     class="cart-cake-image"
+                                     alt=""
+                                     loading="lazy"
+                                     onerror="this.hidden = true; this.nextElementSibling.classList.remove('d-none');" />
+                            }
 
-                            <span>@(item.Cake?.CakeName ?? "Unknown Cake")</span>
-                        </div>
+                        <span class="@(imageSrc != null ? "d-none" : "") cart-cake-image bg-light text-center align-content-center">
+                            <i class="bi bi-cake2" aria-hidden="true"></i>
+                            <span class="visually-hidden">No image available</span>
+                        </span>
+
+                        <span>@(item.Cake?.CakeName ?? "Unknown Cake")</span>
+                    </div>
 
                         <div class="order-item-options">
                             <div>

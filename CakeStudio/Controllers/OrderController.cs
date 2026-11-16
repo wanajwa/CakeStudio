@@ -18,13 +18,15 @@ namespace CakeStudio.Controllers
     public class OrderController : Controller
     {
         private readonly IOrderService _orderService;
+        private readonly ICakeService _cakeService;
         private readonly ICartService _cartService;
         private readonly ILogger<OrderController> _logger;
         private readonly Stripe.StripeClient _stripeClient;
         private readonly IConfiguration _configuration;
-        public OrderController( IOrderService orderService,ICartService cartService, ILogger<OrderController> logger, Stripe.StripeClient stripeClient, IConfiguration configuration)
+        public OrderController( IOrderService orderService, ICakeService cakeService, ICartService cartService, ILogger<OrderController> logger, Stripe.StripeClient stripeClient, IConfiguration configuration)
         {
             _orderService = orderService;
+            _cakeService = cakeService;
             _cartService = cartService;
             _logger = logger;
             _stripeClient = stripeClient;
@@ -356,42 +358,25 @@ namespace CakeStudio.Controllers
             if (model == null)
                 return NotFound();
 
+            var cakeImageSources = new Dictionary<int, string>();
+
+            foreach (var cakeId in model.OrderItems.Select(item => item.CakeId).Distinct())
+            {
+                var image = _cakeService.GetById(cakeId)?.Image;
+
+                if (image?.ImageContent is not { Length: > 0 } imageBytes)
+                    continue;
+
+                cakeImageSources[cakeId] =
+                    $"data:{image.ImageType};base64,{Convert.ToBase64String(imageBytes)}";
+            }
+
+            ViewData["CakeImageSources"] = cakeImageSources;
+
             return View(model);
         }
 
-        [Authorize(Roles = "Customer,Baker")]
-        [HttpGet]
-        public IActionResult CakeImage(int id, int cakeId, [FromServices] ICakeService cakeService)
-        {
-            var userId = GetCurrentUserId();
-
-            if (!userId.HasValue)
-                return Challenge();
-
-            var details = _orderService.GetOrderDetails(id);
-
-            if (details == null)
-                return NotFound();
-
-            if (User.IsInRole("Customer") && details.Order.CustId != userId.Value)
-                return Forbid();
-
-            if (User.IsInRole("Baker") && (details.Order.OrderStatus == OrderStatus.PendingPayment || details.Order.OrderStatus == OrderStatus.Cancelled))
-            {
-                return NotFound();
-            }
-
-            if (!details.OrderItems.Any(item => item.CakeId == cakeId))
-                return NotFound();
-
-            var image = cakeService.GetById(cakeId)?.Image;
-
-            if (image == null || image.ImageContent is not { Length: > 0 })
-                return NotFound();
-
-            return File(image.ImageContent, image.ImageType);
-        }
-
+      
         // Baker: All orders
         [Authorize(Roles = "Baker")]
         [HttpGet]
