@@ -655,7 +655,7 @@ namespace CakeStudio.Services
                 payment.PaidAt = DateTime.Now;
                 payment.Order.OrderStatus = OrderStatus.OrderPlaced;
             }
-            else if (payment.PaymentStatus != PaymentStatus.Paid && payment.PaymentStatus != PaymentStatus.Refunded)
+            else if (payment.PaymentStatus != PaymentStatus.Paid && payment.PaymentStatus != PaymentStatus.Refunded && payment.PaymentStatus != PaymentStatus.RefundRequired)
             {
                 throw new InvalidOperationException(Resource.StripePaymentNotVerified);
             }
@@ -976,6 +976,15 @@ namespace CakeStudio.Services
                     }
 
                     order.RejectionReason = rejectionReason;
+
+                    var payment = session.QueryOver<Payment>()
+                        .Where(p => p.Order.OrderId == orderId)
+                        .SingleOrDefault();
+
+                    if (payment?.PaymentStatus == PaymentStatus.Paid)
+                    {
+                        payment.PaymentStatus = PaymentStatus.RefundRequired;
+                    }
                 }
 
                 order.OrderStatus = status;

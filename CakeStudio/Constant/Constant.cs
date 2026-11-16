@@ -18,6 +18,7 @@
         public const string Refunded = "Refunded";
         public const string Pending = "Pending";
         public const string PaymentCancelled = "PaymentCancelled";
+        public const string RefundRequired = "RefundRequired";
     }
 
     public static class PaymentMethod

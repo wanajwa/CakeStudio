@@ -306,6 +306,12 @@
                                     Paid
                                 </span>
                             }
+                            else if (Model.Payment.PaymentStatus == PaymentStatus.RefundRequired)
+                            {
+                                <span class="order-status status-rejected">
+                                    @(User.IsInRole("Baker") ? "Refund Required" : "Awaiting Refund")
+                                </span>
+                            }
                             else if (Model.Payment.PaymentStatus == PaymentStatus.Refunded)
                             {
                                 <span class="order-status status-rejected">
