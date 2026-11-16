@@ -1,5 +1,7 @@
 ﻿@model CakeStudio.ViewModels.CartViewModel
 @using CakeStudio.Models
+@using CakeStudio.Resources
+@using CakeStudio.Constant
 
 @{
 	ViewData["Title"] = "My Cart";
@@ -28,10 +30,12 @@
 		</div>
 	}
 
-	@if (TempData["ErrorMessage"] != null)
+	@if (TempData["ErrorMessage"] is string errorMessage)
 	{
-		<div class="alert alert-danger">
-			@TempData["ErrorMessage"]
+		var isPickupTimeError = errorMessage == Resource.InvalidPickupTime ? "true" : "false";
+
+		<div class="alert alert-danger" data-pickup-time-error="@isPickupTimeError">
+			@errorMessage
 		</div>
 	}
 
@@ -70,6 +74,8 @@
 				<label for="requiredTime">Pickup Time</label>
 				<input id="requiredTime" name="RequiredTime" type="time"
 					   value="@pickupTime" form="cartCheckoutForm"
+					   min="@(PickupHours.OpensAt.ToString(@"hh\:mm"))"
+					   max="@(PickupHours.ClosesAt.ToString(@"hh\:mm"))"
 					   class="form-control form-control-sm" required />
 			</div>
 		</div>
@@ -295,6 +301,26 @@
 	<script>
 		const cartForm = document.getElementById("cartCheckoutForm");
 		const cards = document.querySelectorAll("[data-cart-item]");
+		const pickupTimeInput = document.getElementById("requiredTime");
+		const pickupTimeAlert = document.querySelector('[data-pickup-time-error="true"]');
+
+		pickupTimeInput?.addEventListener("input", () => {
+			if (pickupTimeInput.validity.valid) {
+				pickupTimeAlert?.classList.add("d-none");
+			}
+		});
+
+		const pickupDateInput = document.getElementById("requiredDate");
+
+		pickupDateInput?.addEventListener("invalid", () => {
+			if (pickupDateInput.validity.valueMissing) {
+				pickupDateInput.setCustomValidity("Please select a pickup date.");
+			}
+		});
+
+		pickupDateInput?.addEventListener("input", () => {
+			pickupDateInput.setCustomValidity("");
+		});
 
 		function saveCartOnClick(link, saveUrl) {
 			if (!link || cards.length === 0) {
@@ -383,8 +409,6 @@
 				checkoutButton.disabled = checkoutSubmitting || !allValid;
 			}
 		}
-
-		async function refreshItemPrice(card) {
 
 		async function refreshItemPrice(card) {
 			const state = priceStates.get(card);

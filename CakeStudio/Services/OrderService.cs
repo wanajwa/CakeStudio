@@ -300,6 +300,11 @@ namespace CakeStudio.Services
                 throw new ArgumentException(Resource.InvalidRequiredDateTime);
             }
 
+            if (!PickupHours.IsValid(model.RequiredTime.Value))
+            {
+                throw new ArgumentException(Resource.InvalidPickupTime);
+            }
+
             DateTime requiredDateTime = model.RequiredDate.Value.Date
                 .Add(model.RequiredTime.Value);
 
@@ -785,9 +790,9 @@ namespace CakeStudio.Services
                 throw new ArgumentException(Resource.InvalidRequiredDateTime);
             }
 
-            if (model.RequiredTime.Value < TimeSpan.Zero ||model.RequiredTime.Value >= TimeSpan.FromDays(1))
+            if (!PickupHours.IsValid(model.RequiredTime.Value))
             {
-                throw new ArgumentException(Resource.InvalidRequiredDateTime);
+                throw new ArgumentException(Resource.InvalidPickupTime);
             }
 
             DateTime requiredDateTime = model.RequiredDate.Value.Date

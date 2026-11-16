@@ -808,6 +808,15 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pickup time must be between 8:00 AM and 5:00 PM..
+        /// </summary>
+        public static string InvalidPickupTime {
+            get {
+                return ResourceManager.GetString("InvalidPickupTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid registration type.
         /// </summary>
         public static string InvalidRegistrationType {

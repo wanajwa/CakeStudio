@@ -513,4 +513,7 @@
   <data name="StripePaymentReturnURLFailed" xml:space="preserve">
     <value>Could not generate the payment return URL.</value>
   </data>
+  <data name="InvalidPickupTime" xml:space="preserve">
+    <value>Pickup time must be between 8:00 AM and 5:00 PM.</value>
+  </data>
 </root>

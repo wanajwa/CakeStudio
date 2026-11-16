@@ -128,6 +128,12 @@ namespace CakeStudio.Controllers
                     return RedirectToAction("Index", "Cart");
                 }
 
+                if (!PickupHours.IsValid(requiredTime.Value))
+                {
+                    TempData["ErrorMessage"] = Resource.InvalidPickupTime;
+                    return RedirectToAction("Index", "Cart", new { orderId });
+                }
+
                 try
                 {
                     if (orderId.HasValue)

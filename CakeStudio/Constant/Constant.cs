@@ -31,4 +31,14 @@
         public const int DailyLimit = 5;
     }
 
+    public static class PickupHours
+    {
+        public static readonly TimeSpan OpensAt = TimeSpan.FromHours(8);
+        public static readonly TimeSpan ClosesAt = TimeSpan.FromHours(17);
+
+        public static bool IsValid(TimeSpan time)
+        {
+            return time >= OpensAt && time <= ClosesAt;
+        }
+    }
 }
