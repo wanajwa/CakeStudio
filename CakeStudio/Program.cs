@@ -8,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
 builder.Services.AddSingleton<NHibernateHelper>();
 builder.Services.AddScoped<ICakeService, CakeService>();
 builder.Services.AddScoped<IUserService, UserService>();
