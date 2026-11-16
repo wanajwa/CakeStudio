@@ -511,24 +511,6 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Delivery address is required.
-        /// </summary>
-        public static string DeliveryAddressRequired {
-            get {
-                return ResourceManager.GetString("DeliveryAddressRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Delivery address must not exceed 500 characters..
-        /// </summary>
-        public static string DeliveryAddressTooLong {
-            get {
-                return ResourceManager.GetString("DeliveryAddressTooLong", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to This cake flavour already exists..
         /// </summary>
         public static string DuplicateCakeFlavour {
@@ -835,7 +817,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pickup or delivery date and time must be in the future.
+        ///   Looks up a localized string similar to Pickup date and time must be in the future.
         /// </summary>
         public static string InvalidRequiredDateTime {
             get {
@@ -1024,20 +1006,11 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Payment record not found for this order..
+        ///   Looks up a localized string similar to  Payment record not found for this order..
         /// </summary>
         public static string PaymentNotFound {
             get {
                 return ResourceManager.GetString("PaymentNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Only paid payments can be refunded..
-        /// </summary>
-        public static string PaymentRefundNotAllowed {
-            get {
-                return ResourceManager.GetString("PaymentRefundNotAllowed", resourceCulture);
             }
         }
         

@@ -129,9 +129,6 @@
   <data name="CakeUpdatedSuccess" xml:space="preserve">
     <value>Cake updated successfully!</value>
   </data>
-  <data name="DeliveryAddressRequired" xml:space="preserve">
-    <value>Delivery address is required</value>
-  </data>
   <data name="FlavourRequired" xml:space="preserve">
     <value>Please select a flavour</value>
   </data>
@@ -166,7 +163,7 @@
     <value>Calculated order price is invalid</value>
   </data>
   <data name="InvalidRequiredDateTime" xml:space="preserve">
-    <value>Pickup or delivery date and time must be in the future</value>
+    <value>Pickup date and time must be in the future</value>
   </data>
   <data name="OrderNotFound" xml:space="preserve">
     <value>Order not found</value>
@@ -408,17 +405,11 @@
   <data name="OrderEditForbidden" xml:space="preserve">
     <value>You cannot edit this order.</value>
   </data>
-  <data name="DeliveryAddressTooLong" xml:space="preserve">
-    <value>Delivery address must not exceed 500 characters.</value>
-  </data>
   <data name="InvalidOrderItems" xml:space="preserve">
     <value>Invalid order items.</value>
   </data>
-  <data name="PaymentRefundNotAllowed" xml:space="preserve">
-    <value>Only paid payments can be refunded.</value>
-  </data>
   <data name="PaymentNotFound" xml:space="preserve">
-    <value>Payment record not found for this order.</value>
+    <value> Payment record not found for this order.</value>
   </data>
   <data name="OrderCustomerMissing" xml:space="preserve">
     <value>This order has no customer assigned.</value>
