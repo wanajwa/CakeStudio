@@ -308,8 +308,21 @@
                             }
                             else if (Model.Payment.PaymentStatus == PaymentStatus.RefundRequired)
                             {
+                                var threeDaysPassed = Model.Order.UpdatedAt is DateTime rejectedAt && DateTime.Now >= rejectedAt.AddMinutes(1);
+
                                 <span class="order-status status-rejected">
-                                    @(User.IsInRole("Baker") ? "Refund Required" : "Awaiting Refund")
+                                    @if (User.IsInRole("Baker"))
+                                    {
+                                        <text>Refund Required</text>
+                                    }
+                                    else if (threeDaysPassed)
+                                    {
+                                        <text>Refunded</text>
+                                    }
+                                    else
+                                    {
+                                        <text>Awaiting Refund</text>
+                                    }
                                 </span>
                             }
                             else if (Model.Payment.PaymentStatus == PaymentStatus.Refunded)
