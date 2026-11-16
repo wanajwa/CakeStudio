@@ -1015,6 +1015,15 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Payment was not completed within the allowed time..
+        /// </summary>
+        public static string PaymentNotCompleted {
+            get {
+                return ResourceManager.GetString("PaymentNotCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to  Payment record not found for this order..
         /// </summary>
         public static string PaymentNotFound {

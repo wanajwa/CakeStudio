@@ -1,15 +1,16 @@
 ﻿
 using CakeStudio.Constant;
+using CakeStudio.Data;
 using CakeStudio.Models;
 using CakeStudio.Resources;
 using CakeStudio.Services;
 using CakeStudio.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using System.Security.Claims;
 using System.Text.Json;
 using static System.Net.WebRequestMethods;
-using Microsoft.Data.SqlClient;
 
 namespace CakeStudio.Controllers
 {
@@ -407,72 +408,14 @@ namespace CakeStudio.Controllers
         [Authorize(Roles = "Baker")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateStatus(int orderId, string status, string? rejectionReason)
+        private Task<IActionResult> RunCheckoutLockedAsync(int customerId, Func<Task<IActionResult>> checkout)
         {
-            int? bakerId = GetCurrentUserId();
-
-            if (!bakerId.HasValue)
-                return Challenge();
-
-            try
-            {
-                _orderService.UpdateStatus(orderId, status, bakerId.Value, rejectionReason);
-
-                TempData["SuccessMessage"] = Resource.OrderStatusUpdatedSuccess;
-            }
-            catch (ArgumentException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
-            catch (InvalidOperationException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, Resource.OrderStatusUpdateFailed);
-                TempData["ErrorMessage"] = Resource.OrderStatusUpdateFailed;
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        private async Task<IActionResult> RunCheckoutLockedAsync(int customerId,Func<Task<IActionResult>> checkout)
-        {
-            var cancellationToken = HttpContext.RequestAborted;
-
-            await using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-
-            await connection.OpenAsync(cancellationToken);
-
-            await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync(cancellationToken);
-
-            await using var command = connection.CreateCommand();
-            command.Transaction = transaction;
-            command.CommandText = """
-                DECLARE @result INT;
-
-                EXEC @result = sp_getapplock
-                    @Resource = @resource,
-                    @LockMode = 'Exclusive',
-                    @LockOwner = 'Transaction',
-                    @LockTimeout = 10000;
-
-                SELECT @result;
-                """;
-
-            command.Parameters.AddWithValue("@resource", $"CakeStudio:checkout:{customerId}");
-
-            var result = (int)(await command.ExecuteScalarAsync(cancellationToken) ?? -1);
-
-            if (result < 0)
-                return StatusCode(503, Resource.PreviousPaymentProcessing);
-
-            return await checkout();
+            return CheckoutLock.RunAsync(
+                _configuration,
+                customerId,
+                checkout,
+                () => StatusCode(503, Resource.PreviousPaymentProcessing),
+                HttpContext.RequestAborted);
         }
 
         [Authorize(Roles = "Customer")]
@@ -679,10 +622,7 @@ namespace CakeStudio.Controllers
                     return BadRequest(Resource.StripePaymentNotVerified);
                 }
 
-                var orderId = _orderService.ConfirmStripePayment(
-                    customerId.Value,
-                    stripeSession.Id,
-                    stripeSession.AmountTotal.Value);
+                var orderId = _orderService.ConfirmStripePayment(customerId.Value,stripeSession.Id,stripeSession.AmountTotal.Value);
 
                 TempData["SuccessMessage"] = Resource.OrderPlacedSuccess;
 

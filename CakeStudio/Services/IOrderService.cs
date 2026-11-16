@@ -25,7 +25,9 @@ namespace CakeStudio.Services
 
         void ClearStripeSession(int orderId, int customerId, string stripeSessionId);
 
-        void CancelUnpaidOrder(int orderId, int customerId, string? stripeSessionId, string reason);
+        void CancelUnpaidOrder(int orderId, int customerId, string? stripeSessionId, string reason, bool automatic = false);
+
+        IReadOnlyList<(int OrderId, int CustomerId)> GetExpiredUnpaidOrders(DateTime cutoff);
 
         int ConfirmStripePayment(int? customerId, string stripeSessionId, long amountInSen);
 

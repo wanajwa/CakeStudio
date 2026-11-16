@@ -516,4 +516,7 @@
   <data name="OrderCannotBeCancelled" xml:space="preserve">
     <value>Only orders with pending payment can be cancelled.</value>
   </data>
+  <data name="PaymentNotCompleted" xml:space="preserve">
+    <value>Payment was not completed within the allowed time.</value>
+  </data>
 </root>

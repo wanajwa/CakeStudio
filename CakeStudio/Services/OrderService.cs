@@ -571,7 +571,7 @@ namespace CakeStudio.Services
             transaction.Commit();
         }
 
-        public void CancelUnpaidOrder(int orderId, int customerId, string? stripeSessionId, string reason)
+        public void CancelUnpaidOrder(int orderId, int customerId, string? stripeSessionId, string reason, bool automatic = false)
         {
             using var session = _nhibernateHelper.OpenSession();
             using var transaction = session.BeginTransaction(
@@ -603,11 +603,24 @@ namespace CakeStudio.Services
             order.OrderStatus = OrderStatus.Cancelled;
             order.CancellationReason = reason;
             order.UpdatedAt = DateTime.Now;
-            order.UpdatedId = customerId;
+            order.UpdatedId = automatic ? null : customerId;
 
             payment.PaymentStatus = PaymentStatus.PaymentCancelled;
 
             transaction.Commit();
+        }
+
+        public IReadOnlyList<(int OrderId, int CustomerId)> GetExpiredUnpaidOrders(DateTime cutoff)
+        {
+            using var session = _nhibernateHelper.OpenSession();
+
+            return session.QueryOver<Order>()
+                .Where(order => order.OrderStatus == OrderStatus.PendingPayment
+                    && order.CreatedAt <= cutoff)
+                .List()
+                .Where(order => order.CustId.HasValue)
+                .Select(order => (order.OrderId, order.CustId.GetValueOrDefault()))
+                .ToList();
         }
         public int ConfirmStripePayment(int? customerId,string stripeSessionId,long amountInSen)
         {
