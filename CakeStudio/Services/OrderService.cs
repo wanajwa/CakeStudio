@@ -678,7 +678,7 @@ namespace CakeStudio.Services
                 .JoinAlias(item => item.Order, () => order)
                 .Where(() => order.RequiredDate >= startDate)
                 .And(() => order.RequiredDate < endDate)
-                .And(() => order.OrderStatus == OrderStatus.Preparing ||order.OrderStatus == OrderStatus.Ready || order.OrderStatus == OrderStatus.Completed);
+                .And(() => order.OrderStatus == OrderStatus.PendingPayment || order.OrderStatus == OrderStatus.OrderPlaced || order.OrderStatus == OrderStatus.Preparing ||order.OrderStatus == OrderStatus.Ready || order.OrderStatus == OrderStatus.Completed);
 
             if (excludeOrderId.HasValue)
             {
