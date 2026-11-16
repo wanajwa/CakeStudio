@@ -326,6 +326,7 @@
 
 
 		const checkoutButton = document.querySelector('button[form="cartCheckoutForm"]');
+		let checkoutSubmitting = false;
 
 		const moneyFormatter = new Intl.NumberFormat("en-MY", {
 			minimumFractionDigits: 2,
@@ -343,45 +344,47 @@
 			});
 		});
 
-			function updateCartTotals() {
-			let totalQuantity = 0;
-			let totalPrice = 0;
-			let allValid = true;
+		function updateCartTotals() {
+		let totalQuantity = 0;
+		let totalPrice = 0;
+		let allValid = true;
 
-			cards.forEach(card => {
-				const input = card.querySelector("[data-cart-quantity]");
-				const subtotalElement = document.getElementById(input.dataset.subtotalId);
-				const state = priceStates.get(card);
+		cards.forEach(card => {
+			const input = card.querySelector("[data-cart-quantity]");
+			const subtotalElement = document.getElementById(input.dataset.subtotalId);
+			const state = priceStates.get(card);
 
-				const optionsValid = Array.from(card.querySelectorAll("select"))
-					.every(select => select.checkValidity());
+			const optionsValid = Array.from(card.querySelectorAll("select"))
+				.every(select => select.checkValidity());
 
-				if (!input.checkValidity() || !optionsValid || state.pending || !state.valid) {
-					subtotalElement.textContent = "—";
-					allValid = false;
-					return;
-				}
+			if (!input.checkValidity() || !optionsValid || state.pending || !state.valid) {
+				subtotalElement.textContent = "—";
+				allValid = false;
+				return;
+			}
 
-				const quantity = Number(input.value);
-				const subtotal = quantity * Number(input.dataset.unitPrice);
+			const quantity = Number(input.value);
+			const subtotal = quantity * Number(input.dataset.unitPrice);
 
-				totalQuantity += quantity;
-				totalPrice += subtotal;
-				subtotalElement.textContent = "RM " + moneyFormatter.format(subtotal);
-			});
+			totalQuantity += quantity;
+			totalPrice += subtotal;
+			subtotalElement.textContent = "RM " + moneyFormatter.format(subtotal);
+		});
 
-			document.querySelectorAll("[data-cart-total-quantity]").forEach(element => {
-				element.textContent = allValid ? totalQuantity : "—";
-			});
+		document.querySelectorAll("[data-cart-total-quantity]").forEach(element => {
+			element.textContent = allValid ? totalQuantity : "—";
+		});
 
-			document.querySelectorAll("[data-cart-total-price]").forEach(element => {
-				element.textContent = allValid ? "RM " + moneyFormatter.format(totalPrice) : "—";
-			});
+		document.querySelectorAll("[data-cart-total-price]").forEach(element => {
+			element.textContent = allValid ? "RM " + moneyFormatter.format(totalPrice) : "—";
+		});
 
 			if (checkoutButton) {
-				checkoutButton.disabled = !allValid;
+				checkoutButton.disabled = checkoutSubmitting || !allValid;
 			}
 		}
+
+		async function refreshItemPrice(card) {
 
 		async function refreshItemPrice(card) {
 			const state = priceStates.get(card);
@@ -469,9 +472,29 @@
 			const priceUnavailable = Array.from(priceStates.values())
 				.some(state => state.pending || !state.valid);
 
-			if (priceUnavailable) {
+			if (checkoutSubmitting || priceUnavailable) {
 				event.preventDefault();
+				return;
 			}
+
+			checkoutSubmitting = true;
+
+			if (checkoutButton) {
+				checkoutButton.disabled = true;
+				checkoutButton.textContent = "Processing...";
+			}
+		});
+
+		window.addEventListener("pageshow", function (event) {
+			if (!event.persisted) return;
+
+			checkoutSubmitting = false;
+
+			if (checkoutButton) {
+				checkoutButton.textContent = "Place Order";
+			}
+
+			updateCartTotals();
 		});
 
 		updateCartTotals();
