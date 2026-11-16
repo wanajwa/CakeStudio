@@ -985,30 +985,6 @@ namespace CakeStudio.Services
 
                 session.Update(order);
 
-                //if rejected
-                
-                if (status == OrderStatus.Rejected)
-                {
-                    var payment = session.QueryOver<Payment>()
-                        .Where(p => p.Order.OrderId == orderId)
-                        .SingleOrDefault();
-
-                    if (payment == null)
-                    {
-                        throw new InvalidOperationException(Resource.PaymentNotFound);
-                    }
-
-                    if (payment.PaymentStatus != PaymentStatus.Paid)
-                    {
-                        throw new InvalidOperationException(Resource.PaymentRefundNotAllowed);
-                    }
-
-                    payment.PaymentStatus = PaymentStatus.Refunded;
-                    payment.RefundedAt = DateTime.Now;
-
-                    session.Update(payment);
-                }
-
                 // status change notification , yang lain ikut je
                 string statusLabel = status == OrderStatus.Ready
                         ? "Ready for Pickup"
