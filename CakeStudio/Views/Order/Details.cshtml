@@ -308,7 +308,7 @@
                             }
                             else if (Model.Payment.PaymentStatus == PaymentStatus.RefundRequired)
                             {
-                                var threeDaysPassed = Model.Order.UpdatedAt is DateTime rejectedAt && DateTime.Now >= rejectedAt.AddMinutes(1);
+                                var threeDaysPassed = Model.Order.UpdatedAt is DateTime rejectedAt && DateTime.Now >= rejectedAt.AddDays(3);
 
                                 <span class="order-status status-rejected">
                                     @if (User.IsInRole("Baker"))

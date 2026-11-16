@@ -1,4 +1,5 @@
 ﻿@model CakeStudio.ViewModels.OrderViewModel
+@using CakeStudio.Constant
 @{
     ViewData["Title"] = "Edit Order";
 }
@@ -46,6 +47,8 @@
 
                             <input asp-for="RequiredTime"
                                    type="time"
+                                   min="@(PickupHours.OpensAt.ToString(@"hh\:mm"))"
+                                   max="@(PickupHours.ClosesAt.ToString(@"hh\:mm"))"
                                    step="1800"
                                    class="form-control" />
 
