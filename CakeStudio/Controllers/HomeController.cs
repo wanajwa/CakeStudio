@@ -35,7 +35,7 @@ namespace CakeStudio.Controllers
             var payments = _orderService.GetAllPayments();
 
             var paidPayments = payments
-                .Where(p => p.PaymentStatus == PaymentStatus.Paid && p.Order.OrderStatus != OrderStatus.OrderPlaced)
+                .Where(p => p.PaymentStatus == PaymentStatus.Paid)
                 .ToList();
             var cakeSalesByOrder = orders.ToDictionary(order => order.OrderId, order => order.OrderItems.Sum(item => item.UnitPrice * item.Quantity));
 
