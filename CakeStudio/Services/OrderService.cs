@@ -613,7 +613,7 @@ namespace CakeStudio.Services
                 .JoinAlias(item => item.Order, () => order)
                 .Where(() => order.RequiredDate >= startDate)
                 .And(() => order.RequiredDate < endDate)
-                .And(() => order.OrderStatus != OrderStatus.Rejected);
+                .And(() => order.OrderStatus == OrderStatus.Preparing ||order.OrderStatus == OrderStatus.Ready || order.OrderStatus == OrderStatus.Completed);
 
             if (excludeOrderId.HasValue)
             {
@@ -800,8 +800,9 @@ namespace CakeStudio.Services
         {
 
             using var session = _nhibernateHelper.OpenSession();
-            using var transaction = session.BeginTransaction();
+            using var transaction = session.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
+            // Serializable protect 5 limit cake when 2 different order compete for the last slot
             try
             {
                 var baker = session.Get<User>(bakerId);
@@ -811,7 +812,8 @@ namespace CakeStudio.Services
                     throw new UnauthorizedAccessException(Resource.InvalidBakerAccount);
                 }
 
-                var order = session.Get<Order>(orderId);
+                //lock help when 2 req try to change same order status at the same time, one will wait for the other to finish
+                var order = session.Get<Order>(orderId, LockMode.Upgrade);
 
                 if (order == null)
                     throw new ArgumentException(Resource.OrderNotFound);
@@ -868,6 +870,30 @@ namespace CakeStudio.Services
                             status
                         )
                      );
+                }
+
+                if (status == OrderStatus.Preparing)
+                {
+                    if (!order.RequiredDate.HasValue)
+                        throw new InvalidOperationException(Resource.InvalidRequiredDateTime);
+
+                    int orderQuantity = session.QueryOver<OrderItem>()
+                        .Where(item => item.OrderId == orderId)
+                        .SelectList(list => list.SelectSum(item => item.Quantity))
+                        .SingleOrDefault<int?>() ?? 0;
+
+                    int bookedQuantity = GetBookedCakeQuantity(session, order.RequiredDate.Value, orderId);
+
+                    int remaining = Math.Max(0, BakingCapacity.DailyLimit - bookedQuantity);
+
+                    if (orderQuantity > remaining)
+                    {
+                        string message = remaining == 0
+                            ? Resource.DateFullyBooked
+                            : $"Only {remaining} {(remaining == 1 ? "cake" : "cakes")} can be booked for this date.";
+
+                        throw new InvalidOperationException(message);
+                    }
                 }
 
                 if (status == OrderStatus.Rejected)
