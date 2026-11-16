@@ -418,7 +418,7 @@
     <value>Only paid payments can be refunded.</value>
   </data>
   <data name="PaymentNotFound" xml:space="preserve">
-    <value> Payment record not found for this order.</value>
+    <value>Payment record not found for this order.</value>
   </data>
   <data name="OrderCustomerMissing" xml:space="preserve">
     <value>This order has no customer assigned.</value>
@@ -517,6 +517,9 @@
     <value>Only orders with pending payment can be cancelled.</value>
   </data>
   <data name="PaymentNotCompleted" xml:space="preserve">
-    <value>Payment was not completed within the allowed time.</value>
+    <value>Payment was not made on time</value>
+  </data>
+  <data name="StripePaymentReturnURLFailed" xml:space="preserve">
+    <value>Could not generate the payment return URL.</value>
   </data>
 </root>

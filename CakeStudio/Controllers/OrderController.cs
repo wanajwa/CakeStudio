@@ -370,7 +370,7 @@ namespace CakeStudio.Controllers
             if (User.IsInRole("Customer") && details.Order.CustId != userId.Value)
                 return Forbid();
 
-            if (User.IsInRole("Baker") && details.Order.OrderStatus == OrderStatus.PendingPayment || details.Order.OrderStatus == OrderStatus.Cancelled)
+            if (User.IsInRole("Baker") && (details.Order.OrderStatus == OrderStatus.PendingPayment || details.Order.OrderStatus == OrderStatus.Cancelled))
             {
                 return NotFound();
             }
@@ -408,7 +408,41 @@ namespace CakeStudio.Controllers
         [Authorize(Roles = "Baker")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        private Task<IActionResult> RunCheckoutLockedAsync(int customerId, Func<Task<IActionResult>> checkout)
+        public IActionResult UpdateStatus(int orderId, string status, string? rejectionReason)
+        {
+            int? bakerId = GetCurrentUserId();
+
+            if (!bakerId.HasValue)
+                return Challenge();
+
+            try
+            {
+                _orderService.UpdateStatus(orderId, status, bakerId.Value, rejectionReason);
+                TempData["SuccessMessage"] = Resource.OrderStatusUpdatedSuccess;
+            }
+            catch (ArgumentException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, Resource.OrderStatusUpdateFailed);
+                TempData["ErrorMessage"] = Resource.OrderStatusUpdateFailed;
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private Task<IActionResult> RunCheckoutLockedAsync(
+            int customerId, Func<Task<IActionResult>> checkout)
         {
             return CheckoutLock.RunAsync(
                 _configuration,
@@ -666,12 +700,16 @@ namespace CakeStudio.Controllers
                     }
                 }).ToList();
 
+                var paymentUrl = Url.Action(nameof(Payment),"Order",values: null,protocol: Request.Scheme)
+                    ?? throw new InvalidOperationException(Resource.StripePaymentReturnURLFailed);
+                var cancelUrl = Url.Action(nameof(Details),"Order",new { id = orderId },Request.Scheme);
+
                 var options = new Stripe.Checkout.SessionCreateOptions
                 {
                     Mode = "payment",
                     AllowedPaymentMethodTypes = new List<string> { "card" },
-                    CancelUrl = Url.Action(nameof(Details), "Order", new { id = orderId }, Request.Scheme),
-                    SuccessUrl = "https://localhost:7056/Order/Payment?sessionId={CHECKOUT_SESSION_ID}",
+                    CancelUrl = cancelUrl,
+                    SuccessUrl = paymentUrl + $"?sessionId={{CHECKOUT_SESSION_ID}}",
                     LineItems = lineItems,
                 };
 

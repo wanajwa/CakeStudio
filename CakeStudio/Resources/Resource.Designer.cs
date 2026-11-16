@@ -1015,7 +1015,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Payment was not completed within the allowed time..
+        ///   Looks up a localized string similar to Payment was not made on time.
         /// </summary>
         public static string PaymentNotCompleted {
             get {
@@ -1024,7 +1024,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Payment record not found for this order..
+        ///   Looks up a localized string similar to Payment record not found for this order..
         /// </summary>
         public static string PaymentNotFound {
             get {
@@ -1218,6 +1218,15 @@ namespace CakeStudio.Resources {
         public static string StripePaymentNotVerified {
             get {
                 return ResourceManager.GetString("StripePaymentNotVerified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not generate the payment return URL..
+        /// </summary>
+        public static string StripePaymentReturnURLFailed {
+            get {
+                return ResourceManager.GetString("StripePaymentReturnURLFailed", resourceCulture);
             }
         }
         
