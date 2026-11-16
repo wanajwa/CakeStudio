@@ -62,6 +62,8 @@ namespace CakeStudio.Mappings
                 .KeyColumn("OrderId")
                 .Inverse()
                 .Cascade.None();
+
+            Map(x => x.CheckoutRequestId).Nullable();
         }
     }
 }

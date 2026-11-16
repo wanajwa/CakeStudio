@@ -201,6 +201,17 @@ namespace CakeStudio.Services
                 TotalOrders = totalOrders
             };
         }
+
+        public int? FindCheckoutOrderId(int customerId, Guid checkoutRequestId)
+        {
+            using var session = _nhibernateHelper.OpenSession();
+
+            return session.QueryOver<Order>()
+                .Where(order => order.CustId == customerId)
+                .And(order => order.CheckoutRequestId == checkoutRequestId)
+                .Select(order => order.OrderId)
+                .SingleOrDefault<int?>();
+        }
         public decimal CalculateTotalPrice(OrderViewModel model)
         {
             if (!model.CakeId.HasValue || !model.SizeId.HasValue || !model.FlavourId.HasValue || !model.TierId.HasValue)
@@ -267,15 +278,16 @@ namespace CakeStudio.Services
                 pendingPayment: false);
         }
 
-        public int CreateAwaitingPayment(int customerId, OrderViewModel model, int? existingOrderId = null)
+        public int CreateAwaitingPayment(int customerId, OrderViewModel model, int? existingOrderId = null, Guid? checkoutRequestId = null)
         {
             return CreateOrder(customerId, model, PaymentMethod.Card,
                 stripeCheckoutSessionId: null,
                 stripeAmountInSen: null,
                 pendingPayment: true,
-                existingOrderId: existingOrderId);
+                existingOrderId: existingOrderId,
+                checkoutRequestId: checkoutRequestId);
         }
-        private int CreateOrder(int customerId,OrderViewModel model,string paymentMethod,string? stripeCheckoutSessionId,long? stripeAmountInSen,bool pendingPayment, int? existingOrderId = null)
+        private int CreateOrder(int customerId,OrderViewModel model,string paymentMethod,string? stripeCheckoutSessionId,long? stripeAmountInSen,bool pendingPayment, int? existingOrderId = null, Guid? checkoutRequestId = null)
         {
             if (model.Cart == null || !model.Cart.Items.Any())
             {
@@ -469,7 +481,8 @@ namespace CakeStudio.Services
                             ? OrderStatus.PendingPayment
                             : OrderStatus.OrderPlaced,
                         CreatedAt = DateTime.Now,
-                        CreatedId = customerId
+                        CreatedId = customerId,
+                        CheckoutRequestId = checkoutRequestId
                     };
 
                     session.Save(order);

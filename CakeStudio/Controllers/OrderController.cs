@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text.Json;
 using static System.Net.WebRequestMethods;
+using Microsoft.Data.SqlClient;
 
 namespace CakeStudio.Controllers
 {
@@ -19,12 +20,14 @@ namespace CakeStudio.Controllers
         private readonly ICartService _cartService;
         private readonly ILogger<OrderController> _logger;
         private readonly Stripe.StripeClient _stripeClient;
-        public OrderController( IOrderService orderService,ICartService cartService, ILogger<OrderController> logger, Stripe.StripeClient stripeClient)
+        private readonly IConfiguration _configuration;
+        public OrderController( IOrderService orderService,ICartService cartService, ILogger<OrderController> logger, Stripe.StripeClient stripeClient, IConfiguration configuration)
         {
             _orderService = orderService;
             _cartService = cartService;
             _logger = logger;
             _stripeClient = stripeClient;
+            _configuration = configuration;
         }
 
         private int? GetCurrentUserId()
@@ -63,120 +66,136 @@ namespace CakeStudio.Controllers
         [Authorize(Roles = "Customer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Checkout(List<CartItemViewModel> items, DateTime? requiredDate, TimeSpan? requiredTime, int? orderId)
+        public async Task<IActionResult> Checkout(List<CartItemViewModel> items, DateTime? requiredDate, TimeSpan? requiredTime, int? orderId, Guid checkoutRequestId)
         {
             var customerId = GetCurrentUserId();
 
             if (!customerId.HasValue)
                 return Challenge();
 
-            if (!ModelState.IsValid)
+            return await RunCheckoutLockedAsync(customerId.Value, async () =>
             {
-                TempData["ErrorMessage"] = Resource.InvalidCheckoutDetails;
-                return RedirectToAction("Index", "Cart");
-            }
 
-            var order = new OrderViewModel
-            {
-                RequiredDate = requiredDate,
-                RequiredTime = requiredTime
-            };
-
-            HttpContext.Session.SetString($"CheckoutDraft_{customerId.Value}", JsonSerializer.Serialize(new { order.RequiredDate, order.RequiredTime }));
-
-            if (items.Count == 0)
-            {
-                TempData["ErrorMessage"] = Resource.CartEmpty;
-                return RedirectToAction("Index", "Cart");
-            }
-
-            try
-            {
-                // Save the submitted options, quantities, and messages.
-                // UpdateItems also validates the options and calculates current prices.
-                _cartService.UpdateItems(items);
-                order.Cart = _cartService.GetCart();
-            }
-            catch (ArgumentException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Index", "Cart");
-            }
-
-            if (!requiredDate.HasValue || !requiredTime.HasValue || requiredTime.Value < TimeSpan.Zero || requiredTime.Value >= TimeSpan.FromDays(1) || requiredDate.Value.Date.Add(requiredTime.Value) <= DateTime.Now)
-            {
-                TempData["ErrorMessage"] = Resource.InvalidRequiredDateTime;
-                return RedirectToAction("Index", "Cart");
-            }
-
-            try
-            {
-                if (orderId.HasValue)
+                if (!ModelState.IsValid || checkoutRequestId == Guid.Empty)
                 {
-                    var savedOrder = _orderService.GetOrderDetails(orderId.Value);
+                    TempData["ErrorMessage"] = Resource.InvalidCheckoutDetails;
+                    return RedirectToAction("Index", "Cart");
+                }
 
-                    if (savedOrder == null)
-                        return NotFound();
+                if (!orderId.HasValue)
+                {
+                    var existingCheckoutOrderId = _orderService.FindCheckoutOrderId(
+                        customerId.Value, checkoutRequestId);
 
-                    if (savedOrder.Order.CustId != customerId.Value)
-                        return Forbid();
-
-                    if (savedOrder.Order.OrderStatus != OrderStatus.PendingPayment)
-                        return RedirectToAction(nameof(Details), new { id = orderId.Value });
-
-                    var previousSessionId = savedOrder.Payment?.StripeCheckoutSessionId;
-
-                    if (!string.IsNullOrEmpty(previousSessionId))
+                    if (existingCheckoutOrderId.HasValue)
                     {
-                        var stripeSessions = _stripeClient.V1.Checkout.Sessions;
-                        var cancellationToken = HttpContext.RequestAborted;
-
-                        var previousSession = await stripeSessions.GetAsync(previousSessionId, cancellationToken: cancellationToken);
-
-                        if (previousSession.PaymentStatus == "paid")
-                        {
-                            return RedirectToAction(nameof(Payment), new { sessionId = previousSessionId });
-                        }
-
-                        if (previousSession.Status == "open")
-                        {
-                            previousSession = await stripeSessions.ExpireAsync(previousSessionId, cancellationToken: cancellationToken);
-                        }
-
-                        if (previousSession.Status != "expired" || previousSession.PaymentStatus != "unpaid")
-                        {
-                            TempData["ErrorMessage"] = Resource.PreviousPaymentProcessing;
-                            return RedirectToAction(nameof(Details), new { id = orderId.Value });
-                        }
-
-                        _orderService.ClearStripeSession(orderId.Value, customerId.Value, previousSessionId);
+                        return RedirectToAction(nameof(Details), new { id = existingCheckoutOrderId.Value });
                     }
                 }
 
-                var savedOrderId = _orderService.CreateAwaitingPayment(customerId.Value, order, orderId);
+                var order = new OrderViewModel
+                {
+                    RequiredDate = requiredDate,
+                    RequiredTime = requiredTime
+                };
 
-                _cartService.ClearCart();
-                HttpContext.Session.Remove($"CheckoutDraft_{customerId.Value}");
+                HttpContext.Session.SetString($"CheckoutDraft_{customerId.Value}", JsonSerializer.Serialize(new { order.RequiredDate, order.RequiredTime }));
 
-                return await StartStripeCheckout(savedOrderId, order, HttpContext.RequestAborted);
-            }
-            catch (Stripe.StripeException ex)
-            {
-                _logger.LogError(ex, "Unable to check or close the previous Stripe session.");
-                TempData["ErrorMessage"] = Resource.PreviousPaymentCheckFailed;
-                return RedirectToAction("Index", "Cart", new { orderId });
-            }
-            catch (ArgumentException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Index", "Cart", new { orderId });
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogError(ex, "Unable to update the unpaid order.");
-                TempData["ErrorMessage"] = Resource.OrderUpdateFailed;
-                return RedirectToAction("Index", "Cart", new { orderId });
-            }
+                if (items.Count == 0)
+                {
+                    TempData["ErrorMessage"] = Resource.CartEmpty;
+                    return RedirectToAction("Index", "Cart");
+                }
+
+                try
+                {
+                    // Save the submitted options, quantities, and messages.
+                    // UpdateItems also validates the options and calculates current prices.
+                    _cartService.UpdateItems(items);
+                    order.Cart = _cartService.GetCart();
+                }
+                catch (ArgumentException ex)
+                {
+                    TempData["ErrorMessage"] = ex.Message;
+                    return RedirectToAction("Index", "Cart");
+                }
+
+
+                if (!requiredDate.HasValue || !requiredTime.HasValue || requiredTime.Value < TimeSpan.Zero || requiredTime.Value >= TimeSpan.FromDays(1) || requiredDate.Value.Date.Add(requiredTime.Value) <= DateTime.Now)
+                {
+                    TempData["ErrorMessage"] = Resource.InvalidRequiredDateTime;
+                    return RedirectToAction("Index", "Cart");
+                }
+
+                try
+                {
+                    if (orderId.HasValue)
+                    {
+                        var savedOrder = _orderService.GetOrderDetails(orderId.Value);
+
+                        if (savedOrder == null)
+                            return NotFound();
+
+                        if (savedOrder.Order.CustId != customerId.Value)
+                            return Forbid();
+
+                        if (savedOrder.Order.OrderStatus != OrderStatus.PendingPayment)
+                            return RedirectToAction(nameof(Details), new { id = orderId.Value });
+
+                        var previousSessionId = savedOrder.Payment?.StripeCheckoutSessionId;
+
+                        if (!string.IsNullOrEmpty(previousSessionId))
+                        {
+                            var stripeSessions = _stripeClient.V1.Checkout.Sessions;
+                            var cancellationToken = HttpContext.RequestAborted;
+
+                            var previousSession = await stripeSessions.GetAsync(previousSessionId, cancellationToken: cancellationToken);
+
+                            if (previousSession.PaymentStatus == "paid")
+                            {
+                                return RedirectToAction(nameof(Payment), new { sessionId = previousSessionId });
+                            }
+
+                            if (previousSession.Status == "open")
+                            {
+                                previousSession = await stripeSessions.ExpireAsync(previousSessionId, cancellationToken: cancellationToken);
+                            }
+
+                            if (previousSession.Status != "expired" || previousSession.PaymentStatus != "unpaid")
+                            {
+                                TempData["ErrorMessage"] = Resource.PreviousPaymentProcessing;
+                                return RedirectToAction(nameof(Details), new { id = orderId.Value });
+                            }
+
+                            _orderService.ClearStripeSession(orderId.Value, customerId.Value, previousSessionId);
+                        }
+                    }
+
+                    var savedOrderId = _orderService.CreateAwaitingPayment(customerId.Value, order, orderId, checkoutRequestId);
+
+                    _cartService.ClearCart();
+                    HttpContext.Session.Remove($"CheckoutDraft_{customerId.Value}");
+                    await HttpContext.Session.CommitAsync(HttpContext.RequestAborted);
+                    return await StartStripeCheckout(savedOrderId, order, HttpContext.RequestAborted);
+                }
+                catch (Stripe.StripeException ex)
+                {
+                    _logger.LogError(ex, "Unable to check or close the previous Stripe session.");
+                    TempData["ErrorMessage"] = Resource.PreviousPaymentCheckFailed;
+                    return RedirectToAction("Index", "Cart", new { orderId });
+                }
+                catch (ArgumentException ex)
+                {
+                    TempData["ErrorMessage"] = ex.Message;
+                    return RedirectToAction("Index", "Cart", new { orderId });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.LogError(ex, "Unable to update the unpaid order.");
+                    TempData["ErrorMessage"] = Resource.OrderUpdateFailed;
+                    return RedirectToAction("Index", "Cart", new { orderId });
+                }
+            });
         }
 
         // Customer: Order history
@@ -422,6 +441,40 @@ namespace CakeStudio.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        private async Task<IActionResult> RunCheckoutLockedAsync(int customerId,Func<Task<IActionResult>> checkout)
+        {
+            var cancellationToken = HttpContext.RequestAborted;
+
+            await using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+
+            await connection.OpenAsync(cancellationToken);
+
+            await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync(cancellationToken);
+
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = """
+                DECLARE @result INT;
+
+                EXEC @result = sp_getapplock
+                    @Resource = @resource,
+                    @LockMode = 'Exclusive',
+                    @LockOwner = 'Transaction',
+                    @LockTimeout = 10000;
+
+                SELECT @result;
+                """;
+
+            command.Parameters.AddWithValue("@resource", $"CakeStudio:checkout:{customerId}");
+
+            var result = (int)(await command.ExecuteScalarAsync(cancellationToken) ?? -1);
+
+            if (result < 0)
+                return StatusCode(503, Resource.PreviousPaymentProcessing);
+
+            return await checkout();
+        }
+
         [Authorize(Roles = "Customer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -432,85 +485,88 @@ namespace CakeStudio.Controllers
             if (!customerId.HasValue)
                 return Challenge();
 
-            var details = _orderService.GetOrderDetails(id);
-
-            if (details == null)
-                return NotFound();
-
-            if (details.Order.CustId != customerId.Value)
-                return Forbid();
-
-            if (details.Order.OrderStatus != OrderStatus.PendingPayment || details.Payment?.PaymentStatus != PaymentStatus.Pending)
+            return await RunCheckoutLockedAsync(customerId.Value, async () =>
             {
-                return RedirectToAction(nameof(Details), new { id });
-            }
+                var details = _orderService.GetOrderDetails(id);
 
-            var sessionId = details.Payment.StripeCheckoutSessionId;
-            var cancellationToken = HttpContext.RequestAborted;
+                if (details == null)
+                    return NotFound();
 
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(sessionId))
+                if (details.Order.CustId != customerId.Value)
+                    return Forbid();
+
+                if (details.Order.OrderStatus != OrderStatus.PendingPayment || details.Payment?.PaymentStatus != PaymentStatus.Pending)
                 {
-                    var stripeSession = await _stripeClient.V1.Checkout.Sessions.GetAsync(sessionId, cancellationToken: cancellationToken);
-
-                    if (stripeSession.PaymentStatus == "paid")
-                        return RedirectToAction(nameof(Payment), new { sessionId });
-
-                    if (stripeSession.Status == "open" && !string.IsNullOrWhiteSpace(stripeSession.Url) && details.Order.RequiredDate > DateTime.Now)
-                    {
-                        return Redirect(stripeSession.Url);
-                    }
-
-                    if (stripeSession.Status != "expired" || stripeSession.PaymentStatus != "unpaid")
-                    {
-                        TempData["ErrorMessage"] = details.Order.RequiredDate <= DateTime.Now
-                            ? Resource.PickupTimePassed
-                            : Resource.PreviousPaymentProcessing;
-
-                        return RedirectToAction(nameof(Details), new { id });
-                    }
-                }
-
-                if (!details.Order.RequiredDate.HasValue || details.Order.RequiredDate.Value <= DateTime.Now)
-                {
-                    TempData["ErrorMessage"] = Resource.PickupTimePassed;
                     return RedirectToAction(nameof(Details), new { id });
                 }
 
-                if (!string.IsNullOrWhiteSpace(sessionId))
-                    _orderService.ClearStripeSession(id, customerId.Value, sessionId);
+                var sessionId = details.Payment.StripeCheckoutSessionId;
+                var cancellationToken = HttpContext.RequestAborted;
 
-                var order = new OrderViewModel
+                try
                 {
-                    Cart = new CartViewModel
+                    if (!string.IsNullOrWhiteSpace(sessionId))
                     {
-                        Items = details.OrderItems.Select(item => new CartItemViewModel
+                        var stripeSession = await _stripeClient.V1.Checkout.Sessions.GetAsync(sessionId, cancellationToken: cancellationToken);
+
+                        if (stripeSession.PaymentStatus == "paid")
+                            return RedirectToAction(nameof(Payment), new { sessionId });
+
+                        if (stripeSession.Status == "open" && !string.IsNullOrWhiteSpace(stripeSession.Url) && details.Order.RequiredDate > DateTime.Now)
                         {
-                            CakeName = item.Cake?.CakeName ?? "Cake",
-                            SizeName = item.Size?.SizeName ?? "",
-                            FlavourName = item.Flavour?.FlavourName ?? "",
-                            TierName = item.Tier?.TierName ?? "",
-                            Quantity = item.Quantity,
-                            UnitPrice = item.UnitPrice
-                        }).ToList()
+                            return Redirect(stripeSession.Url);
+                        }
+
+                        if (stripeSession.Status != "expired" || stripeSession.PaymentStatus != "unpaid")
+                        {
+                            TempData["ErrorMessage"] = details.Order.RequiredDate <= DateTime.Now
+                                ? Resource.PickupTimePassed
+                                : Resource.PreviousPaymentProcessing;
+
+                            return RedirectToAction(nameof(Details), new { id });
+                        }
                     }
-                };
 
-                return await StartStripeCheckout(id, order, cancellationToken);
-            }
-            catch (Stripe.StripeException ex)
-            {
-                _logger.LogError(ex, "Unable to reopen Stripe Checkout for order {OrderId}.", id);
-                TempData["ErrorMessage"] = Resource.StripeCheckoutStartFailed;
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogError(ex, "Unable to update checkout for order {OrderId}.", id);
-                TempData["ErrorMessage"] = Resource.StripePaymentLinkChanged;
-            }
+                    if (!details.Order.RequiredDate.HasValue || details.Order.RequiredDate.Value <= DateTime.Now)
+                    {
+                        TempData["ErrorMessage"] = Resource.PickupTimePassed;
+                        return RedirectToAction(nameof(Details), new { id });
+                    }
 
-            return RedirectToAction(nameof(Details), new { id });
+                    if (!string.IsNullOrWhiteSpace(sessionId))
+                        _orderService.ClearStripeSession(id, customerId.Value, sessionId);
+
+                    var order = new OrderViewModel
+                    {
+                        Cart = new CartViewModel
+                        {
+                            Items = details.OrderItems.Select(item => new CartItemViewModel
+                            {
+                                CakeName = item.Cake?.CakeName ?? "Cake",
+                                SizeName = item.Size?.SizeName ?? "",
+                                FlavourName = item.Flavour?.FlavourName ?? "",
+                                TierName = item.Tier?.TierName ?? "",
+                                Quantity = item.Quantity,
+                                UnitPrice = item.UnitPrice
+                            }).ToList()
+                        }
+                    };
+
+                    return await StartStripeCheckout(id, order, cancellationToken);
+                }
+                catch (Stripe.StripeException ex)
+                {
+                    _logger.LogError(ex, "Unable to reopen Stripe Checkout for order {OrderId}.", id);
+                    TempData["ErrorMessage"] = Resource.StripeCheckoutStartFailed;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.LogError(ex, "Unable to update checkout for order {OrderId}.", id);
+                    TempData["ErrorMessage"] = Resource.StripePaymentLinkChanged;
+                }
+
+                return RedirectToAction(nameof(Details), new { id });
+            });
         }
 
         [Authorize(Roles = "Customer")]

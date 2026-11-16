@@ -15,9 +15,11 @@ namespace CakeStudio.Services
         OrderListViewModel GetPagedOrders(int page, int pageSize, string sort = "");
 
         OrderListViewModel GetPagedOrdersByCustomer(int customerId, int page, int pageSize);
+
+        int? FindCheckoutOrderId(int customerId, Guid checkoutRequestId);
         List<Payment> GetAllPayments();
 
-        int CreateAwaitingPayment(int customerId, OrderViewModel model, int? existingOrderId = null);
+        int CreateAwaitingPayment(int customerId, OrderViewModel model, int? existingOrderId = null, Guid? checkoutRequestId = null);
 
         void SaveStripeSession(int orderId, int customerId, string stripeSessionId);
 
@@ -32,6 +34,7 @@ namespace CakeStudio.Services
         decimal CalculateTotalPrice(OrderViewModel model);
 
         void UpdateCustomerOrder(int orderId, int customerId, OrderViewModel model);
+
 
     }
 }

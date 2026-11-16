@@ -34,5 +34,7 @@ namespace CakeStudio.Models
 
         public virtual IList<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
+        public virtual Guid? CheckoutRequestId { get; set; }
+
     }
 }
