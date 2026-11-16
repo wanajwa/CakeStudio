@@ -1252,3 +1252,32 @@ html {
     background-color: #ffedd5;
     color: #9a3412;
 }
+
+/*button cancel*/
+.order-details-header .order-status,
+.order-details-header .order-now-btn,
+.order-details-header .cancel-order-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    box-sizing: border-box;
+}
+
+.btn.cancel-order-btn {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+    .btn.cancel-order-btn:hover,
+    .btn.cancel-order-btn:focus-visible,
+    .btn.cancel-order-btn:active {
+        background-color: #bb2d3b;
+        border-color: #bb2d3b;
+        color: #fff;
+    }

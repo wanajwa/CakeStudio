@@ -75,6 +75,21 @@
                 <form asp-controller="Order" asp-action="PayNow" method="post">
                     <input type="hidden" name="id" value="@Model.Order.OrderId" />
                     <button type="submit" class="btn order-now-btn">Pay Now</button>
+
+                </form>
+
+                <form id="cancelOrderForm"
+                      asp-controller="Order"
+                      asp-action="CancelUnpaidOrder"
+                      method="post">
+                    <input type="hidden" name="id" value="@Model.Order.OrderId" />
+
+                    <button type="button"
+                            class="btn btn-danger cancel-order-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#cancelOrderModal">
+                        Cancel Order
+                    </button>
                 </form>
             }
 
@@ -164,13 +179,20 @@
                 </dl>
             </div>
 
-            @if (Model.Order.OrderStatus == OrderStatus.Rejected &&
-                        !string.IsNullOrWhiteSpace(Model.Order.RejectionReason))
+            @if (Model.Order.OrderStatus == OrderStatus.Rejected && !string.IsNullOrWhiteSpace(Model.Order.RejectionReason))
             {
                 <div class="alert alert-danger">
                     <strong>Reason for rejection</strong>
 
                     <p class="mb-0" style="white-space: pre-wrap">@Model.Order.RejectionReason</p>
+                </div>
+            }
+
+            @if (Model.Order.OrderStatus == OrderStatus.Cancelled && !string.IsNullOrWhiteSpace(Model.Order.CancellationReason))
+            {
+                <div class="alert alert-secondary">
+                    <strong>Reason for cancellation</strong>
+                    <p class="mb-0">@Model.Order.CancellationReason</p>
                 </div>
             }
 
@@ -320,6 +342,44 @@
                     </p>
                 }
 
+            </div>
+
+            <div class="modal fade"
+                 id="cancelOrderModal"
+                 tabindex="-1"
+                 aria-labelledby="cancelOrderModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-4">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cancelOrderModalLabel">
+                                Cancel Order
+                            </h5>
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            Are you sure you want to cancel this unpaid order?
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button"
+                                    class="btn btn-outline-secondary rounded-pill px-4"
+                                    data-bs-dismiss="modal">
+                                Keep Order
+                            </button>
+
+                            <button type="submit"
+                                    class="btn btn-danger cancel-order-btn rounded-pill px-4"
+                                    form="cancelOrderForm">
+                                Cancel Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
           

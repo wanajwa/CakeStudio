@@ -63,7 +63,7 @@ namespace CakeStudio.Services
             var model = new OrderListViewModel
             {
                 TotalOrders = session.QueryOver<Order>()
-                    .Where(o => o.OrderStatus != OrderStatus.PendingPayment)
+                    .Where(o => o.OrderStatus != OrderStatus.PendingPayment && o.OrderStatus != OrderStatus.Cancelled)
                     .RowCount(),
 
                 PreparingOrders = session.QueryOver<Order>()
@@ -81,7 +81,7 @@ namespace CakeStudio.Services
 
             // Filter and sort the orders
             var query = session.QueryOver<Order>()
-                .Where(o => o.OrderStatus != OrderStatus.PendingPayment);
+                .Where(o => o.OrderStatus != OrderStatus.PendingPayment && o.OrderStatus != OrderStatus.Cancelled);
 
             switch (sort)
             {
@@ -568,6 +568,45 @@ namespace CakeStudio.Services
             }
 
             payment.StripeCheckoutSessionId = null;
+            transaction.Commit();
+        }
+
+        public void CancelUnpaidOrder(int orderId, int customerId, string? stripeSessionId, string reason)
+        {
+            using var session = _nhibernateHelper.OpenSession();
+            using var transaction = session.BeginTransaction(
+                System.Data.IsolationLevel.Serializable);
+
+            var order = session.Get<Order>(orderId, LockMode.Upgrade);
+
+            if (order == null)
+                throw new ArgumentException(Resource.OrderNotFound);
+
+            if (order.CustId != customerId)
+                throw new UnauthorizedAccessException();
+
+            if (order.OrderStatus == OrderStatus.Cancelled)
+                return;
+
+            var payment = session.QueryOver<Payment>()
+                .Where(p => p.Order.OrderId == orderId)
+                .SingleOrDefault();
+
+            if (order.OrderStatus != OrderStatus.PendingPayment || payment == null || payment.PaymentStatus != PaymentStatus.Pending)
+            {
+                throw new InvalidOperationException(Resource.OrderCannotBeCancelled);
+            }
+
+            if (payment.StripeCheckoutSessionId != stripeSessionId)
+                throw new InvalidOperationException(Resource.StripePaymentLinkChanged);
+
+            order.OrderStatus = OrderStatus.Cancelled;
+            order.CancellationReason = reason;
+            order.UpdatedAt = DateTime.Now;
+            order.UpdatedId = customerId;
+
+            payment.PaymentStatus = PaymentStatus.PaymentCancelled;
+
             transaction.Commit();
         }
         public int ConfirmStripePayment(int? customerId,string stripeSessionId,long amountInSen)

@@ -214,7 +214,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  A cake price has changed. Please review the payment summary again..
+        ///   Looks up a localized string similar to A cake price has changed. Please review the payment summary again..
         /// </summary>
         public static string CakePriceChanged {
             get {
@@ -358,7 +358,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Unable to update the cake..
+        ///   Looks up a localized string similar to Unable to update the cake..
         /// </summary>
         public static string CakeUpdateFailed {
             get {
@@ -439,7 +439,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  This item is used in an existing order. Mark it as unavailable instead..
+        ///   Looks up a localized string similar to This item is used in an existing order. Mark it as unavailable instead..
         /// </summary>
         public static string CatalogueItemUsedInOrder {
             get {
@@ -466,7 +466,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Unable to load customer profile..
+        ///   Looks up a localized string similar to Unable to load customer profile..
         /// </summary>
         public static string CustomerProfileLoadFailed {
             get {
@@ -520,7 +520,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Delivery address must not exceed 500 characters..
+        ///   Looks up a localized string similar to Delivery address must not exceed 500 characters..
         /// </summary>
         public static string DeliveryAddressTooLong {
             get {
@@ -583,7 +583,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  This flavour is a cake&apos;s default flavour. Change the cake&apos;s default flavour before deleting it..
+        ///   Looks up a localized string similar to This flavour is a cake&apos;s default flavour. Change the cake&apos;s default flavour before deleting it..
         /// </summary>
         public static string FlavourUsedAsCakeDefault {
             get {
@@ -790,7 +790,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Invalid order items..
+        ///   Looks up a localized string similar to Invalid order items..
         /// </summary>
         public static string InvalidOrderItems {
             get {
@@ -880,7 +880,34 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  This order has no customer assigned..
+        ///   Looks up a localized string similar to Cancelled by the customer..
+        /// </summary>
+        public static string OrderCancelledByCustomer {
+            get {
+                return ResourceManager.GetString("OrderCancelledByCustomer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your order has been cancelled..
+        /// </summary>
+        public static string OrderCancelledSuccess {
+            get {
+                return ResourceManager.GetString("OrderCancelledSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only orders with pending payment can be cancelled..
+        /// </summary>
+        public static string OrderCannotBeCancelled {
+            get {
+                return ResourceManager.GetString("OrderCannotBeCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This order has no customer assigned..
         /// </summary>
         public static string OrderCustomerMissing {
             get {
@@ -889,7 +916,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  You cannot edit this order..
+        ///   Looks up a localized string similar to You cannot edit this order..
         /// </summary>
         public static string OrderEditForbidden {
             get {
@@ -1024,7 +1051,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  This pickup time has passed..
+        ///   Looks up a localized string similar to This pickup time has passed..
         /// </summary>
         public static string PickupTimePassed {
             get {
@@ -1033,7 +1060,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  The previous checkout must be closed before editing this order..
+        ///   Looks up a localized string similar to The previous checkout must be closed before editing this order..
         /// </summary>
         public static string PreviousCheckoutMustBeClosed {
             get {
@@ -1087,7 +1114,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Only {0} more cakes can be booked for this date..
+        ///   Looks up a localized string similar to Only {0} more cakes can be booked for this date..
         /// </summary>
         public static string RemainingCakeCapacityMultiple {
             get {
@@ -1222,7 +1249,7 @@ namespace CakeStudio.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  This order can no longer be edited..
+        ///   Looks up a localized string similar to This order can no longer be edited..
         /// </summary>
         public static string UnpaidOrderCannotBeEdited {
             get {

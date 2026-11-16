@@ -397,7 +397,7 @@
     <value>This date is fully booked. Please choose another date.</value>
   </data>
   <data name="CakePriceChanged" xml:space="preserve">
-    <value> A cake price has changed. Please review the payment summary again.</value>
+    <value>A cake price has changed. Please review the payment summary again.</value>
   </data>
   <data name="InvalidPaymentMethod" xml:space="preserve">
     <value>Invalid Payment Method</value>
@@ -406,13 +406,13 @@
     <value>Baker account not found</value>
   </data>
   <data name="OrderEditForbidden" xml:space="preserve">
-    <value> You cannot edit this order.</value>
+    <value>You cannot edit this order.</value>
   </data>
   <data name="DeliveryAddressTooLong" xml:space="preserve">
-    <value> Delivery address must not exceed 500 characters.</value>
+    <value>Delivery address must not exceed 500 characters.</value>
   </data>
   <data name="InvalidOrderItems" xml:space="preserve">
-    <value> Invalid order items.</value>
+    <value>Invalid order items.</value>
   </data>
   <data name="PaymentRefundNotAllowed" xml:space="preserve">
     <value>Only paid payments can be refunded.</value>
@@ -421,10 +421,10 @@
     <value> Payment record not found for this order.</value>
   </data>
   <data name="OrderCustomerMissing" xml:space="preserve">
-    <value> This order has no customer assigned.</value>
+    <value>This order has no customer assigned.</value>
   </data>
   <data name="CustomerProfileLoadFailed" xml:space="preserve">
-    <value> Unable to load customer profile.</value>
+    <value>Unable to load customer profile.</value>
   </data>
   <data name="CustomerProfileUpdatedSuccess" xml:space="preserve">
     <value>Profile Updated Successfully</value>
@@ -445,7 +445,7 @@
     <value>Unable to create the cake.</value>
   </data>
   <data name="CakeUpdateFailed" xml:space="preserve">
-    <value> Unable to update the cake.</value>
+    <value>Unable to update the cake.</value>
   </data>
   <data name="CakeDeleteFailed" xml:space="preserve">
     <value>Unable to delete the cake.</value>
@@ -475,7 +475,7 @@
     <value>Check the pickup date, time, and cake options.</value>
   </data>
   <data name="PickupTimePassed" xml:space="preserve">
-    <value> This pickup time has passed.</value>
+    <value>This pickup time has passed.</value>
   </data>
   <data name="PreviousPaymentProcessing" xml:space="preserve">
     <value>The previous payment is still being checked. Please try again.</value>
@@ -490,21 +490,30 @@
     <value>The payment link changed. Please try again.</value>
   </data>
   <data name="UnpaidOrderCannotBeEdited" xml:space="preserve">
-    <value> This order can no longer be edited.</value>
+    <value>This order can no longer be edited.</value>
   </data>
   <data name="PreviousCheckoutMustBeClosed" xml:space="preserve">
-    <value> The previous checkout must be closed before editing this order.</value>
+    <value>The previous checkout must be closed before editing this order.</value>
   </data>
   <data name="RemainingCakeCapacitySingle" xml:space="preserve">
     <value>Only {0} more cake can be booked for this date.</value>
   </data>
   <data name="RemainingCakeCapacityMultiple" xml:space="preserve">
-    <value> Only {0} more cakes can be booked for this date.</value>
+    <value>Only {0} more cakes can be booked for this date.</value>
   </data>
   <data name="CatalogueItemUsedInOrder" xml:space="preserve">
-    <value> This item is used in an existing order. Mark it as unavailable instead.</value>
+    <value>This item is used in an existing order. Mark it as unavailable instead.</value>
   </data>
   <data name="FlavourUsedAsCakeDefault" xml:space="preserve">
-    <value> This flavour is a cake's default flavour. Change the cake's default flavour before deleting it.</value>
+    <value>This flavour is a cake's default flavour. Change the cake's default flavour before deleting it.</value>
+  </data>
+  <data name="OrderCancelledByCustomer" xml:space="preserve">
+    <value>Cancelled by the customer.</value>
+  </data>
+  <data name="OrderCancelledSuccess" xml:space="preserve">
+    <value>Your order has been cancelled.</value>
+  </data>
+  <data name="OrderCannotBeCancelled" xml:space="preserve">
+    <value>Only orders with pending payment can be cancelled.</value>
   </data>
 </root>

@@ -26,7 +26,7 @@ namespace CakeStudio.Controllers
         {
             var cakes = _cakeService.GetAll();
             var orders = _orderService.GetAll()
-                .Where(o => o.OrderStatus != OrderStatus.PendingPayment)
+                .Where(o => o.OrderStatus != OrderStatus.PendingPayment && o.OrderStatus != OrderStatus.Cancelled)
                 .ToList();
 
             var today = DateTime.Today;

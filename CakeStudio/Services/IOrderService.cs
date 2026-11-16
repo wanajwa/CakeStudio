@@ -25,6 +25,8 @@ namespace CakeStudio.Services
 
         void ClearStripeSession(int orderId, int customerId, string stripeSessionId);
 
+        void CancelUnpaidOrder(int orderId, int customerId, string? stripeSessionId, string reason);
+
         int ConfirmStripePayment(int? customerId, string stripeSessionId, long amountInSen);
 
         int Create(int customerId, OrderViewModel model, string paymentMethod, string? stripeCheckoutSessionId = null, long? stripeAmountInSen = null);
@@ -35,6 +37,6 @@ namespace CakeStudio.Services
 
         void UpdateCustomerOrder(int orderId, int customerId, OrderViewModel model);
 
-
+        
     }
 }

@@ -331,7 +331,7 @@ namespace CakeStudio.Controllers
             if (order == null)
                 return NotFound();
 
-            if (User.IsInRole("Baker") && order.OrderStatus == OrderStatus.PendingPayment)
+            if (User.IsInRole("Baker") && (order.OrderStatus == OrderStatus.PendingPayment || order.OrderStatus == OrderStatus.Cancelled))
             {
                 return NotFound();
             }
@@ -369,7 +369,7 @@ namespace CakeStudio.Controllers
             if (User.IsInRole("Customer") && details.Order.CustId != userId.Value)
                 return Forbid();
 
-            if (User.IsInRole("Baker") && details.Order.OrderStatus == OrderStatus.PendingPayment)
+            if (User.IsInRole("Baker") && details.Order.OrderStatus == OrderStatus.PendingPayment || details.Order.OrderStatus == OrderStatus.Cancelled)
             {
                 return NotFound();
             }
@@ -563,6 +563,93 @@ namespace CakeStudio.Controllers
                 {
                     _logger.LogError(ex, "Unable to update checkout for order {OrderId}.", id);
                     TempData["ErrorMessage"] = Resource.StripePaymentLinkChanged;
+                }
+
+                return RedirectToAction(nameof(Details), new { id });
+            });
+        }
+
+
+        [Authorize(Roles = "Customer")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelUnpaidOrder(int id)
+        {
+            var customerId = GetCurrentUserId();
+
+            if (!customerId.HasValue)
+                return Challenge();
+
+            return await RunCheckoutLockedAsync(customerId.Value, async () =>
+            {
+                var details = _orderService.GetOrderDetails(id);
+
+                if (details == null)
+                    return NotFound();
+
+                if (details.Order.CustId != customerId.Value)
+                    return Forbid();
+
+                if (details.Order.OrderStatus == OrderStatus.Cancelled)
+                    return RedirectToAction(nameof(Details), new { id });
+
+                var payment = details.Payment;
+
+                if (details.Order.OrderStatus != OrderStatus.PendingPayment || payment == null || payment.PaymentStatus != PaymentStatus.Pending)
+                {
+                    TempData["ErrorMessage"] = Resource.OrderCannotBeCancelled;
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                var sessionId = payment.StripeCheckoutSessionId;
+                var cancellationToken = HttpContext.RequestAborted;
+
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(sessionId))
+                    {
+                        var stripeSessions = _stripeClient.V1.Checkout.Sessions;
+                        var stripeSession = await stripeSessions.GetAsync(sessionId, cancellationToken: cancellationToken);
+
+                        if (stripeSession.Status == "open" && stripeSession.PaymentStatus == "unpaid")
+                        {
+                            try
+                            {
+                                stripeSession = await stripeSessions.ExpireAsync(sessionId, cancellationToken: cancellationToken);
+                            }
+                            catch (Stripe.StripeException)
+                            {
+                                // Payment may have finished while we tried to expire the link.
+                                stripeSession = await stripeSessions.GetAsync(sessionId, cancellationToken: cancellationToken);
+                            }
+                        }
+
+                        if (stripeSession.PaymentStatus == "paid")
+                            return RedirectToAction(nameof(Payment), new { sessionId });
+
+                        if (stripeSession.Status != "expired" || stripeSession.PaymentStatus != "unpaid")
+                        {
+                            TempData["ErrorMessage"] = Resource.PreviousPaymentProcessing;
+                            return RedirectToAction(nameof(Details), new { id });
+                        }
+                    }
+
+                    _orderService.CancelUnpaidOrder(id, customerId.Value, sessionId, Resource.OrderCancelledByCustomer);
+
+                    TempData["SuccessMessage"] = Resource.OrderCancelledSuccess;
+                }
+                catch (Stripe.StripeException ex)
+                {
+                    _logger.LogError(ex, "Unable to verify cancellation for order {OrderId}.", id);
+                    TempData["ErrorMessage"] = Resource.PreviousPaymentCheckFailed;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Forbid();
+                }
+                catch (InvalidOperationException ex)
+                {
+                    TempData["ErrorMessage"] = ex.Message;
                 }
 
                 return RedirectToAction(nameof(Details), new { id });

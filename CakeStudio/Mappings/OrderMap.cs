@@ -28,6 +28,10 @@ namespace CakeStudio.Mappings
                 .Length(500)
                 .Nullable();
 
+            Map(x => x.CancellationReason)
+                .Length(500)
+                .Nullable();
+
             // Required date
             Map(x => x.RequiredDate)
                 .Not.Nullable();
