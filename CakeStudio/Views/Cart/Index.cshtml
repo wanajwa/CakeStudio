@@ -18,7 +18,7 @@
 		  asp-action="Checkout"
 		  method="post">
 		<input type="hidden" name="orderId"
-			   value="@ViewBag.AwaitingPaymentOrderId" />
+			   value="@ViewBag.PendingPaymentOrderId" />
 	</form>
 
 	@if (TempData["SuccessMessage"] != null)

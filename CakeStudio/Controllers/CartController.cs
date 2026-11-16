@@ -67,7 +67,7 @@ namespace CakeStudio.Controllers
                 }
             }
 
-            ViewBag.AwaitingPaymentOrderId = orderId;
+            ViewBag.PendingPaymentOrderId = orderId;
 
             return View(model);
         }

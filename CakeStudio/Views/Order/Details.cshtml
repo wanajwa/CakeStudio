@@ -36,7 +36,7 @@
     @{
         string statusClass = Model.Order.OrderStatus switch
         {
-            OrderStatus.AwaitingPayment => "status-awaiting-payment",
+            OrderStatus.PendingPayment => "status-awaiting-payment",
             OrderStatus.OrderPlaced => "status-pending",
             OrderStatus.Preparing => "status-preparing",
             OrderStatus.Ready => "status-ready",
@@ -63,14 +63,14 @@
             <span class="order-status @statusClass">
                 @(Model.Order.OrderStatus switch
                 {
-                    OrderStatus.AwaitingPayment => "Payment Pending",
+                    OrderStatus.PendingPayment => "Pending Payment",
                     OrderStatus.OrderPlaced => "Order Placed",
                     _ => Model.Order.OrderStatus
                 })
             </span>
 
             @if (User.IsInRole("Customer") &&
-                        Model.Order.OrderStatus == OrderStatus.AwaitingPayment && Model.Payment?.PaymentStatus == PaymentStatus.Pending)
+                        Model.Order.OrderStatus == OrderStatus.PendingPayment && Model.Payment?.PaymentStatus == PaymentStatus.Pending)
             {
                 <form asp-controller="Order" asp-action="PayNow" method="post">
                     <input type="hidden" name="id" value="@Model.Order.OrderId" />

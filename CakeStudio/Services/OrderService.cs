@@ -63,7 +63,7 @@ namespace CakeStudio.Services
             var model = new OrderListViewModel
             {
                 TotalOrders = session.QueryOver<Order>()
-                    .Where(o => o.OrderStatus != OrderStatus.AwaitingPayment)
+                    .Where(o => o.OrderStatus != OrderStatus.PendingPayment)
                     .RowCount(),
 
                 PreparingOrders = session.QueryOver<Order>()
@@ -81,7 +81,7 @@ namespace CakeStudio.Services
 
             // Filter and sort the orders
             var query = session.QueryOver<Order>()
-                .Where(o => o.OrderStatus != OrderStatus.AwaitingPayment);
+                .Where(o => o.OrderStatus != OrderStatus.PendingPayment);
 
             switch (sort)
             {
@@ -264,7 +264,7 @@ namespace CakeStudio.Services
             return CreateOrder(
                 customerId, model, paymentMethod,
                 stripeCheckoutSessionId, stripeAmountInSen,
-                awaitingPayment: false);
+                pendingPayment: false);
         }
 
         public int CreateAwaitingPayment(int customerId, OrderViewModel model, int? existingOrderId = null)
@@ -272,10 +272,10 @@ namespace CakeStudio.Services
             return CreateOrder(customerId, model, PaymentMethod.Card,
                 stripeCheckoutSessionId: null,
                 stripeAmountInSen: null,
-                awaitingPayment: true,
+                pendingPayment: true,
                 existingOrderId: existingOrderId);
         }
-        private int CreateOrder(int customerId,OrderViewModel model,string paymentMethod,string? stripeCheckoutSessionId,long? stripeAmountInSen,bool awaitingPayment, int? existingOrderId = null)
+        private int CreateOrder(int customerId,OrderViewModel model,string paymentMethod,string? stripeCheckoutSessionId,long? stripeAmountInSen,bool pendingPayment, int? existingOrderId = null)
         {
             if (model.Cart == null || !model.Cart.Items.Any())
             {
@@ -427,7 +427,7 @@ namespace CakeStudio.Services
                 {
                     var savedOrder = session.Get<Order>(existingOrderId.Value);
 
-                    if (savedOrder == null || savedOrder.CustId != customerId || savedOrder.OrderStatus != OrderStatus.AwaitingPayment)
+                    if (savedOrder == null || savedOrder.CustId != customerId || savedOrder.OrderStatus != OrderStatus.PendingPayment)
                     {
                         throw new ArgumentException(Resource.UnpaidOrderCannotBeEdited);
                     }
@@ -465,8 +465,8 @@ namespace CakeStudio.Services
                         BakerId = baker.UserId,
                         RequiredDate = requiredDateTime,
                         TotalPrice = totalPrice,
-                        OrderStatus = awaitingPayment
-                            ? OrderStatus.AwaitingPayment
+                        OrderStatus = pendingPayment
+                            ? OrderStatus.PendingPayment
                             : OrderStatus.OrderPlaced,
                         CreatedAt = DateTime.Now,
                         CreatedId = customerId
@@ -479,10 +479,10 @@ namespace CakeStudio.Services
                         Order = order,
                         Amount = totalPrice,
                         PaymentMethod = PaymentMethod.Card,
-                        PaymentStatus = awaitingPayment
+                        PaymentStatus = pendingPayment
                             ? PaymentStatus.Pending
                             : PaymentStatus.Paid,
-                        PaidAt = awaitingPayment ? null : DateTime.Now,
+                        PaidAt = pendingPayment ? null : DateTime.Now,
                         StripeCheckoutSessionId = stripeCheckoutSessionId
                     };
 
@@ -523,7 +523,7 @@ namespace CakeStudio.Services
             if (payment == null)
                 throw new InvalidOperationException(Resource.PaymentNotFound);
 
-            if (payment.PaymentStatus != PaymentStatus.Pending || payment.Order.OrderStatus != OrderStatus.AwaitingPayment)
+            if (payment.PaymentStatus != PaymentStatus.Pending || payment.Order.OrderStatus != OrderStatus.PendingPayment)
             {
                 throw new InvalidOperationException(Resource.StripeSessionMismatch);
             }
@@ -549,7 +549,7 @@ namespace CakeStudio.Services
                 .Where(() => order.OrderId == orderId && order.CustId == customerId)
                 .SingleOrDefault();
 
-            if (payment == null || payment.PaymentStatus != PaymentStatus.Pending || payment.Order.OrderStatus != OrderStatus.AwaitingPayment || payment.StripeCheckoutSessionId != stripeSessionId)
+            if (payment == null || payment.PaymentStatus != PaymentStatus.Pending || payment.Order.OrderStatus != OrderStatus.PendingPayment || payment.StripeCheckoutSessionId != stripeSessionId)
             {
                 throw new InvalidOperationException(Resource.StripeSessionMismatch);
             }
@@ -584,7 +584,7 @@ namespace CakeStudio.Services
             if (amountInSen != expectedAmountInSen)
                 throw new InvalidOperationException(Resource.StripeAmountMismatch);
 
-            if (payment.PaymentStatus == PaymentStatus.Pending && payment.Order.OrderStatus == OrderStatus.AwaitingPayment)
+            if (payment.PaymentStatus == PaymentStatus.Pending && payment.Order.OrderStatus == OrderStatus.PendingPayment)
             {
                 payment.PaymentStatus = PaymentStatus.Paid;
                 payment.PaidAt = DateTime.Now;

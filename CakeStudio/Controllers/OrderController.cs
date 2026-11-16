@@ -121,7 +121,7 @@ namespace CakeStudio.Controllers
                     if (savedOrder.Order.CustId != customerId.Value)
                         return Forbid();
 
-                    if (savedOrder.Order.OrderStatus != OrderStatus.AwaitingPayment)
+                    if (savedOrder.Order.OrderStatus != OrderStatus.PendingPayment)
                         return RedirectToAction(nameof(Details), new { id = orderId.Value });
 
                     var previousSessionId = savedOrder.Payment?.StripeCheckoutSessionId;
@@ -312,7 +312,7 @@ namespace CakeStudio.Controllers
             if (order == null)
                 return NotFound();
 
-            if (User.IsInRole("Baker") && order.OrderStatus == OrderStatus.AwaitingPayment)
+            if (User.IsInRole("Baker") && order.OrderStatus == OrderStatus.PendingPayment)
             {
                 return NotFound();
             }
@@ -350,8 +350,7 @@ namespace CakeStudio.Controllers
             if (User.IsInRole("Customer") && details.Order.CustId != userId.Value)
                 return Forbid();
 
-            if (User.IsInRole("Baker") &&
-                details.Order.OrderStatus == OrderStatus.AwaitingPayment)
+            if (User.IsInRole("Baker") && details.Order.OrderStatus == OrderStatus.PendingPayment)
             {
                 return NotFound();
             }
@@ -441,7 +440,7 @@ namespace CakeStudio.Controllers
             if (details.Order.CustId != customerId.Value)
                 return Forbid();
 
-            if (details.Order.OrderStatus != OrderStatus.AwaitingPayment || details.Payment?.PaymentStatus != PaymentStatus.Pending)
+            if (details.Order.OrderStatus != OrderStatus.PendingPayment || details.Payment?.PaymentStatus != PaymentStatus.Pending)
             {
                 return RedirectToAction(nameof(Details), new { id });
             }
